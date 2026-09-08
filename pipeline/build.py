@@ -613,6 +613,23 @@ def build_am(P):
         promoted_30 = sum(1 for pid in ids if lv_30[pid] < CORE <= lv_now[pid])
         demoted_30 = sum(1 for pid in ids if lv_30[pid] >= CORE > lv_now[pid])
         active_now = sum(1 for pid in ids if lv_now[pid] >= CORE)
+        # submitters by month, YTD: new / active / dabbler (same rules as the AE chart)
+        snaps_m = [s for _, _, s in months]
+        lv_m = {pid: [E[pid].level(s) if pid in E else QUIET for s in snaps_m] for pid in ids}
+        mrows = []
+        for i, (label, m0, s) in enumerate(months):
+            new = act = dab = 0
+            for pid in ids:
+                e = E.get(pid)
+                if not e or e.cases_between(m0, s) == 0:
+                    continue
+                if e.first is not None and m0 <= e.first < s:
+                    new += 1
+                elif lv_m[pid][i] >= CORE:
+                    act += 1
+                else:
+                    dab += 1
+            mrows.append({"m": m0.strftime("%Y-%m"), "label": label, "new": new, "active": act, "dabbler": dab, "total": new + act + dab})
         # daily volume by business day, trailing 60 days
         per_day = defaultdict(int)
         for fd, _, _, _ in folded:
@@ -674,6 +691,7 @@ def build_am(P):
                       "cases_mtd": cases_mtd, "prior_pace": prior_pace, "mtd_pct": mtd_pct, "biz_days_in": len(biz_in),
                       "month_label": cur_m0.strftime("%b"), "prior_month_label": pm0.strftime("%b"),
                       "promoted_30": promoted_30, "demoted_30": demoted_30},
+            "months": mrows,
             "daily": {"days": daily, "total": sum(x["n"] for x in daily), "from": window60[0].isoformat() if window60 else None, "to": window60[-1].isoformat() if window60 else None},
             "revenue": {"months": [m[0] for m in months], "series": [series[g] for g in groups],
                         "mtd_factor": round(mtd_factor, 3) if mtd_factor else None, "mtd_biz_elapsed": mtd_elapsed, "mtd_biz_total": mtd_total,

@@ -130,7 +130,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 @media (max-width:1000px){.bottom{grid-template-columns:1fr}}
 .am-grid{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-top:12px}
 @media (max-width:1000px){.am-grid{grid-template-columns:1fr}}
-.am-right{display:flex;flex-direction:column;gap:12px}
+.am-right,.am-left{display:flex;flex-direction:column;gap:12px}
 .panel{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .panel .panel-title{margin-bottom:8px}
 .mx-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -229,7 +229,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.5.3</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.5.4</span></div>
 
 </main>
 
@@ -605,7 +605,11 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
           tile(fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "d") +
         "</div>" +
         '<div class="am-grid">' +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
+          '<div class="am-left">' +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AM.year) + ' YTD</div><div class="legend">' +
+              SERIES.map(function (s) { return "<span><i style=\"background:" + s.color + '"></i>' + esc(s.label) + "</span>"; }).join("") + "</div></div>" + chartSVG(sub.months || [], 0) + "</div>" +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
+          "</div>" +
           '<div class="am-right">' +
             '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue expansion: invoiced revenue per invoiced practice by month, ' + esc(AM.year) + ' YTD</div><div class="legend">' +
               sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name) + "</span>"; }).join("") +
@@ -832,6 +836,15 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       ["" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "B0362F"]
     ];
     kp.forEach(function (k, i) { kpiBox(pptx, s, 3.15 + i * 2.42, 2.3, k[0], k[1], k[2], k[3]); });
+    var mLabels = (sub.months || []).map(function (m) { return m.label; });
+    s.addChart(pptx.ChartType.bar, SERIES.map(function (ser) { return { name: ser.label, labels: mLabels, values: (sub.months || []).map(function (m) { return m[ser.key] || 0; }) }; }), {
+      x: 0.4, y: 2.35, w: 7.5, h: 2.3, barDir: "col", barGrouping: "stacked", barGapWidthPct: 45, chartColors: SERIES.map(function (x) { return x.color.replace("#", ""); }),
+      showLegend: true, legendPos: "t", legendFontSize: 8, legendFontFace: "Calibri",
+      catAxisLabelFontSize: 8, valAxisLabelFontSize: 7, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+      valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
+      showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelColor: "052030", dataLabelFontSize: 7, dataLabelFontFace: "Calibri",
+      showTitle: true, title: "Submitting practices by month, " + AM.year + " YTD", titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
+    });
     var days = sub.daily.days, wa = weeklyAverages(days);
     var dayLabels = days.map(function (d, i) { return d.monday ? d.label + " (avg " + (Math.round((wa.perDay[i] || 0) * 10) / 10) + ")" : ""; });
     s.addChart([
@@ -839,7 +852,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
         showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelColor: "052030", dataLabelFontSize: 6, dataLabelFontFace: "Calibri", dataLabelPosition: "outEnd" } },
       { type: pptx.ChartType.line, data: [{ name: "Weekly average per business day", labels: dayLabels, values: wa.perDay.map(function (v) { return Math.round((v || 0) * 10) / 10; }) }], options: { chartColors: ["B3A369"], lineDash: "dash", lineSize: 2, lineDataSymbol: "none", showValue: false } }
     ], {
-      x: 0.4, y: 2.35, w: 7.5, h: 4.75, barDir: "col",
+      x: 0.4, y: 4.8, w: 7.5, h: 2.3, barDir: "col",
       showLegend: true, legendPos: "b", legendFontSize: 8, legendFontFace: "Calibri",
       catAxisLabelFontSize: 7, valAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
       valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,

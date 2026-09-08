@@ -235,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.6.0</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.6.1</span></div>
 
 </main>
 
@@ -507,17 +507,23 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     grid(s, ticks, y, padL, W, padR);
     days.forEach(function (d, i) {
       var cx = padL + slot * i + slot / 2, x = cx - bw / 2, y1 = y(d.n), h = y(0) - y1;
-      s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (d.monday ? "#0F6BA8" : "#1882C7") + '" rx="1.5"/>');
+      s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (d.monday ? "#0F6BA8" : "#1882C7") + '" fill-opacity="' + (d.monday ? "1" : "0.62") + '" rx="1.5"/>');
+      if (d.n > 0) {
+        s.push(h >= 16
+          ? '<text x="' + cx.toFixed(1) + '" y="' + (y(0) - 5).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="800" fill="#FFFFFF" paint-order="stroke" stroke="#0F6BA8" stroke-width="1.2">' + d.n + '</text>'
+          : '<text x="' + cx.toFixed(1) + '" y="' + (y1 - 4).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="800" fill="#052030">' + d.n + '</text>');
+      }
       if (d.monday) s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(d.label) + '</text>');
     });
-    /* one gold dashed level per week (average cases per business day) with a single label above that week's tallest bar */
+    /* one gold dashed level per week (average cases per business day) with a bold gold pill above that week's tallest bar */
     var wa = weeklyAverages(days);
     wa.weeks.forEach(function (w) {
       var x0 = padL + slot * w.idx[0] + slot * 0.15, x1 = padL + slot * (w.idx[w.idx.length - 1] + 1) - slot * 0.15, cx = (x0 + x1) / 2;
       var peak = 0; w.idx.forEach(function (i) { if (days[i].n > peak) peak = days[i].n; });
-      var ya = y(w.avg), label = Math.round(w.avg * 10) / 10;
-      s.push('<line x1="' + x0.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y1="' + ya.toFixed(1) + '" y2="' + ya.toFixed(1) + '" stroke="#B3A369" stroke-width="3" stroke-dasharray="8,5" stroke-linecap="round"/>');
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (Math.min(ya, y(peak)) - 9).toFixed(1) + '" text-anchor="middle" font-size="12.5" font-weight="800" fill="#8A7A42" paint-order="stroke" stroke="#F3F9FD" stroke-width="5">' + label + '</text>');
+      var ya = y(w.avg), label = String(Math.round(w.avg * 10) / 10), pw = label.length * 8.5 + 14, py = Math.min(ya, y(peak)) - 24;
+      s.push('<line x1="' + x0.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y1="' + ya.toFixed(1) + '" y2="' + ya.toFixed(1) + '" stroke="#B3A369" stroke-width="3.5" stroke-dasharray="8,5" stroke-linecap="round"/>');
+      s.push('<rect x="' + (cx - pw / 2).toFixed(1) + '" y="' + py.toFixed(1) + '" width="' + pw.toFixed(1) + '" height="19" rx="5" fill="#B3A369"/>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (py + 14).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#052030">' + label + '</text>');
     });
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     return s.join("") + "</svg>";
@@ -932,7 +938,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     var dayLabels = days.map(function (d, i) { return d.monday ? d.label + " (avg " + (Math.round((wa.perDay[i] || 0) * 10) / 10) + ")" : ""; });
     sectionLabel(pptx, s, 0.5, 4.7, 7.4, "Case volume by business day", "trailing 60 days, " + fmtN(sub.daily.total) + " cases; dashed = weekly average per business day (in the Monday label)");
     s.addChart([
-      { type: pptx.ChartType.bar, data: [{ name: "Cases received", labels: dayLabels, values: days.map(function (d) { return d.n; }) }], options: { barGapWidthPct: 35, chartColors: [DECK.killian], showValue: false } },
+      { type: pptx.ChartType.bar, data: [{ name: "Cases received", labels: dayLabels, values: days.map(function (d) { return d.n; }) }], options: { barGapWidthPct: 35, chartColors: [DECK.killian], showValue: true, dataLabelPosition: "inBase", dataLabelColor: "FFFFFF", dataLabelFontSize: 6, dataLabelFormatCode: "#,##0;-#,##0;" } },
       { type: pptx.ChartType.line, data: [{ name: "Weekly average per business day", labels: dayLabels, values: wa.perDay.map(function (v) { return Math.round((v || 0) * 10) / 10; }) }], options: { chartColors: [DECK.gold], lineDash: "dash", lineSize: 2, lineDataSymbol: "none", showValue: false } }
     ], opts({ x: 0.5, y: 4.95, w: 7.4, h: 2.1, barDir: "col", showLegend: true, legendPos: "b", legendFontSize: 7, catAxisLabelFontSize: 6.5, valAxisLabelFontSize: 7, valAxes: [{ showValAxisTitle: false }], catAxes: [{ catAxisTitle: "" }] }));
     var rv = sub.revenue, rvLast = rv.months.length - 1, rvProj = rv.mtd_factor != null;

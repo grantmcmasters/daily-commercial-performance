@@ -394,7 +394,7 @@
           tile(fmtN(c.total), "Total practices", "", "") +
           tile(fmtN(c.active), "Active", "", "g") +
           tile(fmtN(c.dabblers), "Dabblers", "", "") +
-          tile(fmtPct(c.penetration_pct), "YTD penetration", "", "d") +
+          tile(fmtPct(c.penetration_pct), "YTD penetration", fmtN(c.ytd_submitters) + "/" + fmtN(c.total) + " practices sent 1+ case this year", "d") +
           tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g") +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
@@ -775,9 +775,9 @@
     var c = sub.cards, self = this;
     this.content(sub.title, "Account Executives  |  " + sub.ae);
     this.logoCard(0.5, 1.05, 1.9, 1.05, [logo], sub.title);
-    [["" + fmtN(c.total), "Total practices", DECK.navy], ["" + fmtN(c.active), "Active", DECK.killian], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy],
-     [fmtPct(c.penetration_pct), "YTD penetration", DECK.goldInk], ["" + fmtN(c.mtd_net_new), "MTD net new submitters", DECK.killian]
-    ].forEach(function (k, i) { self.kpi(2.55 + i * 2.06, 1.05, 1.96, 1.05, k[0], k[1], "", DECK.strips[i], k[2]); });
+    [["" + fmtN(c.total), "Total practices", DECK.navy, ""], ["" + fmtN(c.active), "Active", DECK.killian, ""], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy, ""],
+     [fmtPct(c.penetration_pct), "YTD penetration", DECK.goldInk, fmtN(c.ytd_submitters) + "/" + fmtN(c.total) + " sent 1+ case this year"], ["" + fmtN(c.mtd_net_new), "MTD net new submitters", DECK.killian, ""]
+    ].forEach(function (k, i) { self.kpi(2.55 + i * 2.06, 1.05, 1.96, 1.05, k[0], k[1], k[3], DECK.strips[i], k[2]); });
     this.label(0.5, 2.3, 8.2, "Submitting practices by month", AE.year + " YTD, dashed top level = rest of the network (" + fmtN(sub.network) + ")");
     var t = defaultStates(sub.states);
     this.plays(8.95, 2.3, 3.9, 4.65, "Plays", playsOf(sub.key, sub.plays));

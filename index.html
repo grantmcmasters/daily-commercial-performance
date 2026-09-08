@@ -235,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.6.6</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.6.7</span></div>
 
 </main>
 
@@ -842,7 +842,8 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     if (SK_ICON) s.addImage({ data: SK_ICON, x: 0.24, y: 0.08, w: 0.66, h: 0.66 });
     s.addText(title.toUpperCase(), { x: 1.02, y: 0.11, w: 8.4, h: 0.45, fontFace: "Montserrat", fontSize: 22, bold: true, color: "FFFFFF", isTextBox: true, margin: 0, valign: "middle" });
     s.addText(subtitle || "", { x: 1.05, y: 0.54, w: 8.4, h: 0.3, fontFace: "Lora", fontSize: 12, italic: true, color: DECK.pale, isTextBox: true, margin: 0, valign: "middle" });
-    s.addText(DATA_THRU, { x: 9.4, y: 0.3, w: 3.5, h: 0.32, align: "right", fontFace: "Montserrat", fontSize: 10, bold: true, color: DECK.gold, isTextBox: true, margin: 0, charSpacing: 1 });
+    var thru = (D.meta && D.meta.data_through) ? "Data through " + longDate(D.meta.data_through) : "";
+    s.addText(thru, { x: 9.4, y: 0.3, w: 3.5, h: 0.32, align: "right", fontFace: "Montserrat", fontSize: 10, bold: true, color: DECK.gold, isTextBox: true, margin: 0, charSpacing: 1 });
     s.addShape(pptx.ShapeType.rect, { x: 0, y: 0.85, w: 13.333, h: 0.05, fill: { color: DECK.dental }, line: { color: DECK.dental } });
     slideNo++;
     s.addText("SPECTRUM KILLIAN   |   DAILY COMMERCIAL PERFORMANCE   |   CONFIDENTIAL", { x: 0.5, y: 7.18, w: 8, h: 0.24, fontFace: "Montserrat", fontSize: 8, color: DECK.muted, charSpacing: 2, isTextBox: true, margin: 0, valign: "middle" });

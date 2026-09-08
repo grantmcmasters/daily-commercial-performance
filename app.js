@@ -395,13 +395,16 @@
     return good ? "background:rgba(52,199,89," + (0.16 + 0.5 * mag).toFixed(2) + ");color:#1D7A3A"
                 : "background:rgba(239,68,68," + (0.12 + 0.46 * mag).toFixed(2) + ");color:#B0362F";
   }
+  /* dabbler cells: a quiet blue ramp, darker where the row has relatively more dabblers */
+  function blueShade(v, lo, hi) { return 0.08 + 0.32 * (hi > lo ? (v - lo) / (hi - lo) : 0.5); }
   function statesTableHTML(t) {
     var h = '<table class="mx' + (t.columns.length > 14 ? " dense" : "") + '"><thead><tr><th>State at ' + esc(t.kind) + ' end</th>' + t.columns.map(function (c) { return "<th>" + esc(c.label) + (c.partial ? "*" : "") + "</th>"; }).join("") + "</tr></thead><tbody>";
     t.rows.forEach(function (r) {
       h += '<tr><td class="lbl">' + esc(r.label) + "</td>";
+      var lo = Math.min.apply(null, r.values), hi = Math.max.apply(null, r.values);
       r.values.forEach(function (v, i) {
-        var d = r.deltas[i];
-        h += '<td style="' + deltaStyle(r.tone, d) + '">' + fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + signed(d) + "</small>") + "</td>";
+        var d = r.deltas[i], style = r.tone === "neutral" ? "background:rgba(24,130,199," + blueShade(v, lo, hi).toFixed(2) + ");color:#0C2C4D" : deltaStyle(r.tone, d);
+        h += '<td style="' + style + '">' + fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + signed(d) + "</small>") + "</td>";
       });
       h += "</tr>";
     });
@@ -553,7 +556,7 @@
       "<li>A snapshot counts cases received in the 90 days before it, and the 90 days before that for the Super Active test, one business unit per case (the business unit comes from the primary product). Month columns are measured at the end of the month; the current month at yesterday.</li></ul>" +
       "<h3>State tables and the picker</h3><ul>" +
       "<li><b>Month over month / week over week:</b> where the practices sit at the end of each month or week (Super Active, Core Active, Dabbler, New, Inactive). The picker switches between months and weeks and between the current year and the current quarter; the default, month by month for the current year, is what the slides show.</li>" +
-      "<li>Weeks are seven day blocks from the first day of the year or quarter, so the two weekly views use different week boundaries. * marks the partial period through yesterday. The small number and the color show the change from the period before: green is good, red is bad, gray is neutral (Dabbler) or no change.</li></ul>" +
+      "<li>Weeks are seven day blocks from the first day of the year or quarter, so the two weekly views use different week boundaries. * marks the partial period through yesterday. The small number and the color show the change from the period before: green is good, red is bad, gray is no change. The Dabbler row is shaded blue instead, darker where that row has relatively more dabblers.</li></ul>" +
       "<h3>Account Executives</h3><ul>" +
       "<li><b>Total practices:</b> the partner network.<ul>" + networks + "</ul></li>" +
       "<li><b>Active, Dabblers:</b> where the practices sit today. <b>YTD penetration:</b> practices that sent a case this year divided by the network, rounded to the nearest percent. <b>MTD net new submitters:</b> practices whose first ever case landed this month.</li>" +
@@ -814,16 +817,17 @@
     this.text(("STATE AT " + t.kind + " END").toUpperCase(), x + 0.04, y + rowH / 2, { size: 6.5, weight: 700, color: DECK.ink, baseline: "middle", space: 1 });
     t.columns.forEach(function (c, i) { self.text(c.label + (c.partial ? "*" : ""), x + firstW + colW * i + colW / 2, y + rowH / 2, { size: fs, weight: 700, color: DECK.ink, align: "center", baseline: "middle" }); });
     t.rows.forEach(function (r, ri) {
-      var yy = y + rowH * (ri + 1);
+      var yy = y + rowH * (ri + 1), lo = Math.min.apply(null, r.values), hi = Math.max.apply(null, r.values);
       self.rect(x, yy + 0.01, firstW - 0.02, rowH - 0.02, DECK.cardFill);
       self.text(r.label, x + 0.06, yy + rowH / 2, { size: 7.5, weight: 700, color: DECK.navy, baseline: "middle" });
       r.values.forEach(function (v, i) {
         var d = r.deltas[i], fill = "#F7F9FB", col = DECK.gray;
-        if (d != null && d !== 0 && r.tone !== "neutral") {
+        if (r.tone === "neutral") { fill = blendHex([24, 130, 199], blueShade(v, lo, hi)); col = DECK.ink; }
+        else if (d != null && d !== 0) {
           var good = r.tone === "good_up" ? d > 0 : d < 0, mag = Math.min(1, Math.abs(d) / 6);
           fill = good ? blendHex([52, 199, 89], 0.16 + 0.5 * mag) : blendHex([239, 68, 68], 0.12 + 0.46 * mag);
           col = good ? DECK.green : DECK.red;
-        } else if (d != null && d !== 0) fill = blendHex([176, 183, 195], 0.26);
+        }
         var cx = x + firstW + colW * i;
         self.rect(cx + 0.01, yy + 0.01, colW - 0.02, rowH - 0.02, fill);
         self.text(fmtN(v) + (d == null || d === 0 ? "" : " (" + signed(d) + ")"), cx + colW / 2, yy + rowH / 2, { size: fs, weight: 700, color: col, align: "center", baseline: "middle" });

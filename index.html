@@ -235,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.6.5</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.6.6</span></div>
 
 </main>
 
@@ -519,8 +519,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     var wa = weeklyAverages(days), pts = [], pills = [];
     wa.weeks.forEach(function (w) {
       var cx = padL + slot * (w.idx[0] + w.idx[w.idx.length - 1] + 1) / 2;
-      var peak = 0; w.idx.forEach(function (i) { if (days[i].n > peak) peak = days[i].n; });
-      var ya = y(w.avg), label = String(Math.round(w.avg * 10) / 10), pw = label.length * 8.5 + 14, py = Math.min(ya, y(peak)) - 24;
+      var ya = y(w.avg), label = String(Math.round(w.avg * 10) / 10), pw = label.length * 8.5 + 14, py = ya - 28;
       pts.push(cx.toFixed(1) + "," + ya.toFixed(1));
       pills.push({ cx: cx, ya: ya, py: py, pw: pw, label: label });
     });

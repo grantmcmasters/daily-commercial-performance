@@ -146,9 +146,9 @@ AMS = [
     {"key": "syed", "name": "Syed Zubair", "amc": ["Syed Zubair, Nikolas Olejnik"], "label": "Incisive", "logos": ["logos/incisive.png"], "lines": "all"},
     {"key": "liezl", "name": "Liezl Evangelista", "amc": ["Liezl Evangelista"], "label": "OC Private Practice", "logos": ["logos/spectrum-killian.png"], "logo_tag": "OC Private Practice", "lines": "all"},
     {"key": "nikolas", "name": "Nikolas Olejnik", "amc": ["Nikolas Olejnik"], "label": "MB2, Engel, S.I.N. 360 (non-Incisive book)",
-     "logos": ["logos/mb2.png", "logos/engel.png", "logos/sin360.png"], "lines": ["MB2", "Engel", "S.I.N. 360"]},
+     "logos": ["logos/mb2.png", "logos/engel.png", "logos/sin360.png"], "lines": "all"},
     {"key": "ed", "name": "Ed Loonam", "amc": ["Ed Loonam"], "label": "Strategic partner book",
-     "logos": ["logos/advantage-dental.png", "logos/affordable-dentures.png", "logos/pds.svg"], "lines": "top3"},
+     "logos": ["logos/advantage-dental.png", "logos/affordable-dentures.png", "logos/pds.svg"], "lines": "all"},
 ]
 SA_T = {"CB": 60, "IMP": 12, "REM": 30, "FA": 12, "HE": 12}          # full bar, both windows
 CORE_T = {k: math.ceil(v / 2) for k, v in SA_T.items()}               # half bar, last 90 days

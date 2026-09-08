@@ -235,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.6.1</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.6.2</span></div>
 
 </main>
 
@@ -529,33 +529,39 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     return s.join("") + "</svg>";
   }
 
-  /* two bands: the revenue line lives in the top band, the cases bars in the bottom band, so they never overlap */
+  /* one plot: the revenue axis is auto-fit (it starts near the lowest revenue point, not at $0) and the
+     cases bars are scaled so the tallest one stays just under the lowest revenue point */
   function lineSVG(rev) {
     var W = 560, H = 380, padL = 48, padR = 44, padT = 24, padB = 30;
-    var months = rev.months, n = months.length || 1, max = 0, last = n - 1, proj = rev.mtd_factor != null;
+    var months = rev.months, n = months.length || 1, max = 0, min = Infinity, last = n - 1, proj = rev.mtd_factor != null;
     rev.series.forEach(function (ser) {
-      ser.values.forEach(function (v, i) { var vv = (proj && i === last && ser.projected_last != null) ? ser.projected_last : v; if (vv != null && vv > max) max = vv; });
+      ser.values.forEach(function (v, i) { var vv = (proj && i === last && ser.projected_last != null) ? ser.projected_last : v; if (vv != null) { if (vv > max) max = vv; if (vv < min) min = vv; } });
     });
-    var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
+    if (!isFinite(min)) min = 0;
     var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n;
-    var topH = ih * 0.55, botTop = padT + ih * 0.64, botH = ih * 0.36;
-    var y = function (v) { return padT + topH - (v / ymax) * topH; }, x = function (i) { return padL + slot * i + slot / 2; };
-    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Invoiced revenue per invoiced practice (line, top) and cases invoiced per invoiced practice (bars, bottom) by month; the current month is at run rate and dashed">'];
-    ticks.forEach(function (t) {
-      var yy = y(t);
-      s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>');
-      s.push('<text x="' + (padL - 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + fmtMoney(t) + '</text>');
-    });
-    /* bottom band: cases invoiced per invoiced practice, book level, as bars on the right axis */
     var cpo = rev.cases_per_office || [], cmax = 0;
     cpo.forEach(function (v, i) { var vv = (proj && i === last && rev.cases_projected_last != null) ? rev.cases_projected_last : v; if (vv != null && vv > cmax) cmax = vv; });
     var cticks = niceTicks(cmax), cymax = cticks[cticks.length - 1] || 1;
-    var y2 = function (v) { return botTop + botH - (v / cymax) * botH; };
-    cticks.forEach(function (t) {
-      var yy = y2(t);
+    /* revenue scale: nice step over the visible range, floor pushed down until the bars have room underneath */
+    var span = Math.max(max - min, max * 0.15, 1), step = niceTicks(span)[1] || 1, lo = Math.max(0, Math.floor((min - span * 0.25) / step) * step), hi = Math.ceil((max + step * 0.5) / step) * step;
+    var y, gap = 18, bandTop, bandH, tries = 0;
+    do {
+      if (hi <= lo) hi = lo + step;
+      y = (function (lo_, hi_) { return function (v) { return padT + ih - ((v - lo_) / (hi_ - lo_)) * ih; }; })(lo, hi);
+      bandTop = y(min) + gap;
+      bandH = padT + ih - bandTop;
+      if (bandH < ih * 0.28 && lo > 0) lo = Math.max(0, lo - step); else break;
+    } while (++tries < 12);
+    var x = function (i) { return padL + slot * i + slot / 2; };
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Invoiced revenue per invoiced practice (line) with cases invoiced per invoiced practice (bars) by month; the current month is at run rate and dashed">'];
+    for (var t = lo; t <= hi + 1e-9; t += step) {
+      var yy = y(t);
       s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>');
-      s.push('<text x="' + (W - padR + 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="start" font-size="10.5" font-weight="700" fill="' + CASES_INK + '">' + fmtN(t) + '</text>');
-    });
+      s.push('<text x="' + (padL - 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + fmtMoney(t) + '</text>');
+    }
+    /* cases bars: right axis spans the band under the line */
+    var y2 = function (v) { return padT + ih - (v / cymax) * bandH; };
+    [0, cymax].forEach(function (t) { s.push('<text x="' + (W - padR + 8) + '" y="' + (y2(t) + 3.5).toFixed(1) + '" text-anchor="start" font-size="10.5" font-weight="700" fill="' + CASES_INK + '">' + fmtN(t) + '</text>'); });
     var bw = Math.min(30, slot * 0.5);
     cpo.forEach(function (v, i) {
       var est = proj && i === last && rev.cases_projected_last != null;
@@ -589,7 +595,6 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       });
     });
     months.forEach(function (m, i) { s.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m) + '</text>'); });
-    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     return s.join("") + "</svg>";
   }
 

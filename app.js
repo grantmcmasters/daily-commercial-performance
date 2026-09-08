@@ -165,7 +165,7 @@
           ? '<text x="' + cx.toFixed(1) + '" y="' + (y(0) - 5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="800" fill="#FFFFFF" paint-order="stroke" stroke="#0F6BA8" stroke-width="1.2">' + d.n + '</text>'
           : '<text x="' + cx.toFixed(1) + '" y="' + (y1 - 4).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="800" fill="#052030">' + d.n + '</text>');
       }
-      if (d.monday) s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6B79">' + esc(d.label) + '</text>');
+      if (d.monday) s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="11.5" font-weight="800" fill="#0F6BA8">' + esc(d.label) + '</text>');
     });
     var wa = weeklyAverages(days), pts = [], pills = [];
     wa.weeks.forEach(function (w) {

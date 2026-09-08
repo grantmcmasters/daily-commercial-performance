@@ -410,11 +410,11 @@
   function avgTickerHTML(c) {
     if (c.avg_pct == null) return '<span class="tick flat">n/a</span> no ' + esc(c.prior_month_label) + " cases to compare";
     var tone = c.avg_pct > 0.5 ? "up" : c.avg_pct < -0.5 ? "down" : "flat";
-    return '<span class="tick ' + tone + '">' + (c.avg_pct > 0 ? "+" : "") + Math.round(c.avg_pct) + "%</span> vs " + esc(c.prior_month_label) + " (" + fmt1(c.avg_per_day_prior) + " per day) · " + fmtN(c.cases_mtd) + " cases in " + c.biz_days_in + " business days";
+    return '<span class="tick ' + tone + '">' + (c.avg_pct > 0 ? "+" : "") + Math.round(c.avg_pct) + "%</span> from " + esc(c.prior_month_label) + " (" + fmtN(Math.round(c.avg_per_day_prior)) + " per day)";
   }
   function avgTickerText(c) {
     if (c.avg_pct == null) return "no " + c.prior_month_label + " cases to compare";
-    return (c.avg_pct > 0 ? "+" : "") + Math.round(c.avg_pct) + "% vs " + c.prior_month_label + " (" + fmt1(c.avg_per_day_prior) + " per day)";
+    return (c.avg_pct > 0 ? "+" : "") + Math.round(c.avg_pct) + "% from " + c.prior_month_label + " (" + fmtN(Math.round(c.avg_per_day_prior)) + " per day)";
   }
   function revenueLegend(sub) {
     return sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name === "All" ? "Revenue per invoiced practice" : ser.name + " revenue per practice") + "</span>"; }).join("") +
@@ -433,7 +433,7 @@
         '<div><span class="chip chip-b">' + esc(sub.label) + "</span></div></div>" +
         '<div class="b4row">' +
           tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
-          tileHTML(fmt1(c.avg_per_day_mtd), "Cases per business day, " + esc(c.month_label) + " MTD", avgTickerHTML(c), "") +
+          tileHTML(fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerHTML(c), "") +
           tile(fmtN(c.promoted_30), "Promoted to active, last 30 days", "", "g") +
           tile(fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "d") +
         "</div>" +
@@ -791,7 +791,7 @@
     this.content(sub.name, "Account Managers  |  " + sub.label);
     this.logoCard(0.5, 1.05, 2.6, 1.05, logos, sub.name, sub.logo_tag);
     [["" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, null],
-     [fmt1(c.avg_per_day_mtd), "Cases per business day, " + c.month_label + " MTD", avgTickerText(c), DECK.navy, c.avg_pct == null ? DECK.ink : c.avg_pct >= 0 ? DECK.green : DECK.red],
+     [fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerText(c), DECK.navy, c.avg_pct == null ? DECK.ink : c.avg_pct >= 0 ? DECK.green : DECK.red],
      ["" + fmtN(c.promoted_30), "Promoted to active, last 30 days", "", DECK.green, null],
      ["" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", DECK.red, null]
     ].forEach(function (k, i) { self.kpi(3.25 + i * 2.42, 1.05, 2.32, 1.05, k[0], k[1], k[2], DECK.strips[i], k[3], k[4]); });

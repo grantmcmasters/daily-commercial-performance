@@ -235,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.6.3</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.6.4</span></div>
 
 </main>
 
@@ -672,7 +672,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
               sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name === "All" ? "Revenue per invoiced practice" : ser.name + " revenue per practice") + "</span>"; }).join("") +
               '<span><i style="background:' + CASES_COLOR + '"></i>Cases per invoiced practice (bars, right axis)</span>' +
               (sub.revenue.mtd_factor != null ? '<span><i class="dash-gold" style="border-color:#5A6B79"></i>' + esc(sub.revenue.mtd_label) + " at run rate</span>" : "") + "</div></div>" + lineSVG(sub.revenue) + "</div>" +
-            '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend"><span><i style="background:' + GREEN + '"></i>Up to active</span><span><i style="background:' + RED + '"></i>Down from active</span></div></div>' + wowSVG(sub.weekly) + "</div>" +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend"><span><i style="background:' + GREEN + '"></i>Dabbler → Active</span><span><i style="background:' + RED + '"></i>Active → Dabbler</span></div></div>' + wowSVG(sub.weekly) + "</div>" +
           "</div></div></div>";
     }).join("");
   }
@@ -956,10 +956,10 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     s.addChart(pptx.ChartType.bar, [{ name: "Cases per invoiced practice", labels: rvLabels, values: cpoVals }], opts({ x: 8.15, y: 3.92, w: 4.7, h: 0.98, barDir: "col", barGapWidthPct: 55, chartColors: [DECK.gold], showLegend: false, catAxisLabelFontSize: 7, valAxisLabelFontSize: 7, showValue: true, dataLabelFormatCode: "0.0", dataLabelFontSize: 7, dataLabelColor: "8A7A42", dataLabelPosition: "outEnd" }));
     var wk = sub.weekly.weeks;
     var wkLabels = wk.map(function (w) { return w.label + (w.partial ? "*" : "") + " net " + (w.net > 0 ? "+" + w.net : w.net); });
-    sectionLabel(pptx, s, 8.15, 4.95, 4.7, "Week over week, " + sub.weekly.quarter, "up to active vs down from active, net in the label");
+    sectionLabel(pptx, s, 8.15, 4.95, 4.7, "Week over week, " + sub.weekly.quarter, "Dabbler → Active vs Active → Dabbler, net in the label");
     s.addChart(pptx.ChartType.bar, [
-      { name: "Up to active", labels: wkLabels, values: wk.map(function (w) { return w.promoted; }) },
-      { name: "Down from active", labels: wkLabels, values: wk.map(function (w) { return -w.demoted; }) }
+      { name: "Dabbler → Active", labels: wkLabels, values: wk.map(function (w) { return w.promoted; }) },
+      { name: "Active → Dabbler", labels: wkLabels, values: wk.map(function (w) { return -w.demoted; }) }
     ], opts({ x: 8.15, y: 5.2, w: 4.7, h: 1.85, barDir: "col", barGrouping: "stacked", barGapWidthPct: 60, chartColors: ["34C759", "EF4444"], catAxisLabelPos: "low", showLegend: true, legendPos: "b", legendFontSize: 7, catAxisLabelFontSize: 6.5, valAxisLabelFontSize: 7, showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelFontSize: 7, dataLabelColor: DECK.navy, dataLabelPosition: "ctr" }));
   }
 

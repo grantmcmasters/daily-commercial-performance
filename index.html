@@ -229,7 +229,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.5.4</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.5.5</span></div>
 
 </main>
 
@@ -380,7 +380,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
         s.push('<text x="' + cx.toFixed(1) + '" y="' + (yn - 6).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6C7A88">' + fmtN(network) + '</text>');
       }
       if (m.total > 0) {
-        s.push(roomAbove >= 20
+        s.push((!network || roomAbove >= 20)
           ? '<text x="' + cx.toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#052030">' + fmtN(m.total) + '</text>'
           : '<text x="' + cx.toFixed(1) + '" y="' + (yt + 14).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">' + fmtN(m.total) + '</text>');
       }

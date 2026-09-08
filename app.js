@@ -186,9 +186,9 @@
 
   /* one plot: the revenue axis is auto-fit (it starts near the lowest revenue point, not at $0) and the
      cases bars are scaled so the tallest one stays just under the lowest revenue point */
-  function lineSVG(rev, W, H) {
-    W = W || 560; H = H || 380;
-    var padL = 48, padR = 44, padT = 24, padB = 42;
+  function lineSVG(rev, W, H, lab) {
+    W = W || 560; H = H || 380; lab = lab || 1;
+    var padL = 48, padR = 44, padT = 14 + 10 * lab, padB = 42;
     var months = rev.months, n = months.length || 1, max = 0, min = Infinity, last = n - 1, proj = rev.mtd_factor != null;
     rev.series.forEach(function (ser) {
       ser.values.forEach(function (v, i) { var vv = (proj && i === last && ser.projected_last != null) ? ser.projected_last : v; if (vv != null) { if (vv > max) max = vv; if (vv < min) min = vv; } });
@@ -225,7 +225,7 @@
       s.push(est
         ? '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="none" stroke="' + CASES_COLOR + '" stroke-width="2" stroke-dasharray="5,4" rx="2"/>'
         : '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + CASES_COLOR + '" rx="2"/>');
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 - 5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="800" fill="' + CASES_INK + '">' + vv + (est ? "*" : "") + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (10 * lab).toFixed(1) + '" font-weight="800" fill="' + CASES_INK + '">' + vv + (est ? "*" : "") + '</text>');
     });
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y2(0).toFixed(1) + '" y2="' + y2(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     rev.series.forEach(function (ser, si) {
@@ -245,7 +245,7 @@
         s.push(p[4]
           ? '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#FFFFFF" stroke="' + col + '" stroke-width="2.5"/>'
           : '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.5" fill="' + col + '" stroke="#FFFFFF" stroke-width="1.5"/>');
-        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + col + '">' + fmtMoney(p[2]) + (p[4] ? "*" : "") + '</text>');
+        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (9.5 * lab).toFixed(1) + '" font-weight="800" fill="' + col + '">' + fmtMoney(p[2]) + (p[4] ? "*" : "") + '</text>');
       });
     });
     months.forEach(function (m, i) { s.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 21) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m) + (proj && i === last ? "*" : "") + '</text>'); });
@@ -259,9 +259,9 @@
     { label: "Dabbler → Active", color: GREEN }, { label: "Active → Super Active", color: GREEN2 },
     { label: "Active → Dabbler", color: RED }, { label: "Dabbler → Inactive", color: RED2 }
   ];
-  function wowSVG(weekly, W, H) {
-    W = W || 560; H = H || 330;
-    var weeks = weekly.weeks, padL = 36, padR = 10, padT = 24, padB = 54;
+  function wowSVG(weekly, W, H, lab) {
+    W = W || 560; H = H || 330; lab = lab || 1;
+    var weeks = weekly.weeks, padL = 36, padR = 10, padT = 14 + 12 * lab, padB = 40 + 16 * lab;
     var n = weeks.length || 1, top = 1;
     weeks.forEach(function (w) { top = Math.max(top, w.promoted + (w.up_super || 0), w.demoted + (w.down_quiet || 0)); });
     var ticks = niceTicks(top), m = ticks[ticks.length - 1] || 1;
@@ -278,38 +278,39 @@
     function seg(x, a, b, color, cx) {
       var y1 = Math.min(y(a), y(b)), h = Math.abs(y(a) - y(b));
       s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + color + '"/>');
-      if (h >= 14) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 3.5).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="800" fill="#FFFFFF">' + Math.abs(b - a) + '</text>');
+      if (h >= 13 * lab) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 3.5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (9.5 * lab).toFixed(1) + '" font-weight="800" fill="#FFFFFF">' + Math.abs(b - a) + '</text>');
     }
     weeks.forEach(function (w, i) {
       var cx = padL + slot * i + slot / 2, x = cx - bw / 2;
       var up = w.promoted, up2 = w.up_super || 0, dn = w.demoted, dn2 = w.down_quiet || 0;
       if (up > 0) seg(x, 0, up, GREEN, cx);
       if (up2 > 0) seg(x, up, up + up2, GREEN2, cx);
-      if (up + up2 > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(up + up2) - 5).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="800" fill="' + GREEN_INK + '">+' + (up + up2) + '</text>');
+      if (up + up2 > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(up + up2) - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + GREEN_INK + '">+' + (up + up2) + '</text>');
       if (dn > 0) seg(x, 0, -dn, RED, cx);
       if (dn2 > 0) seg(x, -dn, -dn - dn2, RED2, cx);
-      if (dn + dn2 > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(-dn - dn2) + 13).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="800" fill="' + RED_INK + '">-' + (dn + dn2) + '</text>');
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 32) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
+      if (dn + dn2 > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(-dn - dn2) + 13 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">-' + (dn + dn2) + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - padB + 16).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
       var netCol = w.net > 0 ? GREEN_INK : w.net < 0 ? RED_INK : "#5A6B79";
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="14" font-weight="800" fill="' + netCol + '">' + signed(w.net) + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="' + (14 * lab).toFixed(1) + '" font-weight="800" fill="' + netCol + '">' + signed(w.net) + '</text>');
     });
-    s.push('<text x="' + (padL - 6) + '" y="' + (H - 12) + '" text-anchor="end" font-size="9.5" font-weight="800" fill="#5A6B79">NET</text>');
+    s.push('<text x="' + (padL - 6) + '" y="' + (H - 10) + '" text-anchor="end" font-size="9.5" font-weight="800" fill="#5A6B79">NET</text>');
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#052030" stroke-width="1.5"/>');
     return s.join("") + "</svg>";
   }
 
   /* retention: where the practices that were active at the start of the quarter sit today (flow, top) and
      the same practices' invoiced revenue this quarter against the quarter before (bars, bottom) */
+  function shortQ(label) { return String(label || "").replace(/ 20(\d\d)$/, "'$1"); }
   function retentionSVG(ret, W, H) {
-    W = W || 640; H = H || 400;
+    W = W || 640; H = H || 470;
     var s = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Active book maintenance: practices active at the start of the quarter and where they are now; revenue stability: revenue from the same practices this quarter against last quarter">'];
-    var q = ret.quarter, pq = ret.prev_quarter, n = ret.start_active || 0, total = Math.max(n, 1);
-    var left = 12, right = W - 12, big = H >= 380 ? 30 : 26, mid = H >= 380 ? 14 : 12.5;
+    var q = shortQ(ret.quarter), pq = shortQ(ret.prev_quarter), n = ret.start_active || 0, total = Math.max(n, 1);
+    var small = H < 380, left = 12, right = W - 12, big = small ? 28 : 34, mid = small ? 13 : 15, pctBig = small ? 30 : 42;
     /* active book maintenance: one bar of quarter-start actives flowing into where they sit today */
-    var y0 = 12, avail = Math.round(H * 0.36), barX = left + 4, barW = 46, nodeX = Math.round(W * 0.52), nodeW = 34, cmid = (barX + barW + nodeX) / 2;
+    var y0 = 12, avail = Math.round(H * (small ? 0.34 : 0.38)), barX = left + 4, barW = 50, nodeX = Math.round(W * 0.5), nodeW = 36, cmid = (barX + barW + nodeX) / 2;
     s.push('<rect x="' + barX + '" y="' + y0 + '" width="' + barW + '" height="' + avail + '" fill="#1882C7" rx="4"/>');
     s.push('<text x="' + (barX + barW / 2).toFixed(1) + '" y="' + (y0 + avail / 2 + big * 0.36).toFixed(1) + '" text-anchor="middle" font-size="' + big + '" font-weight="800" fill="#FFFFFF">' + n + '</text>');
-    s.push('<text x="' + barX + '" y="' + (y0 + avail + 15) + '" font-size="11" font-weight="700" fill="#5A6B79">active on ' + esc(shortStart(ret.start)) + '</text>');
+    s.push('<text x="' + barX + '" y="' + (y0 + avail + 16) + '" font-size="12" font-weight="700" fill="#5A6B79">active on ' + esc(shortStart(ret.start)) + '</text>');
     var parts = [["stayed", "still active", GREEN, GREEN_INK], ["to_dabbler", "now dabbler", "#4ABEEE", "#0F6BA8"], ["to_inactive", "now inactive", RED, RED_INK]];
     var gap = 10, live = parts.filter(function (p) { return (ret[p[0]] || 0) > 0; }).length, usable = avail - gap * Math.max(live - 1, 0);
     var yR = y0, yL = y0, lastLabel = -1e9;
@@ -326,30 +327,30 @@
       yR += hR + gap; yL += hL;
     });
     if (n === 0) s.push('<text x="' + (barX + barW + 12) + '" y="' + (y0 + avail / 2 + 5) + '" font-size="12" font-weight="700" fill="#5A6B79">no active practices at the start of the quarter</text>');
-    var pctY = y0 + avail + 20 + big;
+    var pctY = y0 + avail + (small ? 20 : 24) + pctBig;
     if (ret.retained_pct != null) {
-      var rp = Math.round(ret.retained_pct), rc = rp >= 90 ? GREEN_INK : rp >= 70 ? "#8A7A42" : RED_INK;
-      s.push('<text x="' + left + '" y="' + pctY + '" font-size="' + big + '" font-weight="800" fill="' + rc + '">' + rp + '%<tspan font-size="' + mid + '" font-weight="700" fill="#5A6B79"> active book maintenance</tspan></text>');
+      var rp = Math.round(ret.retained_pct), rc = rp >= 90 ? GREEN_INK : rp >= 80 ? "#8A7A42" : RED_INK;
+      s.push('<text x="' + left + '" y="' + pctY + '" font-size="' + pctBig + '" font-weight="800" fill="' + rc + '">' + rp + '%<tspan font-size="' + mid + '" font-weight="700" fill="#5A6B79"> active book maintenance</tspan></text>');
     }
     /* revenue stability: the same practices' invoiced revenue, prior quarter against this quarter to date and at run rate */
-    var rv = ret.revenue || {}, divY = pctY + 14, hy = divY + 20;
+    var rv = ret.revenue || {}, divY = pctY + (small ? 12 : 16), hy = divY + (small ? 18 : 22);
     s.push('<line x1="' + left + '" x2="' + right + '" y1="' + divY + '" y2="' + divY + '" stroke="#DDE2E9" stroke-width="1"/>');
-    s.push('<text x="' + left + '" y="' + hy + '" font-size="11" font-weight="800" fill="#052030" letter-spacing="1">REVENUE STABILITY, ' + esc(pq).toUpperCase() + ' VS ' + esc(q).toUpperCase() + '</text>');
-    var labelW = 40, bx0 = left + labelW, bx1 = right - 215, full = bx1 - bx0, bh = H >= 380 ? 22 : 18, r1 = hy + 12, r2 = r1 + bh + 10;
+    s.push('<text x="' + left + '" y="' + hy + '" font-size="11.5" font-weight="800" fill="#052030" letter-spacing="1">REVENUE STABILITY, ' + esc(pq).toUpperCase() + ' VS ' + esc(q).toUpperCase() + '</text>');
+    var labelW = 40, bx0 = left + labelW, bx1 = right - 262, full = bx1 - bx0, bh = small ? 18 : 24, r1 = hy + (small ? 12 : 14), r2 = r1 + bh + (small ? 10 : 12);
     var base = rv.base || 0, qtd = rv.qtd || 0, rr = rv.run_rate == null ? null : rv.run_rate;
     var scaleMax = Math.max(base, qtd, rr || 0, 1), wOf = function (v) { return full * v / scaleMax; };
-    s.push('<text x="' + (bx0 - 8) + '" y="' + (r1 + bh * 0.68).toFixed(1) + '" text-anchor="end" font-size="' + mid + '" font-weight="800" fill="#5A6B79">' + esc(pq.split(" ")[0]) + '</text>');
+    s.push('<text x="' + (bx0 - 8) + '" y="' + (r1 + bh * 0.68).toFixed(1) + '" text-anchor="end" font-size="' + mid + '" font-weight="800" fill="#5A6B79">' + esc(pq.split("\'")[0]) + '</text>');
     s.push('<rect x="' + bx0 + '" y="' + r1 + '" width="' + Math.max(wOf(base), 1).toFixed(1) + '" height="' + bh + '" fill="#8A93A3" rx="3"/>');
     s.push('<text x="' + (bx0 + wOf(base) + 8).toFixed(1) + '" y="' + (r1 + bh * 0.68).toFixed(1) + '" font-size="' + mid + '" font-weight="800" fill="#052030">' + fmtMoney(base) + '</text>');
-    s.push('<text x="' + (bx0 - 8) + '" y="' + (r2 + bh * 0.68).toFixed(1) + '" text-anchor="end" font-size="' + mid + '" font-weight="800" fill="#5A6B79">' + esc(q.split(" ")[0]) + '</text>');
+    s.push('<text x="' + (bx0 - 8) + '" y="' + (r2 + bh * 0.68).toFixed(1) + '" text-anchor="end" font-size="' + mid + '" font-weight="800" fill="#5A6B79">' + esc(q.split("\'")[0]) + '</text>');
     s.push('<rect x="' + bx0 + '" y="' + r2 + '" width="' + Math.max(wOf(qtd), 1).toFixed(1) + '" height="' + bh + '" fill="#1882C7" rx="3"/>');
     if (rr != null && rr > qtd) s.push('<rect x="' + (bx0 + wOf(qtd)).toFixed(1) + '" y="' + (r2 + 1) + '" width="' + (wOf(rr) - wOf(qtd)).toFixed(1) + '" height="' + (bh - 2) + '" fill="none" stroke="#1882C7" stroke-width="1.8" stroke-dasharray="5,4" rx="3"/>');
     var endX = bx0 + wOf(Math.max(qtd, rr || 0)) + 8;
     s.push('<text x="' + endX.toFixed(1) + '" y="' + (r2 + bh * 0.68).toFixed(1) + '" font-size="' + mid + '" font-weight="800" fill="#0F6BA8">' + fmtMoney(qtd) + '<tspan font-weight="700" fill="#5A6B79"> to date' + (rr != null ? ', ' + fmtMoney(rr) + ' at run rate' : "") + '</tspan></text>');
-    var pct2 = r2 + bh + 16 + big;
+    var pct2 = r2 + bh + (small ? 12 : 18) + pctBig;
     if (rv.pct_run_rate != null) {
-      var pr = Math.round(rv.pct_run_rate), col = pr >= 100 ? GREEN_INK : pr >= 85 ? "#8A7A42" : RED_INK;
-      s.push('<text x="' + left + '" y="' + pct2 + '" font-size="' + big + '" font-weight="800" fill="' + col + '">' + pr + '%<tspan font-size="' + mid + '" font-weight="700" fill="#5A6B79"> revenue stability at run rate</tspan></text>');
+      var pr = Math.round(rv.pct_run_rate), col = pr >= 100 ? GREEN_INK : pr >= 90 ? "#8A7A42" : RED_INK;
+      s.push('<text x="' + left + '" y="' + pct2 + '" font-size="' + pctBig + '" font-weight="800" fill="' + col + '">' + pr + '%<tspan font-size="' + mid + '" font-weight="700" fill="#5A6B79"> revenue stability at run rate</tspan></text>');
     } else {
       s.push('<text x="' + left + '" y="' + pct2 + '" font-size="12" font-weight="700" fill="#5A6B79">' + (base > 0 ? "no business days elapsed in " + esc(q) + " yet" : "no " + esc(pq) + " invoiced revenue from these practices to compare against") + '</text>');
     }
@@ -500,9 +501,9 @@
         "</div>" +
         '<div class="chart-wrap hero"><div class="chart-head"><div class="panel-title big">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received per day</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
         '<div class="am-grid3">' +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Active book maintenance and revenue stability, ' + esc(sub.retention.quarter) + '</div></div>' + retentionSVG(sub.retention, 640, 400) + "</div>" +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' + revenueLegend(sub) + "</div></div>" + lineSVG(sub.revenue, 640, 400) + "</div>" +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend">' + legendHTML(WOW_LEGEND) + "</div></div>" + wowSVG(sub.weekly, 640, 400) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Active Book Maintenance, ' + esc(shortQ(sub.retention.quarter)) + '</div></div>' + retentionSVG(sub.retention, 470, 470) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' + revenueLegend(sub) + "</div></div>" + lineSVG(sub.revenue, 470, 400, 1.5) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend">' + legendHTML(WOW_LEGEND) + "</div></div>" + wowSVG(sub.weekly, 470, 400, 1.5) + "</div>" +
         "</div></div>";
     }).join("");
   }
@@ -562,7 +563,7 @@
       "<li><b>Book:</b> " + esc(am.book) + ". Beacon LFX cases go to whoever manages that store's Aspen Dental account.</li>" +
       "<li><b>Submitters YTD:</b> practices in the book with a case this year. <b>Cases per business day:</b> " + esc(am.pace_avg || am.pace) + ".</li>" +
       "<li><b>Became active / lost active status, L30D (last 30 days):</b> " + esc(am.moves) + ", comparing today with 30 days ago.</li>" +
-      "<li><b>Active book maintenance and revenue stability:</b> " + esc(am.retention) + ". The percentage is still active over active at the start of the quarter; the revenue percentage is the run rate over the prior quarter. Still active, now dabbler and now inactive add up to the practices that were active at the start of the quarter; active today = still active + practices that became active since.</li>" +
+      "<li><b>Active book maintenance and revenue stability:</b> " + esc(am.retention) + ". The maintenance percentage is still active over active at the start of the quarter (green at 90% or better, gold from 80%, red below); the revenue percentage is the run rate over the prior quarter (green at 100% or better, gold from 90%, red below). Still active, now dabbler and now inactive add up to the practices that were active at the start of the quarter; active today = still active + practices that became active since.</li>" +
       "<li><b>Case volume by business day:</b> the trailing 60 calendar days shown as business days; Mondays are labeled and shaded darker; the gold line is the average per business day for each week.</li>" +
       "<li><b>Revenue and case utilization:</b> " + esc(am.revenue) + ". One line per book; the cases bars are the whole book.</li>" +
       "<li><b>Week over week:</b> for each week of the quarter, practices that crossed the active bar upward (green) or moved from Core to Super Active (dark green) stack above the axis; practices that crossed the active bar downward (red) or went from Dabbler to inactive (dark red) stack below; the net of all four is under each week. * marks the partial week.</li></ul>" +
@@ -860,14 +861,14 @@
     this.label(0.5, 2.3, 12.33, "Case volume by business day", "trailing 60 days, " + fmtN(sub.daily.total) + " cases; gold = weekly average per business day");
     var colW = 3.98, gap = 0.195, y2 = 4.9, cy = 5.16, ch = 1.94, fs = 1.3;
     return this.svg(dailySVG(sub.daily.days, 1500, 280), 0.5, 2.53, 12.33, 2.32).then(function () {
-      self.label(0.5, y2, colW, "Active book maintenance", sub.retention.quarter);
+      self.label(0.5, y2, colW, "Active Book Maintenance, " + shortQ(sub.retention.quarter), "");
       return self.svg(retentionSVG(sub.retention, 640, 315), 0.5, cy, colW, ch, 1.15);
     }).then(function () {
       self.label(0.5 + colW + gap, y2, colW, "Revenue and case utilization", "invoiced, " + AM.year + " YTD" + (sub.revenue.mtd_factor != null ? ", " + sub.revenue.mtd_label + " at run rate" : ""));
-      return self.svg(lineSVG(sub.revenue, 640, 315), 0.5 + colW + gap, cy, colW, ch, fs);
+      return self.svg(lineSVG(sub.revenue, 470, 315, 1.45), 0.5 + colW + gap, cy, colW, ch, 1);
     }).then(function () {
       self.label(0.5 + 2 * (colW + gap), y2, colW, "Week over week, " + sub.weekly.quarter, "up in greens, down in reds, net below");
-      return self.svg(wowSVG(sub.weekly, 640, 315), 0.5 + 2 * (colW + gap), cy, colW, ch, fs);
+      return self.svg(wowSVG(sub.weekly, 470, 315, 1.45), 0.5 + 2 * (colW + gap), cy, colW, ch, 1);
     });
   };
   Deck.prototype.programSlide = function (sub, logo) {

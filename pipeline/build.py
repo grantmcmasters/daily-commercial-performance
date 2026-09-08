@@ -646,6 +646,19 @@ def build_am(P):
                 series[g]["offices"].append(n)
                 series[g]["revenue"].append(int(round(money[g])))
                 series[g]["values"].append(int(round(money[g] / n)) if n else None)
+        # current month at run rate: scale the MTD figure by business days in the month over business days elapsed
+        last_label, last_m0, last_s = months[-1]
+        mtd_factor = mtd_elapsed = mtd_total = None
+        if last_s == RUN_DATE and RUN_DATE != next_month(last_m0):
+            mtd_elapsed = len(cal.between(last_m0, RUN_DATE))
+            mtd_total = len(cal.between(last_m0, next_month(last_m0)))
+            mtd_factor = (mtd_total / mtd_elapsed) if mtd_elapsed else None
+        for g in groups:
+            vals = series[g]
+            rev_mtd, off_mtd = vals["revenue"][-1], vals["offices"][-1]
+            off_prev = vals["offices"][-2] if len(vals["offices"]) > 1 else 0
+            denom = max(off_prev, off_mtd)          # a full month's invoiced practice count, not the partial month's
+            vals["projected_last"] = int(round(rev_mtd * mtd_factor / denom)) if (mtd_factor and denom) else None
         # week over week this quarter
         lv_b = {pid: [E[pid].level(b) if pid in E else QUIET for b in bounds] for pid in ids}
         weeks = []
@@ -662,7 +675,9 @@ def build_am(P):
                       "month_label": cur_m0.strftime("%b"), "prior_month_label": pm0.strftime("%b"),
                       "promoted_30": promoted_30, "demoted_30": demoted_30},
             "daily": {"days": daily, "total": sum(x["n"] for x in daily), "from": window60[0].isoformat() if window60 else None, "to": window60[-1].isoformat() if window60 else None},
-            "revenue": {"months": [m[0] for m in months], "series": [series[g] for g in groups]},
+            "revenue": {"months": [m[0] for m in months], "series": [series[g] for g in groups],
+                        "mtd_factor": round(mtd_factor, 3) if mtd_factor else None, "mtd_biz_elapsed": mtd_elapsed, "mtd_biz_total": mtd_total,
+                        "mtd_label": last_m0.strftime("%b")},
             "weekly": {"quarter": f"Q{(RUN_DATE.month - 1) // 3 + 1} {RUN_DATE.year}", "weeks": weeks},
         })
         print(f"AM {am['name']:18s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} casesMTD={cases_mtd:5d} priorPace={prior_pace:5d} pct={mtd_pct} up30={promoted_30} down30={demoted_30} active={active_now} groups={groups}", flush=True)
@@ -672,7 +687,7 @@ def build_am(P):
             "book": "practices whose accounts carry the manager in Accounts, Account Manager Combined; Syed carries the shared Incisive book, Nikolas his non-Incisive accounts",
             "pace": "cases MTD compared with the same number of business days into last month; weekend and holiday cases count on the business day before",
             "moves": "promoted = below active to Core or Super Active; demoted = Core or Super Active down to Dabbler or quiet",
-            "revenue": "invoice level: Line Items Price Net invoiced in the month divided by the practices with an invoice that month (everything else on this page is on the case received date)",
+            "revenue": "invoice level: Line Items Price Net invoiced in the month divided by the practices with an invoice that month (everything else on this page is on the case received date); the current month is shown at run rate as a dashed segment: month to date invoiced revenue scaled by business days in the month over business days elapsed, divided by last month's invoiced practice count (or this month's if already higher)",
         },
         "subsections": subsections,
     }

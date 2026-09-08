@@ -131,6 +131,8 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .am-grid{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-top:12px}
 @media (max-width:1000px){.am-grid{grid-template-columns:1fr}}
 .am-right,.am-left{display:flex;flex-direction:column;gap:12px}
+.am-right .panel{flex:1;display:flex;flex-direction:column}
+.am-right .panel svg{margin:auto 0}
 .panel{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .panel .panel-title{margin-bottom:8px}
 .mx-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -229,7 +231,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.5.5</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.5.6</span></div>
 
 </main>
 
@@ -516,7 +518,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   }
 
   function lineSVG(rev) {
-    var W = 560, H = 270, padL = 48, padR = 14, padT = 22, padB = 30;
+    var W = 560, H = 330, padL = 48, padR = 14, padT = 24, padB = 30;
     var months = rev.months, n = months.length || 1, max = 0, last = n - 1, proj = rev.mtd_factor != null;
     rev.series.forEach(function (ser) {
       ser.values.forEach(function (v, i) { var vv = (proj && i === last && ser.projected_last != null) ? ser.projected_last : v; if (vv != null && vv > max) max = vv; });
@@ -552,28 +554,38 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     return s.join("") + "</svg>";
   }
 
+  /* diverging bars: promotions to active above the axis (green), demotions from active below (red), net under each week */
   function wowSVG(weekly) {
-    var weeks = weekly.weeks, W = 560, H = 250, padL = 36, padR = 10, padT = 22, padB = 52;
-    var n = weeks.length || 1, max = 1;
-    weeks.forEach(function (w) { if (w.promoted > max) max = w.promoted; if (w.demoted > max) max = w.demoted; });
-    var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
-    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(18, slot * 0.34);
-    var y = function (v) { return padT + ih - (v / ymax) * ih; };
-    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Week over week moves up to active and down from active">'];
-    grid(s, ticks, y, padL, W, padR);
-    weeks.forEach(function (w, i) {
-      var cx = padL + slot * i + slot / 2;
-      var xg = cx - bw - 2, xr = cx + 2;
-      s.push('<rect x="' + xg.toFixed(1) + '" y="' + y(w.promoted).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (y(0) - y(w.promoted)).toFixed(1) + '" fill="' + GREEN + '" rx="1.5"/>');
-      s.push('<rect x="' + xr.toFixed(1) + '" y="' + y(w.demoted).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (y(0) - y(w.demoted)).toFixed(1) + '" fill="' + RED + '" rx="1.5"/>');
-      if (w.promoted > 0) s.push('<text x="' + (xg + bw / 2).toFixed(1) + '" y="' + (y(w.promoted) - 4).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + GREEN_INK + '">' + w.promoted + '</text>');
-      if (w.demoted > 0) s.push('<text x="' + (xr + bw / 2).toFixed(1) + '" y="' + (y(w.demoted) - 4).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + RED_INK + '">' + w.demoted + '</text>');
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 30) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
-      var netCol = w.net > 0 ? GREEN_INK : w.net < 0 ? RED_INK : "#5A6B79";
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="12" font-weight="800" fill="' + netCol + '">' + (w.net > 0 ? "+" + w.net : w.net) + '</text>');
+    var weeks = weekly.weeks, W = 560, H = 330, padL = 36, padR = 10, padT = 24, padB = 54;
+    var n = weeks.length || 1, top = 1;
+    weeks.forEach(function (w) { if (w.promoted > top) top = w.promoted; if (w.demoted > top) top = w.demoted; });
+    var ticks = niceTicks(top), m = ticks[ticks.length - 1] || 1;
+    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(34, slot * 0.62), half = ih / 2;
+    var y = function (v) { return padT + half - (v / m) * half; };
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Week over week: promotions to active above the axis, demotions from active below, net per week">'];
+    ticks.forEach(function (t) {
+      [t, -t].forEach(function (v) {
+        var yy = y(v);
+        s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>');
+        s.push('<text x="' + (padL - 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + (v < 0 ? "-" + fmtN(-v) : fmtN(v)) + '</text>');
+      });
     });
-    s.push('<text x="' + (padL - 6) + '" y="' + (H - 12) + '" text-anchor="end" font-size="9" font-weight="800" fill="#5A6B79">NET</text>');
-    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
+    weeks.forEach(function (w, i) {
+      var cx = padL + slot * i + slot / 2, x = cx - bw / 2;
+      if (w.promoted > 0) {
+        s.push('<rect x="' + x.toFixed(1) + '" y="' + y(w.promoted).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (y(0) - y(w.promoted)).toFixed(1) + '" fill="' + GREEN + '" rx="2"/>');
+        s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(w.promoted) - 5).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="800" fill="' + GREEN_INK + '">+' + w.promoted + '</text>');
+      }
+      if (w.demoted > 0) {
+        s.push('<rect x="' + x.toFixed(1) + '" y="' + y(0).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (y(-w.demoted) - y(0)).toFixed(1) + '" fill="' + RED + '" rx="2"/>');
+        s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(-w.demoted) + 13).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="800" fill="' + RED_INK + '">-' + w.demoted + '</text>');
+      }
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 32) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
+      var netCol = w.net > 0 ? GREEN_INK : w.net < 0 ? RED_INK : "#5A6B79";
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="14" font-weight="800" fill="' + netCol + '">' + (w.net > 0 ? "+" + w.net : w.net) + '</text>');
+    });
+    s.push('<text x="' + (padL - 6) + '" y="' + (H - 12) + '" text-anchor="end" font-size="9.5" font-weight="800" fill="#5A6B79">NET</text>');
+    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#052030" stroke-width="1.5"/>');
     return s.join("") + "</svg>";
   }
 
@@ -870,11 +882,12 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       showTitle: true, title: "Revenue expansion: invoiced revenue per invoiced practice by month, " + AM.year + " YTD" + (rvProj ? " (current month at run rate)" : ""), titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
     });
     var wk = sub.weekly.weeks;
+    var wkLabels = wk.map(function (w) { return w.label + (w.partial ? "*" : "") + " net " + (w.net > 0 ? "+" + w.net : w.net); });
     s.addChart(pptx.ChartType.bar, [
-      { name: "Up to active", labels: wk.map(function (w) { return w.label + (w.partial ? "*" : "") + " (" + (w.net > 0 ? "+" + w.net : w.net) + ")"; }), values: wk.map(function (w) { return w.promoted; }) },
-      { name: "Down from active", labels: wk.map(function (w) { return w.label + (w.partial ? "*" : "") + " (" + (w.net > 0 ? "+" + w.net : w.net) + ")"; }), values: wk.map(function (w) { return w.demoted; }) }
+      { name: "Up to active", labels: wkLabels, values: wk.map(function (w) { return w.promoted; }) },
+      { name: "Down from active", labels: wkLabels, values: wk.map(function (w) { return -w.demoted; }) }
     ], {
-      x: 8.05, y: 4.8, w: 4.9, h: 2.3, barDir: "col", barGrouping: "clustered", barGapWidthPct: 60, chartColors: ["34C759", "EF4444"],
+      x: 8.05, y: 4.8, w: 4.9, h: 2.3, barDir: "col", barGrouping: "stacked", barGapWidthPct: 60, chartColors: ["34C759", "EF4444"], catAxisLabelPos: "low",
       showLegend: true, legendPos: "b", legendFontSize: 8, legendFontFace: "Calibri",
       catAxisLabelFontSize: 7, valAxisLabelFontSize: 7, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
       valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,

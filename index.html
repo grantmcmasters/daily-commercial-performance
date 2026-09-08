@@ -106,8 +106,9 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .sub-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .sub-brand{display:flex;align-items:center;gap:16px;min-width:0;flex-wrap:wrap}
 .sub-logos{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.sub-logo{height:46px;width:auto;max-width:210px;object-fit:contain;display:block}
-.sub-logo.sm{height:36px;max-width:150px}
+.sub-logo{width:190px;height:58px;object-fit:contain;object-position:left center;display:block}
+.sub-logo.tall{height:82px;width:150px;object-position:center}
+.sub-logo.sm{width:140px;height:46px}
 .sub-title{font-size:20px;font-weight:800;line-height:1.15}
 .sub-meta{font-size:11.5px;color:var(--ink2);font-weight:600;margin-top:2px}
 .chip{display:inline-block;font-weight:700;font-size:10.5px;padding:4px 10px;border-radius:999px;white-space:nowrap;line-height:1.25}
@@ -121,6 +122,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .legend i.dash{background:transparent;border:1.5px dashed #6C7A88;border-radius:1px}
 .legend i.ln{height:3px;border-radius:2px;vertical-align:3px}
+.legend i.dash-gold{background:transparent;height:0;border-top:2.5px dashed #B3A369;border-radius:0;vertical-align:3px;width:16px}
 .chart-wrap svg,.panel svg{width:100%;height:auto;display:block;margin-top:4px}
 .bottom{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-top:12px}
 @media (max-width:1000px){.bottom{grid-template-columns:1fr}}
@@ -141,7 +143,12 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .plays-list{margin:0 0 0 18px;font-family:var(--serif);font-size:13.5px;line-height:1.5;color:var(--ink);min-height:120px;outline:none;border-radius:6px}
 .plays-list li{margin-bottom:8px;padding-left:2px}
 .plays-list:focus{background:rgba(24,130,199,.05)}
-.plays-note{font-size:10.5px;color:var(--ink2);margin-top:8px;font-style:italic}
+.about h3{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--killianink);margin:18px 0 6px}
+.about h3:first-child{margin-top:0}
+.about p{font-size:13px;color:var(--ink);margin:0 0 8px;max-width:95ch}
+.about ul{margin:0 0 8px 20px;max-width:95ch}
+.about li{font-size:13px;color:var(--ink);margin-bottom:4px}
+.about b{color:var(--ink)}
 
 /* ---------- tables (generic placeholder sections) ---------- */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -183,6 +190,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       <a class="pill" href="#account-executives" data-sec="account-executives">Account Executives</a>
       <a class="pill" href="#account-managers" data-sec="account-managers">Account Managers</a>
       <a class="pill" href="#programs" data-sec="programs">Programs</a>
+      <a class="pill" href="#about" data-sec="about">About</a>
     </nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
@@ -201,42 +209,25 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
   <section class="block" id="account-executives" data-key="ae">
     <h2 class="sec"><span class="n">01</span>Account Executives</h2>
-    <p class="lede" id="ae-lede">Section placeholder. Renders from data.js once the nightly build has run.</p>
-    <p class="defs" id="ae-defs"></p>
     <div id="ae-subs"></div>
   </section>
 
   <section class="block" id="account-managers" data-key="am">
     <h2 class="sec"><span class="n">02</span>Account Managers</h2>
-    <p class="lede" id="am-lede">Section placeholder. Renders from data.js once the nightly build has run.</p>
-    <p class="defs" id="am-defs"></p>
     <div id="am-subs"></div>
   </section>
 
   <section class="block" id="programs" data-key="programs">
     <h2 class="sec"><span class="n">03</span>Programs</h2>
-    <p class="lede" data-role="lede">Section placeholder. One pagers for Growth, Incisive and TRI, coming next.</p>
-    <div class="b4row" data-role="tiles">
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 1</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 2</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 3</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 4</div><div class="thr">placeholder</div></div>
-    </div>
-    <div class="card" style="margin-top:12px">
-      <div class="tbl-wrap">
-        <table class="tbl" data-role="table">
-          <thead><tr><th>Program</th><th class="r">Column 2</th><th class="r">Column 3</th><th class="r">Column 4</th></tr></thead>
-          <tbody>
-            <tr><td class="ph">Row placeholder</td><td class="r ph">--</td><td class="r ph">--</td><td class="r ph">--</td></tr>
-            <tr><td class="ph">Row placeholder</td><td class="r ph">--</td><td class="r ph">--</td><td class="r ph">--</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="note" data-role="note">Metrics, columns and ordering for this section are still to be defined.</p>
-    </div>
+    <div id="pg-subs"></div>
   </section>
 
-  <div class="footer">Rebuilt from the company database every night at 3:30 AM Pacific. The banner shows the last day of data included and when the page was refreshed. No patient information appears anywhere on this page. <span class="num" id="build-tag">Build v0.4.1</span></div>
+  <section class="block" id="about" data-key="about">
+    <h2 class="sec"><span class="n">04</span>About</h2>
+    <div class="card about" id="about-body"></div>
+  </section>
+
+  <div class="footer"><span class="num" id="build-tag">Build v0.5.0</span></div>
 
 </main>
 
@@ -342,7 +333,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     });
   }
   function tile(value, label, sub, tone) {
-    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + esc(sub) + "</div></div>";
+    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div>' + (sub ? '<div class="rv">' + esc(sub) + "</div>" : "") + "</div>";
   }
   function tileHTML(value, label, subHTML, tone) {
     return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + subHTML + "</div></div>";
@@ -429,7 +420,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   function weeklyStatesHTML(ws) {
     var h = '<table class="mx"><thead><tr><th>State at week end</th>' + ws.weeks.map(function (w) { return "<th>" + esc(w.label) + (w.partial ? "*" : "") + "</th>"; }).join("") + "</tr></thead><tbody>";
     ws.rows.forEach(function (r) {
-      h += '<tr><td class="lbl">' + esc(r.label) + "<small>" + esc(r.hint) + "</small></td>";
+      h += '<tr><td class="lbl">' + esc(r.label) + "</td>";
       r.values.forEach(function (v, i) {
         var d = r.deltas[i];
         h += '<td style="' + deltaStyle(r.tone, d) + '">' + fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + (d > 0 ? "+" + d : d) + "</small>") + "</td>";
@@ -443,37 +434,34 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     return "Super Active: " + (d.super_active || "") + ". Core Active: " + (d.core_active || "") + ". Dabbler: " + (d.dabbler || "") + ". New: " + (d.new || "") + ". " + (d.lfx ? d.lfx + "." : "");
   }
   function logoImg(path, title, small) {
-    return '<img class="sub-logo' + (small ? " sm" : "") + '" src="' + esc(path) + '" alt="' + esc(title) + ' logo" onerror="this.style.display=\'none\'">';
+    var cls = "sub-logo" + (small ? " sm" : "") + (/aspen-beacon/.test(path) ? " tall" : "");
+    return '<img class="' + cls + '" src="' + esc(path) + '" alt="' + esc(title) + ' logo" onerror="this.style.display=\'none\'">';
   }
 
   function renderAE() {
     var host = byId("ae-subs");
     if (!AE || !AE.subsections || !AE.subsections.length) return;
-    byId("ae-lede").textContent = "One pager per partner, practice level. Submitting practices by month, " + AE.year + " year to date, against the total network (dashed).";
-    byId("ae-defs").innerHTML = defsText().replace(/(Super Active|Core Active|Dabbler|New):/g, "<b>$1:</b>");
     host.innerHTML = AE.subsections.map(function (sub) {
       var c = sub.cards;
       return '<div class="sub card" id="ae-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
-          '<div><div class="sub-title">' + esc(sub.title) + '</div><div class="sub-meta">Account executive: ' + esc(sub.ae) + " · practice level · " + esc(AE.year) + " YTD</div></div></div>" +
+          '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
         '<div><span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
         '<div class="b5row">' +
-          tile(fmtN(c.total), "Total practices", c.total_note || "", "") +
-          tile(fmtN(c.active), "Active", fmtN(c.super) + " super active, " + fmtN(c.core) + " core active", "g") +
-          tile(fmtN(c.dabblers), "Dabblers", "sent a case in the last 90 days, below every bar", "") +
-          tile(fmtPct(c.penetration_pct), "YTD penetration", fmtN(c.ytd_submitters) + " of " + fmtN(c.total) + " practices sent a case this year", "d") +
-          tile(fmtN(c.mtd_net_new), "MTD net new submitters", "first ever case received this month", "g") +
+          tile(fmtN(c.total), "Total practices", "", "") +
+          tile(fmtN(c.active), "Active", "", "g") +
+          tile(fmtN(c.dabblers), "Dabblers", "", "") +
+          tile(fmtPct(c.penetration_pct), "YTD penetration", "", "d") +
+          tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g") +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
           SERIES.map(function (s) { return "<span><i style=\"background:" + s.color + '"></i>' + esc(s.label) + "</span>"; }).join("") +
           '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network) + "</div>" +
         '<div class="bottom">' +
-          '<div class="panel"><div class="panel-title">Week over week, ' + esc(sub.weekly_states.quarter) + ': where the practices sit</div>' +
-            '<div class="panel-sub">Counts at the end of each week; the small number and the color show the change from the week before (green is good, red is bad). * partial week through yesterday.</div>' +
+          '<div class="panel"><div class="panel-title">Week over week, ' + esc(sub.weekly_states.quarter) + '</div>' +
             '<div class="mx-wrap">' + weeklyStatesHTML(sub.weekly_states) + "</div></div>" +
           '<div class="panel"><div class="panel-title">Plays</div><ul class="plays-list" contenteditable="true" spellcheck="false">' +
-            (sub.plays || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>" +
-            '<div class="plays-note">Click to edit. Edits go into the PowerPoint export but are not saved between visits yet.</div></div>' +
+            (sub.plays || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul></div>" +
         "</div></div>";
     }).join("");
   }
@@ -483,20 +471,43 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
      ============================================================ */
   var AM = (D.sections || {}).am || null;
 
+  /* weekly average cases per business day: one figure per Monday-to-Friday week in the window */
+  function weeklyAverages(days) {
+    var weeks = [], cur = null;
+    days.forEach(function (d, i) {
+      if (!cur || d.monday) { cur = { idx: [], sum: 0 }; weeks.push(cur); }
+      cur.idx.push(i); cur.sum += d.n;
+    });
+    var perDay = new Array(days.length);
+    weeks.forEach(function (w) {
+      w.avg = w.sum / w.idx.length;
+      w.mid = (w.idx[0] + w.idx[w.idx.length - 1]) / 2;
+      w.idx.forEach(function (i) { perDay[i] = w.avg; });
+    });
+    return { weeks: weeks, perDay: perDay };
+  }
+
   function dailySVG(days) {
-    var W = 900, H = 420, padL = 42, padR = 10, padT = 26, padB = 34;
+    var W = 900, H = 420, padL = 42, padR = 10, padT = 30, padB = 34;
     var n = days.length || 1, max = 0;
     days.forEach(function (d) { if (d.n > max) max = d.n; });
     var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
     var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = slot * 0.7;
     var y = function (v) { return padT + ih - (v / ymax) * ih; };
-    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Case volume by business day, trailing 60 days">'];
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Case volume by business day, trailing 60 days, with the weekly average per business day">'];
     grid(s, ticks, y, padL, W, padR);
     days.forEach(function (d, i) {
       var cx = padL + slot * i + slot / 2, x = cx - bw / 2, y1 = y(d.n), h = y(0) - y1;
       s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (d.monday ? "#0F6BA8" : "#1882C7") + '" rx="1.5"/>');
       if (d.n > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 - 4).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="#052030">' + d.n + '</text>');
       if (d.monday) s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(d.label) + '</text>');
+    });
+    var wa = weeklyAverages(days);
+    var pts = wa.weeks.map(function (w) { return [padL + slot * w.mid + slot / 2, y(w.avg), w.avg]; });
+    if (pts.length > 1) s.push('<polyline fill="none" stroke="#B3A369" stroke-width="2.5" stroke-dasharray="7,5" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
+    pts.forEach(function (p) {
+      s.push('<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#B3A369" stroke="#FFFFFF" stroke-width="1.5"/>');
+      s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 9).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="800" fill="#8A7A42" paint-order="stroke" stroke="#F3F9FD" stroke-width="4">' + (Math.round(p[2] * 10) / 10) + '</text>');
     });
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     return s.join("") + "</svg>";
@@ -565,32 +576,111 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   function renderAM() {
     var host = byId("am-subs");
     if (!AM || !AM.subsections || !AM.subsections.length) return;
-    byId("am-lede").textContent = "One pager per account manager, practice level. Case volume by business day, revenue per submitting office, and the weekly moves up to and down from active.";
-    byId("am-defs").innerHTML = amDefs().replace(/(Book|Pace|Moves|Revenue):/g, "<b>$1:</b>");
     host.innerHTML = AM.subsections.map(function (sub) {
       var c = sub.cards, dly = sub.daily;
-      var range = dly.from && dly.to ? shortDate(dly.from) + " to " + shortDate(dly.to) : "";
       return '<div class="sub card" id="am-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand"><div class="sub-logos">' + (sub.logos || []).map(function (p) { return logoImg(p, sub.label, sub.logos.length > 1); }).join("") + "</div>" +
-          '<div><div class="sub-title">' + esc(sub.name) + '</div><div class="sub-meta">' + esc(sub.label) + " · account manager · practice level · " + fmtN(c.practices) + " practices in book</div></div></div>" +
-        '<div><span class="chip chip-b">' + esc(sub.name) + "</span></div></div>" +
+          '<div class="sub-title">' + esc(sub.name) + "</div></div>" +
+        '<div><span class="chip chip-b">' + esc(sub.label) + "</span></div></div>" +
         '<div class="b4row">' +
-          tile(fmtN(c.submitters_ytd), "Submitters YTD", "practices with a case this year; " + fmtN(c.active_now) + " active today", "g") +
+          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
           tileHTML(fmtN(c.cases_mtd), "Cases MTD (" + esc(c.month_label) + ")", tickerHTML(c), "") +
-          tile(fmtN(c.promoted_30), "Promoted to active", "last 30 days, below active up to Core or Super Active", "g") +
-          tile(fmtN(c.demoted_30), "Demoted from active", "last 30 days, Core or Super Active down to Dabbler or quiet", "d") +
+          tile(fmtN(c.promoted_30), "Promoted to active, last 30 days", "", "g") +
+          tile(fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "d") +
         "</div>" +
         '<div class="am-grid">' +
-          '<div class="panel"><div class="panel-title">Case volume by business day, trailing 60 days</div><div class="panel-sub">' + esc(range) + " · " + fmtN(dly.total) + " cases · weekend and holiday cases count on the business day before · Mondays labeled and shaded darker</div>" + dailySVG(dly.days) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
           '<div class="am-right">' +
-            '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue expansion, ' + esc(AM.year) + ' YTD</div><div class="legend">' +
-              sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name) + "</span>"; }).join("") + "</div></div>" +
-              '<div class="panel-sub">Average revenue per submitting office per month</div>' + lineSVG(sub.revenue) + "</div>" +
-            '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend"><span><i style="background:' + GREEN + '"></i>Up to active</span><span><i style="background:' + RED + '"></i>Down from active</span></div></div>' +
-              '<div class="panel-sub">Practices that crossed the active bar each week; net below. * partial week through yesterday</div>' + wowSVG(sub.weekly) + "</div>" +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue per submitting office by month, ' + esc(AM.year) + ' YTD</div><div class="legend">' +
+              sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name) + "</span>"; }).join("") + "</div></div>" + lineSVG(sub.revenue) + "</div>" +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend"><span><i style="background:' + GREEN + '"></i>Up to active</span><span><i style="background:' + RED + '"></i>Down from active</span></div></div>' + wowSVG(sub.weekly) + "</div>" +
           "</div></div></div>";
     }).join("");
   }
+
+  /* ============================================================
+     Programs (practice level)
+     ============================================================ */
+  var PG = (D.sections || {}).programs || null;
+
+  function newSubmittersSVG(months) {
+    var W = 960, H = 300, padL = 40, padR = 12, padT = 26, padB = 30;
+    var n = months.length || 1, max = 0;
+    months.forEach(function (m) { if (m.new > max) max = m.new; });
+    var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
+    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(70, slot * 0.58);
+    var y = function (v) { return padT + ih - (v / ymax) * ih; };
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="New submitting practices by month">'];
+    grid(s, ticks, y, padL, W, padR);
+    months.forEach(function (m, i) {
+      var cx = padL + slot * i + slot / 2, x = cx - bw / 2, y1 = y(m.new), h = y(0) - y1;
+      s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="#B3A369" rx="2"/>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 - 7).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#052030">' + fmtN(m.new) + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
+    });
+    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
+    return s.join("") + "</svg>";
+  }
+  function pgDefs() {
+    var d = (PG && PG.definition) || {};
+    return "Book: " + (d.book || "") + ". New: " + (d.new || "") + ". Inactive: " + (d.inactive || "") + ".";
+  }
+  function renderPrograms() {
+    var host = byId("pg-subs");
+    if (!PG || !PG.subsections || !PG.subsections.length) return;
+    host.innerHTML = PG.subsections.map(function (sub) {
+      var c = sub.cards;
+      return '<div class="sub card" id="pg-' + esc(sub.key) + '" data-sub="pg-' + esc(sub.key) + '">' +
+        '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
+          '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
+        '<div><span class="chip chip-b">' + esc((sub.partners || []).join(" + ")) + "</span></div></div>" +
+        '<div class="b4row">' +
+          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
+          tile(fmtN(c.active), "Active", "", "g") +
+          tile(fmtN(c.dabblers), "Dabblers", "", "") +
+          tile(fmtN(c.inactive), "Inactive", "", "d") +
+        "</div>" +
+        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New submitting practices by month, ' + esc(PG.year) + ' YTD</div></div>' + newSubmittersSVG(sub.months) + "</div>" +
+        '<div class="panel" style="margin-top:12px"><div class="panel-title">Plays: initiatives and growth</div><ul class="plays-list" contenteditable="true" spellcheck="false">' +
+          (sub.plays || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul></div>" +
+      "</div>";
+    }).join("");
+  }
+
+  /* ============================================================
+     About: every definition and footnote lives here
+     ============================================================ */
+  function aboutHTML() {
+    var ae = (AE && AE.definition) || {}, am = (AM && AM.definition) || {}, pg = (PG && PG.definition) || {};
+    var networks = ((AE && AE.subsections) || []).map(function (s) { return "<li><b>" + esc(s.title) + ":</b> " + esc(s.cards.total_note) + "</li>"; }).join("");
+    return '<h3>What this page is</h3>' +
+      "<p>One one pager per partner, per account manager and per program, all at the practice level (account numbers roll up to a practice id; Incisive renumbered accounts roll up to their legacy practice). Data runs through yesterday and is rebuilt every night at 3:30 AM Pacific from the company database; the banner shows the last day of data included and when the page was refreshed. No patient information appears anywhere. The Export PowerPoint button at the top builds one slide per one pager plus this About page.</p>" +
+      "<h3>Activity definitions</h3><ul>" +
+      "<li><b>Super Active:</b> " + esc(ae.super_active) + ".</li><li><b>Core Active:</b> " + esc(ae.core_active) + ".</li><li><b>Active:</b> Core Active or Super Active.</li>" +
+      "<li><b>Dabbler:</b> " + esc(ae.dabbler) + ".</li><li><b>Inactive (quiet):</b> no case in the last 90 days, including practices that have never sent one.</li><li><b>New:</b> " + esc(ae.new) + ".</li>" +
+      "<li>A snapshot counts cases received in the 90 days before it, and the 90 days before that for the Super Active test, one business unit per case (the business unit comes from the primary product). Month columns are measured at the end of the month; the current month at yesterday.</li></ul>" +
+      "<h3>Account Executives</h3><ul>" +
+      "<li><b>Total practices:</b> the partner network. " + networks + "</li>" +
+      "<li><b>Active, Dabblers:</b> where the practices sit today. <b>YTD penetration:</b> practices that sent a case this year divided by the network, rounded to the nearest percent. <b>MTD net new submitters:</b> practices whose first ever case landed this month.</li>" +
+      "<li><b>Chart:</b> submitting practices each month split Active / Dabbler / New (New wins when a practice is both); the dashed top level is the rest of the network, so every bar reaches the network total.</li>" +
+      "<li><b>Week over week:</b> where the practices sit at the end of each week of the quarter (weeks start on the first day of the quarter and run seven days; * marks the partial week through yesterday). The small number and the color show the change from the week before: green is good, red is bad, gray is neutral (Dabbler) or no change.</li>" +
+      "<li><b>LFX rule:</b> " + esc(ae.lfx) + ". Beacon and Aspen Dental accounts share the store practice id (the four digit office code at the start of the practice name).</li></ul>" +
+      "<h3>Account Managers</h3><ul>" +
+      "<li><b>Book:</b> " + esc(am.book) + ". Beacon LFX cases go to whoever manages that store's Aspen Dental account.</li>" +
+      "<li><b>Submitters YTD:</b> practices in the book with a case this year. <b>Cases MTD:</b> " + esc(am.pace) + ".</li>" +
+      "<li><b>Promoted / demoted, last 30 days:</b> " + esc(am.moves) + ", comparing today with 30 days ago.</li>" +
+      "<li><b>Case volume by business day:</b> the trailing 60 calendar days shown as business days; Mondays are labeled and shaded darker.</li>" +
+      "<li><b>Revenue per submitting office:</b> " + esc(am.revenue) + ". Nikolas is split MB2 / Engel / S.I.N. 360; Ed shows his three largest partners by revenue this year plus Other.</li>" +
+      "<li><b>Week over week:</b> practices that crossed the active bar up (green) or down (red) each week of the quarter, with the net below; * marks the partial week.</li></ul>" +
+      "<h3>Programs</h3><ul>" +
+      "<li><b>Book:</b> " + esc(pg.book) + ".</li><li><b>Submitters YTD, Active, Dabblers, Inactive:</b> as defined above. <b>New submitters by month:</b> " + esc(pg.new) + ".</li></ul>" +
+      "<h3>Plays</h3><p>The Plays boxes are editable on the page (click into them). Edits go into the PowerPoint export but are not saved between visits yet.</p>" +
+      "<h3>Counting rules</h3><p>Cases are counted the same way as the Account Health app: one business unit per case from the primary product, manufacturing jigs dropped, TRI rebill cases dropped, corporate sample accounts dropped, lab, university and intercompany accounts dropped. The one difference is that Aspen Beacon non-LFX cases are kept here so the Beacon page shows the whole Beacon book.</p>";
+  }
+  function aboutText() {
+    return aboutHTML().replace(/<h3>/g, "\n\n").replace(/<\/h3>/g, "\n").replace(/<li>/g, "• ").replace(/<\/li>/g, "\n").replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+  }
+  function renderAbout() { byId("about-body").innerHTML = aboutHTML(); }
 
   /* ============================================================
      PowerPoint export (PptxGenJS, loaded on demand)
@@ -647,8 +737,9 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     s.addShape(pptx.ShapeType.roundRect, { x: x, y: 1.15, w: w, h: 1.05, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
     var ok = (logos || []).filter(function (l) { return l && l.data; });
     if (!ok.length) { s.addText(fallback, { x: x, y: 1.15, w: w, h: 1.05, align: "center", valign: "middle", fontFace: "Montserrat", fontSize: 11, bold: true, color: "052030" }); return; }
-    var gap = 0.12, cellW = (w - 0.2 - gap * (ok.length - 1)) / ok.length, maxH = 0.72;
+    var gap = 0.12, cellW = (w - 0.2 - gap * (ok.length - 1)) / ok.length;
     ok.forEach(function (l, i) {
+      var maxH = (l.ratio || 3) < 2 ? 0.95 : 0.72;      /* square marks (TAG) get the full box height */
       var lw = cellW, lh = lw / (l.ratio || 3);
       if (lh > maxH) { lh = maxH; lw = lh * (l.ratio || 3); }
       var cx = x + 0.1 + i * (cellW + gap) + cellW / 2;
@@ -658,14 +749,14 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
   function addAESlide(pptx, sub, logo) {
     var c = sub.cards, s = pptx.addSlide();
-    slideHeader(pptx, s, "Account Executives  ·  " + sub.title, "Account executive: " + sub.ae + "   ·   practice level   ·   " + ASOF);
+    slideHeader(pptx, s, "Account Executives  ·  " + sub.title, sub.ae + "   ·   " + ASOF);
     logoBox(pptx, s, 0.4, 1.9, [logo], sub.title);
     var kp = [
-      ["" + fmtN(c.total), "Total practices", c.total_note || "", "052030"],
-      ["" + fmtN(c.active), "Active", fmtN(c.super) + " super active, " + fmtN(c.core) + " core active", "0F6BA8"],
-      ["" + fmtN(c.dabblers), "Dabblers", "case in the last 90 days, below every bar", "052030"],
-      [fmtPct(c.penetration_pct), "YTD penetration", fmtN(c.ytd_submitters) + " of " + fmtN(c.total) + " sent a case this year", "8A7A42"],
-      ["" + fmtN(c.mtd_net_new), "MTD net new submitters", "first ever case this month", "0F6BA8"]
+      ["" + fmtN(c.total), "Total practices", "", "052030"],
+      ["" + fmtN(c.active), "Active", "", "0F6BA8"],
+      ["" + fmtN(c.dabblers), "Dabblers", "", "052030"],
+      [fmtPct(c.penetration_pct), "YTD penetration", "", "8A7A42"],
+      ["" + fmtN(c.mtd_net_new), "MTD net new submitters", "", "0F6BA8"]
     ];
     kp.forEach(function (k, i) { kpiBox(pptx, s, 2.45 + i * 2.12, 2.0, k[0], k[1], k[2], k[3]); });
     var labels = sub.months.map(function (m) { return m.label; });
@@ -700,34 +791,39 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       rows.push(l);
     });
     var n = ws.weeks.length, colW = [1.7].concat(ws.weeks.map(function () { return (8.2 - 1.7) / n; }));
-    s.addText("Week over week, " + ws.quarter + ": where the practices sit (count at week end, change from the week before; * partial week)", { x: 0.4, y: 4.85, w: 8.2, h: 0.25, fontFace: "Montserrat", fontSize: 9, bold: true, color: "5A6B79" });
+    s.addText("Week over week, " + ws.quarter, { x: 0.4, y: 4.85, w: 8.2, h: 0.25, fontFace: "Montserrat", fontSize: 9, bold: true, color: "5A6B79" });
     s.addTable(rows, { x: 0.4, y: 5.1, w: 8.2, colW: colW, fontFace: "Calibri", fontSize: 7.5, rowH: 0.24, border: { type: "solid", color: "FFFFFF", pt: 1 }, margin: 0.02 });
     s.addShape(pptx.ShapeType.roundRect, { x: 8.85, y: 2.35, w: 4.1, h: 4.75, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
     s.addText("PLAYS", { x: 9.0, y: 2.45, w: 3.8, h: 0.3, fontFace: "Montserrat", fontSize: 10, bold: true, color: "5A6B79", charSpacing: 2 });
     var plays = playsOf(sub.key, sub.plays);
     s.addText(plays.map(function (p) { return { text: p, options: { bullet: true, breakLine: true } }; }), { x: 9.0, y: 2.8, w: 3.8, h: 4.2, fontFace: "Calibri", fontSize: 11.5, color: "052030", valign: "top", paraSpaceAfter: 6 });
-    s.addText(defsText(), { x: 0.4, y: 7.12, w: 12.5, h: 0.34, fontFace: "Calibri", fontSize: 7, color: "5A6B79", italic: true, valign: "top" });
   }
 
   function addAMSlide(pptx, sub, logos) {
     var c = sub.cards, s = pptx.addSlide();
-    slideHeader(pptx, s, "Account Managers  ·  " + sub.name, sub.label + "   ·   practice level   ·   " + fmtN(c.practices) + " practices in book   ·   " + ASOF);
+    slideHeader(pptx, s, "Account Managers  ·  " + sub.name, sub.label + "   ·   " + ASOF);
     logoBox(pptx, s, 0.4, 2.6, logos, sub.name);
     var pace = c.mtd_pct == null ? "no " + c.prior_month_label + " cases to compare" : (c.mtd_pct > 0 ? "+" : "") + Math.round(c.mtd_pct) + "% vs " + c.prior_month_label + " pace (" + fmtN(c.prior_pace) + ") at " + c.biz_days_in + " business days in";
     var kp = [
-      ["" + fmtN(c.submitters_ytd), "Submitters YTD", fmtN(c.active_now) + " active today", "0F6BA8"],
+      ["" + fmtN(c.submitters_ytd), "Submitters YTD", "", "0F6BA8"],
       ["" + fmtN(c.cases_mtd), "Cases MTD (" + c.month_label + ")", pace, c.mtd_pct == null ? "052030" : c.mtd_pct >= 0 ? "1D7A3A" : "B0362F"],
-      ["" + fmtN(c.promoted_30), "Promoted to active", "last 30 days", "1D7A3A"],
-      ["" + fmtN(c.demoted_30), "Demoted from active", "last 30 days, to dabbler or quiet", "B0362F"]
+      ["" + fmtN(c.promoted_30), "Promoted to active, last 30 days", "", "1D7A3A"],
+      ["" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "B0362F"]
     ];
     kp.forEach(function (k, i) { kpiBox(pptx, s, 3.15 + i * 2.42, 2.3, k[0], k[1], k[2], k[3]); });
-    var days = sub.daily.days;
-    s.addChart(pptx.ChartType.bar, [{ name: "Cases", labels: days.map(function (d) { return d.monday ? d.label : ""; }), values: days.map(function (d) { return d.n; }) }], {
-      x: 0.4, y: 2.35, w: 7.5, h: 4.75, barDir: "col", barGapWidthPct: 35, chartColors: ["1882C7"],
-      showLegend: false, catAxisLabelFontSize: 7, valAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+    var days = sub.daily.days, wa = weeklyAverages(days);
+    var dayLabels = days.map(function (d, i) { return d.monday ? d.label + " (avg " + (Math.round((wa.perDay[i] || 0) * 10) / 10) + ")" : ""; });
+    s.addChart([
+      { type: pptx.ChartType.bar, data: [{ name: "Cases received", labels: dayLabels, values: days.map(function (d) { return d.n; }) }], options: { barGapWidthPct: 35, chartColors: ["1882C7"],
+        showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelColor: "052030", dataLabelFontSize: 6, dataLabelFontFace: "Calibri", dataLabelPosition: "outEnd" } },
+      { type: pptx.ChartType.line, data: [{ name: "Weekly average per business day", labels: dayLabels, values: wa.perDay.map(function (v) { return Math.round((v || 0) * 10) / 10; }) }], options: { chartColors: ["B3A369"], lineDash: "dash", lineSize: 2, lineDataSymbol: "none", showValue: false } }
+    ], {
+      x: 0.4, y: 2.35, w: 7.5, h: 4.75, barDir: "col",
+      showLegend: true, legendPos: "b", legendFontSize: 8, legendFontFace: "Calibri",
+      catAxisLabelFontSize: 7, valAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
       valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
-      showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelColor: "052030", dataLabelFontSize: 6, dataLabelFontFace: "Calibri", dataLabelPosition: "outEnd",
-      showTitle: true, title: "Case volume by business day, trailing 60 days (" + fmtN(sub.daily.total) + " cases)", titleFontSize: 10, titleColor: "5A6B79", titleFontFace: "Montserrat"
+      valAxes: [{ showValAxisTitle: false }], catAxes: [{ catAxisTitle: "" }],
+      showTitle: true, title: "Case volume by business day, trailing 60 days (" + fmtN(sub.daily.total) + " cases); weekly average in the Monday label", titleFontSize: 10, titleColor: "5A6B79", titleFontFace: "Montserrat"
     });
     var rv = sub.revenue;
     s.addChart(pptx.ChartType.line, rv.series.map(function (ser) { return { name: ser.name, labels: rv.months, values: ser.values.map(function (v) { return v == null ? 0 : v; }) }; }), {
@@ -748,20 +844,58 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       catAxisLabelFontSize: 7, valAxisLabelFontSize: 7, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
       valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
       showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelFontSize: 7, dataLabelColor: "052030", dataLabelPosition: "outEnd",
-      showTitle: true, title: "Week over week, " + sub.weekly.quarter + ": practices up to and down from active (net in label; * partial week)", titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
+      showTitle: true, title: "Week over week, " + sub.weekly.quarter + " (net in label)", titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
     });
-    s.addText(amDefs(), { x: 0.4, y: 7.12, w: 12.5, h: 0.34, fontFace: "Calibri", fontSize: 7, color: "5A6B79", italic: true, valign: "top" });
+  }
+
+  function addAboutSlide(pptx) {
+    var s = pptx.addSlide();
+    slideHeader(pptx, s, "About", "Definitions and counting rules   ·   " + ASOF);
+    var parts = aboutText().split("\n\n").filter(Boolean);
+    var runs = [];
+    parts.forEach(function (p) {
+      var lines = p.split("\n").filter(Boolean);
+      runs.push({ text: lines[0], options: { bold: true, color: "0F6BA8", breakLine: true, fontSize: 9 } });
+      lines.slice(1).forEach(function (l) { runs.push({ text: l.replace(/^• /, ""), options: { bullet: l.indexOf("• ") === 0, breakLine: true, fontSize: 7.5, color: "052030" } }); });
+      runs.push({ text: " ", options: { breakLine: true, fontSize: 4 } });
+    });
+    s.addText(runs, { x: 0.4, y: 1.1, w: 12.5, h: 6.2, fontFace: "Calibri", valign: "top", fit: "shrink", paraSpaceAfter: 2 });
+  }
+
+  function addProgramSlide(pptx, sub, logo) {
+    var c = sub.cards, s = pptx.addSlide();
+    slideHeader(pptx, s, "Programs  ·  " + sub.title, (sub.partners || []).join(" + ") + "   ·   " + ASOF);
+    logoBox(pptx, s, 0.4, 1.9, [logo], sub.title);
+    var kp = [
+      ["" + fmtN(c.submitters_ytd), "Submitters YTD", "", "0F6BA8"],
+      ["" + fmtN(c.active), "Active", "", "0F6BA8"],
+      ["" + fmtN(c.dabblers), "Dabblers", "", "052030"],
+      ["" + fmtN(c.inactive), "Inactive", "", "8A7A42"]
+    ];
+    kp.forEach(function (k, i) { kpiBox(pptx, s, 2.45 + i * 2.65, 2.5, k[0], k[1], k[2], k[3]); });
+    s.addChart(pptx.ChartType.bar, [{ name: "New submitters", labels: sub.months.map(function (m) { return m.label; }), values: sub.months.map(function (m) { return m.new; }) }], {
+      x: 0.4, y: 2.35, w: 8.2, h: 4.75, barDir: "col", barGapWidthPct: 55, chartColors: ["B3A369"],
+      showLegend: false, catAxisLabelFontSize: 9, valAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+      valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
+      showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelColor: "052030", dataLabelFontSize: 9, dataLabelFontFace: "Calibri", dataLabelPosition: "outEnd",
+      showTitle: true, title: "New submitting practices by month, " + PG.year + " YTD (first ever case that month)", titleFontSize: 10, titleColor: "5A6B79", titleFontFace: "Montserrat"
+    });
+    s.addShape(pptx.ShapeType.roundRect, { x: 8.85, y: 2.35, w: 4.1, h: 4.75, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
+    s.addText("PLAYS: INITIATIVES AND GROWTH", { x: 9.0, y: 2.45, w: 3.8, h: 0.3, fontFace: "Montserrat", fontSize: 9, bold: true, color: "5A6B79", charSpacing: 2 });
+    var plays = playsOf("pg-" + sub.key, sub.plays);
+    s.addText(plays.map(function (p) { return { text: p, options: { bullet: true, breakLine: true } }; }), { x: 9.0, y: 2.8, w: 3.8, h: 4.2, fontFace: "Calibri", fontSize: 11.5, color: "052030", valign: "top", paraSpaceAfter: 6 });
   }
 
   function exportPptx() {
     var btn = byId("btn-pptx"), st = byId("pptx-status");
     btn.disabled = true; st.textContent = "Loading the PowerPoint library...";
-    var aeSubs = (AE && AE.subsections) || [], amSubs = (AM && AM.subsections) || [];
+    var aeSubs = (AE && AE.subsections) || [], amSubs = (AM && AM.subsections) || [], pgSubs = (PG && PG.subsections) || [];
     loadPptx().then(function () {
       st.textContent = "Preparing logos...";
       return Promise.all([
         Promise.all(aeSubs.map(function (sub) { return logoData(sub.logo); })),
-        Promise.all(amSubs.map(function (sub) { return Promise.all((sub.logos || []).map(logoData)); }))
+        Promise.all(amSubs.map(function (sub) { return Promise.all((sub.logos || []).map(logoData)); })),
+        Promise.all(pgSubs.map(function (sub) { return logoData(sub.logo); }))
       ]);
     }).then(function (res) {
       st.textContent = "Building slides...";
@@ -773,8 +907,10 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       t.addText("Spectrum Killian  ·  " + ASOF, { x: 0.8, y: 3.4, w: 11.7, h: 0.5, fontFace: "Montserrat", fontSize: 14, color: "A0D9EE" });
       aeSubs.forEach(function (sub, i) { addAESlide(pptx, sub, res[0][i]); });
       amSubs.forEach(function (sub, i) { addAMSlide(pptx, sub, res[1][i]); });
+      pgSubs.forEach(function (sub, i) { addProgramSlide(pptx, sub, res[2][i]); });
+      addAboutSlide(pptx);
       var fname = "Daily Commercial Performance " + ((D.meta && D.meta.run_date) || "") + ".pptx";
-      return pptx.writeFile({ fileName: fname }).then(function () { st.textContent = (aeSubs.length + amSubs.length + 1) + " slides exported."; });
+      return pptx.writeFile({ fileName: fname }).then(function () { st.textContent = (aeSubs.length + amSubs.length + pgSubs.length + 2) + " slides exported."; });
     }).catch(function (err) {
       st.textContent = "Export failed: " + (err && err.message ? err.message : err);
     }).then(function () { btn.disabled = false; });
@@ -783,9 +919,11 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
   /* ---------- boot ---------- */
   var blocks = [].slice.call(document.querySelectorAll("section.block"));
-  blocks.forEach(function (sec) { var k = sec.getAttribute("data-key"); if (k !== "ae" && k !== "am") renderGeneric(sec); });
+  blocks.forEach(function (sec) { var k = sec.getAttribute("data-key"); if (k !== "ae" && k !== "am" && k !== "programs") renderGeneric(sec); });
   renderAE();
   renderAM();
+  renderPrograms();
+  renderAbout();
 
   /* ---------- scroll-spy: the pill of the section in view stays lit; anchor offset follows the banner height ---------- */
   var header = document.querySelector(".banner");

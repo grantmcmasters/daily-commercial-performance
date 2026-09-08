@@ -661,9 +661,58 @@ def build_am(P):
     }
 
 
+PROGRAMS = [
+    {"key": "incisive", "title": "Incisive", "partners": ["Incisive", "SKDLA-Incisive"], "logo": "logos/incisive.png"},
+    {"key": "tri", "title": "TRI Dental", "partners": ["TRI Dental", "SKDLA-TRI Dental"], "logo": "logos/tri.png"},
+]
+PROGRAM_PLAYS = [
+    "Initiative 1: name, owner, target date",
+    "Growth play: which offices, what action, by when",
+    "Blocker or ask for the commercial leader",
+]
+
+
 def build_programs(P):
-    """Programs. TODO: metrics to be defined."""
-    return {}
+    """Programs (practice level): submitters YTD, active / dabbler / inactive today, new submitters by month."""
+    scope, counted = P["scope"], P["counted"]
+    months = ytd_months(RUN_DATE)
+    subsections = []
+    for pg in PROGRAMS:
+        pset = set(pg["partners"])
+        ids = {s["pid"] for s in scope.values() if s["sp"] in pset}
+        ents = defaultdict(Entity)
+        for d, line, sp, pid, amc, cn in counted:
+            if sp in pset:
+                ents[pid].add(d, line)
+        for e in ents.values():
+            e.finish()
+        ids = sorted(ids | set(ents.keys()))
+        lv = {pid: (ents[pid].level(RUN_DATE) if pid in ents else QUIET) for pid in ids}
+        n_super = sum(1 for pid in ids if lv[pid] == SUPER)
+        n_core = sum(1 for pid in ids if lv[pid] == CORE)
+        n_dab = sum(1 for pid in ids if lv[pid] == DABBLER)
+        submitters_ytd = sum(1 for pid in ids if pid in ents and ents[pid].cases_between(JAN1, RUN_DATE) > 0)
+        mrows = []
+        for label, m0, s in months:
+            new = sum(1 for pid in ids if pid in ents and ents[pid].first is not None and m0 <= ents[pid].first < s)
+            subm = sum(1 for pid in ids if pid in ents and ents[pid].cases_between(m0, s) > 0)
+            mrows.append({"m": m0.strftime("%Y-%m"), "label": label, "new": new, "submitters": subm})
+        subsections.append({
+            "key": pg["key"], "title": pg["title"], "partners": pg["partners"], "logo": pg["logo"],
+            "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active": n_super + n_core, "super": n_super, "core": n_core,
+                      "dabblers": n_dab, "inactive": len(ids) - n_super - n_core - n_dab},
+            "months": mrows, "plays": list(PROGRAM_PLAYS),
+        })
+        print(f"PROGRAM {pg['title']:10s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} active={n_super + n_core} (SA {n_super}, core {n_core}) dab={n_dab} inactive={len(ids) - n_super - n_core - n_dab} new_by_month={[r['new'] for r in mrows]}", flush=True)
+    return {
+        "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,
+        "definition": {
+            "book": "every practice with an account whose Strategic Partner is one of the program's partners (Incisive: Incisive, SKDLA-Incisive; TRI: TRI Dental, SKDLA-TRI Dental)",
+            "new": "first ever counted case received in that month",
+            "inactive": "no case in the last 90 days, including practices that never sent one",
+        },
+        "subsections": subsections,
+    }
 
 
 def latest_invoice_date():

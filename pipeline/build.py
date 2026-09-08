@@ -124,6 +124,17 @@ def pacific_today():
 
 RUN_DATE = dt.date.fromisoformat(os.environ["DCP_RUN_DATE"]) if os.environ.get("DCP_RUN_DATE") else pacific_today()
 JAN1 = dt.date(RUN_DATE.year, 1, 1)
+
+
+def _qstart(d):
+    return dt.date(d.year, 3 * ((d.month - 1) // 3) + 1, 1)
+
+
+RQ0 = _qstart(RUN_DATE)                                   # retention quarter: the current one, or the last one on its first day
+if RQ0 >= RUN_DATE:
+    RQ0 = _qstart(RQ0 - dt.timedelta(days=1))
+PQ0 = _qstart(RQ0 - dt.timedelta(days=1))                  # the quarter before it (revenue baseline)
+RQ1 = _qstart(RQ0 + dt.timedelta(days=93))                 # first day of the following quarter
 DAY = dt.timedelta(days=1)
 
 # ---------------------------------------------------------------------------
@@ -421,8 +432,9 @@ def load_inputs():
     rebills = {r["case_number"] for r in get("tri_rebill_cases", {"select": "case_number"})}
     print("loading Cases (all history, five columns) ...", flush=True)
     cases = get("Cases", {"select": '"Case Number","Account Number","Received Date","Primary Product Number","LFX Unit Flag"'}, key='"Case Number"')
-    print(f"loading Line Items invoiced since {JAN1} ...", flush=True)
-    raw = get("Line Items", {"select": '"Line Item Id","Case Number","Invoice Date","Price Net"', '"Invoice Date"': f"gte.{JAN1.isoformat()}"}, key='"Line Item Id"')
+    since = min(JAN1, PQ0)
+    print(f"loading Line Items invoiced since {since} ...", flush=True)
+    raw = get("Line Items", {"select": '"Line Item Id","Case Number","Invoice Date","Price Net"', '"Invoice Date"': f"gte.{since.isoformat()}"}, key='"Line Item Id"')
     lines = []
     for r in raw:
         if r.get("Case Number") and r.get("Invoice Date") and r.get("Price Net") is not None:
@@ -710,6 +722,35 @@ def build_am(P):
         promoted_30 = sum(1 for pid in ids if lv_30[pid] < CORE <= lv_now[pid])
         demoted_30 = sum(1 for pid in ids if lv_30[pid] >= CORE > lv_now[pid])
         active_now = sum(1 for pid in ids if lv_now[pid] >= CORE)
+        # retention: the practices that were active at the start of the quarter, where they sit today,
+        # and their invoiced revenue this quarter against the quarter before
+        cohort = {pid for pid in ids if (E[pid].level(RQ0) if pid in E else QUIET) >= CORE}
+        stayed = sum(1 for pid in cohort if lv_now[pid] >= CORE)
+        to_dab = sum(1 for pid in cohort if lv_now[pid] == DABBLER)
+        to_quiet = sum(1 for pid in cohort if lv_now[pid] == QUIET)
+        joined = sum(1 for pid in ids if lv_now[pid] >= CORE and pid not in cohort)
+        rev_base = rev_qtd = 0.0
+        for cn, idate, price in P["lines"]:
+            info = case_info.get(cn)
+            if not info or book_of.get(info[2]) != k or info[1] not in cohort:
+                continue
+            if PQ0 <= idate < RQ0:
+                rev_base += price
+            elif RQ0 <= idate < RUN_DATE:
+                rev_qtd += price
+        rq_total = len(cal.between(RQ0, RQ1))
+        rq_elapsed = len(cal.between(RQ0, RUN_DATE))
+        rev_rr = rev_qtd * rq_total / rq_elapsed if rq_elapsed else None
+        retention = {
+            "quarter": quarter_label(RQ0), "prev_quarter": quarter_label(PQ0), "start": RQ0.isoformat(),
+            "start_active": len(cohort), "stayed": stayed, "to_dabbler": to_dab, "to_inactive": to_quiet,
+            "joined": joined, "active_now": active_now,
+            "retained_pct": round(100.0 * stayed / len(cohort), 1) if cohort else None,
+            "revenue": {"base": int(round(rev_base)), "qtd": int(round(rev_qtd)), "run_rate": int(round(rev_rr)) if rev_rr is not None else None,
+                        "pct_qtd": round(100.0 * rev_qtd / rev_base, 1) if rev_base else None,
+                        "pct_run_rate": round(100.0 * rev_rr / rev_base, 1) if (rev_base and rev_rr is not None) else None,
+                        "biz_elapsed": rq_elapsed, "biz_total": rq_total},
+        }
         # submitters by month, YTD: new / active / dabbler (same rules as the AE chart)
         snaps_m = [s for _, _, s in months]
         lv_m = {pid: [E[pid].level(s) if pid in E else QUIET for s in snaps_m] for pid in ids}
@@ -800,7 +841,9 @@ def build_am(P):
                         "mtd_factor": round(mtd_factor, 3) if mtd_factor else None, "mtd_biz_elapsed": mtd_elapsed, "mtd_biz_total": mtd_total,
                         "mtd_label": last_m0.strftime("%b")},
             "weekly": {"quarter": quarter_label(RUN_DATE), "weeks": weeks},
+            "retention": retention,
         })
+        print(f"   retention {retention['quarter']}: start_active={len(cohort)} stayed={stayed} dabbler={to_dab} inactive={to_quiet} joined={joined} rev_base={rev_base:,.0f} qtd={rev_qtd:,.0f} run_rate={rev_rr or 0:,.0f} pct_rr={retention['revenue']['pct_run_rate']}", flush=True)
         print(f"AM {am['name']:18s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} casesMTD={cases_mtd:5d} priorPace={prior_pace:5d} pct={mtd_pct} up30={promoted_30} down30={demoted_30} active={active_now} groups={groups}", flush=True)
     return {
         "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,
@@ -808,6 +851,7 @@ def build_am(P):
             "book": "practices whose accounts carry the manager in Accounts, Account Manager Combined; Syed carries the shared Incisive book, Nikolas his non-Incisive accounts",
             "pace": "cases MTD compared with the same number of business days into last month; weekend and holiday cases count on the business day before",
             "moves": "promoted = below active to Core or Super Active; demoted = Core or Super Active down to Dabbler or quiet",
+            "retention": "the practices in the book that were Active (Core or Super) at the start of the quarter, and where they sit today; the revenue view is the same practices' invoiced revenue (Line Items Price Net by invoice date) this quarter to date against the whole of the quarter before, with the quarter to date figure scaled by business days in the quarter over business days elapsed to give the run rate",
             "pace_avg": "average cases per business day this month to date against last month's average over all of its business days; weekend and holiday cases count on the business day before",
             "revenue": "invoice level: Line Items Price Net invoiced in the month divided by the practices with an invoice that month, and on the right axis the cases invoiced that month divided by the same practices (everything else on this page is on the case received date); the current month is shown at run rate as a dashed segment: month to date figures scaled by business days in the month over business days elapsed, divided by last month's invoiced practice count (or this month's if already higher)",
         },

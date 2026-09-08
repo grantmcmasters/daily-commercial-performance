@@ -297,6 +297,65 @@
     return s.join("") + "</svg>";
   }
 
+  /* retention: where the practices that were active at the start of the quarter sit today (flow, top) and
+     the same practices' invoiced revenue this quarter against the quarter before (bars, bottom) */
+  function retentionSVG(ret, W, H) {
+    W = W || 640; H = H || 400;
+    var s = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Retention: practices active at the start of the quarter and where they are now; cohort revenue this quarter against last quarter">'];
+    var q = ret.quarter, pq = ret.prev_quarter, n = ret.start_active || 0, total = Math.max(n, 1);
+    var left = 12, right = W - 12, top = 10, flowTop = top + 40, flowH = Math.round(H * 0.56) - flowTop, y0 = flowTop, avail = flowH;
+    s.push('<text x="' + left + '" y="' + (top + 11) + '" font-size="11" font-weight="800" fill="#052030" letter-spacing="1">ACTIVE PRACTICES AT THE START OF ' + esc(q).toUpperCase() + '</text>');
+    s.push('<text x="' + left + '" y="' + (top + 28) + '" font-size="11" font-weight="700" fill="#5A6B79">Where those ' + n + ' practices sit today</text>');
+    var barX = left + 6, barW = 30, nodeX = Math.round(W * 0.56), nodeW = 26, mid = (barX + barW + nodeX) / 2;
+    s.push('<rect x="' + barX + '" y="' + y0 + '" width="' + barW + '" height="' + avail.toFixed(1) + '" fill="#1882C7" rx="3"/>');
+    s.push('<text x="' + (barX + barW / 2).toFixed(1) + '" y="' + (y0 + avail / 2 + 7).toFixed(1) + '" text-anchor="middle" font-size="20" font-weight="800" fill="#FFFFFF">' + n + '</text>');
+    s.push('<text x="' + (barX + barW + 8) + '" y="' + (y0 + 12) + '" font-size="10" font-weight="700" fill="#0F6BA8">Active, ' + esc(shortStart(ret.start)) + '</text>');
+    var parts = [["stayed", "Still active", GREEN, GREEN_INK], ["to_dabbler", "Now dabbler", "#4ABEEE", "#0F6BA8"], ["to_inactive", "Now inactive", RED, RED_INK]];
+    var gap = 8, live = parts.filter(function (p) { return (ret[p[0]] || 0) > 0; }).length, usable = avail - gap * Math.max(live - 1, 0);
+    var yR = y0, yL = y0, lastLabel = -1e9;
+    parts.forEach(function (p) {
+      var v = ret[p[0]] || 0;
+      if (v <= 0) return;
+      var hR = usable * v / total, hL = avail * v / total;
+      s.push('<path d="M' + (barX + barW) + ',' + yL.toFixed(1) + ' C' + mid.toFixed(1) + ',' + yL.toFixed(1) + ' ' + mid.toFixed(1) + ',' + yR.toFixed(1) + ' ' + nodeX + ',' + yR.toFixed(1) +
+        ' L' + nodeX + ',' + (yR + hR).toFixed(1) + ' C' + mid.toFixed(1) + ',' + (yR + hR).toFixed(1) + ' ' + mid.toFixed(1) + ',' + (yL + hL).toFixed(1) + ' ' + (barX + barW) + ',' + (yL + hL).toFixed(1) + ' Z" fill="' + p[2] + '" fill-opacity="0.32"/>');
+      s.push('<rect x="' + nodeX + '" y="' + yR.toFixed(1) + '" width="' + nodeW + '" height="' + Math.max(hR, 3).toFixed(1) + '" fill="' + p[2] + '" rx="2"/>');
+      var ly = Math.max(yR + hR / 2 + 4, lastLabel + 15);
+      s.push('<text x="' + (nodeX + nodeW + 8) + '" y="' + ly.toFixed(1) + '" font-size="12" font-weight="800" fill="' + p[3] + '">' + v + '<tspan font-size="10.5" font-weight="700" fill="#5A6B79"> ' + p[1] + ' (' + Math.round(100 * v / total) + '%)</tspan></text>');
+      lastLabel = ly;
+      yR += hR + gap; yL += hL;
+    });
+    if (n === 0) s.push('<text x="' + (nodeX + nodeW + 8) + '" y="' + (y0 + avail / 2 + 4) + '" font-size="11" font-weight="700" fill="#5A6B79">No active practices at the start of the quarter</text>');
+    var footY = y0 + avail + 16;
+    s.push('<text x="' + left + '" y="' + footY + '" font-size="10.5" font-weight="700" fill="#5A6B79">Active today: <tspan font-weight="800" fill="#052030">' + fmtN(ret.active_now) + '</tspan> = ' + fmtN(ret.stayed) + ' still active + ' + fmtN(ret.joined) + ' newly active since ' + esc(shortStart(ret.start)) + '</text>');
+    /* revenue retention */
+    var rv = ret.revenue || {}, ry = footY + 24;
+    s.push('<line x1="' + left + '" x2="' + right + '" y1="' + (ry - 10) + '" y2="' + (ry - 10) + '" stroke="#DDE2E9" stroke-width="1"/>');
+    s.push('<text x="' + left + '" y="' + (ry + 4) + '" font-size="11" font-weight="800" fill="#052030" letter-spacing="1">REVENUE FROM THOSE PRACTICES, ' + esc(pq).toUpperCase() + ' VS ' + esc(q).toUpperCase() + '</text>');
+    var labelW = 84, bx0 = left + labelW, bx1 = right - 210, full = bx1 - bx0, bh = 20, r1 = ry + 16, r2 = r1 + bh + 10;
+    var base = rv.base || 0, qtd = rv.qtd || 0, rr = rv.run_rate == null ? null : rv.run_rate;
+    var scaleMax = Math.max(base, qtd, rr || 0, 1), wOf = function (v) { return full * v / scaleMax; };
+    s.push('<text x="' + (bx0 - 8) + '" y="' + (r1 + 14) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(pq.split(" ")[0]) + ' invoiced</text>');
+    s.push('<rect x="' + bx0 + '" y="' + r1 + '" width="' + Math.max(wOf(base), 1).toFixed(1) + '" height="' + bh + '" fill="#8A93A3" rx="3"/>');
+    s.push('<text x="' + (bx0 + wOf(base) + 7).toFixed(1) + '" y="' + (r1 + 14) + '" font-size="11" font-weight="800" fill="#052030">' + fmtMoney(base) + '</text>');
+    s.push('<text x="' + (bx0 - 8) + '" y="' + (r2 + 14) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(q.split(" ")[0]) + ' to date</text>');
+    s.push('<rect x="' + bx0 + '" y="' + r2 + '" width="' + Math.max(wOf(qtd), 1).toFixed(1) + '" height="' + bh + '" fill="#1882C7" rx="3"/>');
+    if (rr != null && rr > qtd) s.push('<rect x="' + (bx0 + wOf(qtd)).toFixed(1) + '" y="' + (r2 + 1) + '" width="' + (wOf(rr) - wOf(qtd)).toFixed(1) + '" height="' + (bh - 2) + '" fill="none" stroke="#1882C7" stroke-width="1.6" stroke-dasharray="5,4" rx="3"/>');
+    var endX = bx0 + wOf(Math.max(qtd, rr || 0)) + 7;
+    s.push('<text x="' + endX.toFixed(1) + '" y="' + (r2 + 14) + '" font-size="11" font-weight="800" fill="#0F6BA8">' + fmtMoney(qtd) + (rr != null ? '<tspan font-weight="700" fill="#5A6B79"> QTD, ' + fmtMoney(rr) + ' at run rate</tspan>' : "") + '</text>');
+    var pctY = r2 + bh + 26;
+    if (rv.pct_run_rate != null) {
+      var pr = Math.round(rv.pct_run_rate), col = pr >= 100 ? GREEN_INK : pr >= 85 ? "#8A7A42" : RED_INK;
+      s.push('<text x="' + left + '" y="' + pctY + '" font-size="20" font-weight="800" fill="' + col + '">' + pr + '%<tspan font-size="11" font-weight="700" fill="#5A6B79"> revenue retention at run rate</tspan><tspan font-size="10.5" font-weight="700" fill="#8A93A3">  (' + Math.round(rv.pct_qtd) + '% so far, ' + rv.biz_elapsed + ' of ' + rv.biz_total + ' business days)</tspan></text>');
+    } else {
+      s.push('<text x="' + left + '" y="' + pctY + '" font-size="11" font-weight="700" fill="#5A6B79">No ' + esc(pq) + ' invoiced revenue from these practices to compare against</text>');
+    }
+    return s.join("") + "</svg>";
+  }
+  function shortStart(iso) {
+    try { var p = iso.split("-"); return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(+p[0], +p[1] - 1, +p[2])); } catch (e) { return iso; }
+  }
+
   /* programs: new submitters (blue) beside practices that went quiet (red) each month */
   function newQuietSVG(months, W, H) {
     W = W || 960; H = H || 300;
@@ -439,7 +498,7 @@
         "</div>" +
         '<div class="chart-wrap hero"><div class="chart-head"><div class="panel-title big">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received per day</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
         '<div class="am-grid3">' +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AM.year) + ' YTD</div><div class="legend">' + legendHTML(SERIES) + "</div></div>" + chartSVG(sub.months || [], 0, 640, 400) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Retention, ' + esc(sub.retention.quarter) + '</div></div>' + retentionSVG(sub.retention, 640, 400) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' + revenueLegend(sub) + "</div></div>" + lineSVG(sub.revenue, 640, 400) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend">' + legendHTML(WOW_LEGEND) + "</div></div>" + wowSVG(sub.weekly, 640, 400) + "</div>" +
         "</div></div>";
@@ -501,6 +560,7 @@
       "<li><b>Book:</b> " + esc(am.book) + ". Beacon LFX cases go to whoever manages that store's Aspen Dental account.</li>" +
       "<li><b>Submitters YTD:</b> practices in the book with a case this year. <b>Cases per business day:</b> " + esc(am.pace_avg || am.pace) + ".</li>" +
       "<li><b>Became active / lost active status, L30D (last 30 days):</b> " + esc(am.moves) + ", comparing today with 30 days ago.</li>" +
+      "<li><b>Retention:</b> " + esc(am.retention) + ". Still active, now dabbler and now inactive add up to the practices that were active at the start of the quarter; active today = still active + practices that became active since.</li>" +
       "<li><b>Case volume by business day:</b> the trailing 60 calendar days shown as business days; Mondays are labeled and shaded darker; the gold line is the average per business day for each week.</li>" +
       "<li><b>Revenue and case utilization:</b> " + esc(am.revenue) + ". One line per book; the cases bars are the whole book.</li>" +
       "<li><b>Week over week:</b> for each week of the quarter, practices that crossed the active bar upward (green) or moved from Core to Super Active (dark green) stack above the axis; practices that crossed the active bar downward (red) or went from Dabbler to inactive (dark red) stack below; the net of all four is under each week. * marks the partial week.</li></ul>" +
@@ -798,8 +858,8 @@
     this.label(0.5, 2.3, 12.33, "Case volume by business day", "trailing 60 days, " + fmtN(sub.daily.total) + " cases; gold = weekly average per business day");
     var colW = 3.98, gap = 0.195, y2 = 4.9, cy = 5.16, ch = 1.94, fs = 1.3;
     return this.svg(dailySVG(sub.daily.days, 1500, 280), 0.5, 2.53, 12.33, 2.32).then(function () {
-      self.label(0.5, y2, colW, "Submitting practices by month", AM.year + " YTD");
-      return self.svg(chartSVG(sub.months || [], 0, 640, 315), 0.5, cy, colW, ch, fs);
+      self.label(0.5, y2, colW, "Retention, " + sub.retention.quarter, "who is still active; revenue vs " + sub.retention.prev_quarter);
+      return self.svg(retentionSVG(sub.retention, 640, 315), 0.5, cy, colW, ch, 1.15);
     }).then(function () {
       self.label(0.5 + colW + gap, y2, colW, "Revenue and case utilization", "invoiced, " + AM.year + " YTD" + (sub.revenue.mtd_factor != null ? ", " + sub.revenue.mtd_label + " at run rate" : ""));
       return self.svg(lineSVG(sub.revenue, 640, 315), 0.5 + colW + gap, cy, colW, ch, fs);

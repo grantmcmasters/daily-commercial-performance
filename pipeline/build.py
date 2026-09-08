@@ -869,7 +869,7 @@ def build_programs(P):
     return {
         "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,
         "definition": {
-            "book": "every practice with an account whose Strategic Partner is one of the program's partners (Incisive: Incisive, SKDLA-Incisive; TRI: TRI Dental, SKDLA-TRI Dental)",
+            "book": "every practice with an account whose Strategic Partner is one of the program's partners (Incisive: both Incisive partner codes; TRI: both TRI Dental partner codes)",
             "new": "first ever counted case received in that month",
             "quiet": "gone quiet = sent a case this year but nothing in the last 90 days, so Active + Dabblers + Gone quiet = Submitters YTD",
             "gone_quiet_month": "practices in the program that passed 90 days without a case during that month (91 days after their last case), whether or not they came back later",

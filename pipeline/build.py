@@ -192,6 +192,22 @@ def ytd_months(run_date):
     return out
 
 
+def quarter_bounds(run_date):
+    """Weekly snapshot dates for the current quarter: quarter start, every 7 days, then the run date."""
+    q0 = dt.date(run_date.year, 3 * ((run_date.month - 1) // 3) + 1, 1)
+    bounds, b = [], q0
+    while b < run_date:
+        bounds.append(b)
+        b += dt.timedelta(days=7)
+    if bounds[-1] != run_date:
+        bounds.append(run_date)
+    return bounds
+
+
+def quarter_label(run_date):
+    return f"Q{(run_date.month - 1) // 3 + 1} {run_date.year}"
+
+
 def line_of(l1, l2):
     if l2 == "Implant":
         return "IMP"
@@ -468,10 +484,35 @@ def build_ae(P):
             ("demote_dab", "Demoted to Dabbler", "Core or Super Active to Dabbler", "down"),
             ("quiet", "Went quiet", "No case in 90 days", "quiet"),
         ]
+        # week over week this quarter: where the practices sit at the end of each week
+        bounds = quarter_bounds(RUN_DATE)
+        lv_b = {pid: [E[pid].level(b) if pid in E else QUIET for b in bounds] for pid in ids}
+        wk, counts = [], {"super": [], "core": [], "dabbler": [], "new": [], "inactive": []}
+        for i in range(1, len(bounds)):
+            a, b = bounds[i - 1], bounds[i]
+            wk.append({"label": a.strftime("%b %d").replace(" 0", " "), "start": a.isoformat(), "partial": (b - a).days < 7})
+            counts["super"].append(sum(1 for pid in ids if lv_b[pid][i] == SUPER))
+            counts["core"].append(sum(1 for pid in ids if lv_b[pid][i] == CORE))
+            counts["dabbler"].append(sum(1 for pid in ids if lv_b[pid][i] == DABBLER))
+            counts["inactive"].append(sum(1 for pid in ids if lv_b[pid][i] == QUIET))
+            counts["new"].append(sum(1 for pid in ids if pid in E and E[pid].first is not None and a <= E[pid].first < b))
+
+        def deltas(v):
+            return [None] + [v[j] - v[j - 1] for j in range(1, len(v))]
+        state_rows = [
+            ("super", "Super Active", "full bar in both 90 day windows", "good_up"),
+            ("core", "Core Active", "half bar in the last 90 days", "good_up"),
+            ("dabbler", "Dabbler", "a case in the last 90 days, below the bar", "neutral"),
+            ("new", "New this week", "first ever case that week", "good_up"),
+            ("inactive", "Inactive", "no case in the last 90 days", "good_down"),
+        ]
+        weekly_states = {"quarter": quarter_label(RUN_DATE), "weeks": wk,
+                         "rows": [{"key": k, "label": lab, "hint": hint, "tone": tone, "values": counts[k], "deltas": deltas(counts[k])} for k, lab, hint, tone in state_rows]}
         subsections.append({
             "key": pdef["key"], "title": pdef["title"], "partner": sp, "ae": pdef["ae"], "logo": pdef["logo"],
             "network": network, "plays": list(PLAYS_PLACEHOLDER),
             "cards": cards, "months": mrows,
+            "weekly_states": weekly_states,
             "transitions": {"months": [r["label"] for r in mrows],
                             "rows": [{"key": k, "label": lab, "hint": hint, "tone": tone, "values": tr[k]} for k, lab, hint, tone in row_defs],
                             "net": net},

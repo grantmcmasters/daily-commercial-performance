@@ -236,7 +236,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     </div>
   </section>
 
-  <div class="footer">Rebuilt from the company database every night at 3:30 AM Pacific. The banner shows the last day of data included and when the page was refreshed. No patient information appears anywhere on this page. <span class="num" id="build-tag">Build v0.4.0</span></div>
+  <div class="footer">Rebuilt from the company database every night at 3:30 AM Pacific. The banner shows the last day of data included and when the page was refreshed. No patient information appears anywhere on this page. <span class="num" id="build-tag">Build v0.4.1</span></div>
 
 </main>
 
@@ -364,17 +364,12 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     var max = network || 0;
     months.forEach(function (m) { if (m.total > max) max = m.total; });
     var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
-    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(64, slot * 0.56), dw = bw + 14;
+    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(64, slot * 0.56);
     var y = function (v) { return padT + ih - (v / ymax) * ih; };
     var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Submitting practices by month against the total network">'];
     grid(s, ticks, y, padL, W, padR);
     months.forEach(function (m, i) {
       var cx = padL + slot * i + slot / 2, x = cx - bw / 2, base = 0;
-      if (network) {
-        var yn = y(network);
-        s.push('<rect x="' + (cx - dw / 2).toFixed(1) + '" y="' + yn.toFixed(1) + '" width="' + dw.toFixed(1) + '" height="' + (y(0) - yn).toFixed(1) + '" fill="none" stroke="' + NET_STROKE + '" stroke-width="1.4" stroke-dasharray="5,4" rx="3"/>');
-        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yn - 6).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6C7A88">' + fmtN(network) + '</text>');
-      }
       SERIES.forEach(function (ser) {
         var v = m[ser.key] || 0;
         if (v <= 0) return;
@@ -383,11 +378,18 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
         if (h >= 15) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + ser.ink + '">' + v + '</text>');
         base += v;
       });
-      var yt = y(base), crowded = network && (yt - y(network)) < 18;
+      /* the rest of the network is the dashed top level of the same bar */
+      var yt = y(base), roomAbove = 0;
+      if (network && network > base) {
+        var yn = y(network);
+        roomAbove = yt - yn;
+        s.push('<rect x="' + x.toFixed(1) + '" y="' + yn.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + roomAbove.toFixed(1) + '" fill="none" stroke="' + NET_STROKE + '" stroke-width="1.4" stroke-dasharray="5,4"/>');
+        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yn - 6).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6C7A88">' + fmtN(network) + '</text>');
+      }
       if (m.total > 0) {
-        s.push(crowded
-          ? '<text x="' + cx.toFixed(1) + '" y="' + (yt + 13).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">' + fmtN(m.total) + '</text>'
-          : '<text x="' + cx.toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#052030">' + fmtN(m.total) + '</text>');
+        s.push(roomAbove >= 20
+          ? '<text x="' + cx.toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#052030">' + fmtN(m.total) + '</text>'
+          : '<text x="' + cx.toFixed(1) + '" y="' + (yt + 14).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">' + fmtN(m.total) + '</text>');
       }
       s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
     });
@@ -415,6 +417,26 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     h += '<tr class="net"><td class="lbl">Net movement<small>Returned + promoted, minus demoted + went quiet</small></td>';
     tr.net.forEach(function (v) { h += '<td style="' + netStyle(v) + '">' + (v > 0 ? "+" + v : v) + "</td>"; });
     return h + "</tr></tbody></table>";
+  }
+  /* weekly state table: counts at the end of each week, colored by the change from the prior week */
+  function deltaStyle(tone, d) {
+    if (d == null || d === 0) return "background:rgba(176,183,195,.12);color:#5A6B79";
+    if (tone === "neutral") return "background:rgba(176,183,195,.26);color:#5A6B79";
+    var good = tone === "good_up" ? d > 0 : d < 0, mag = Math.min(1, Math.abs(d) / 6);
+    return good ? "background:rgba(52,199,89," + (0.16 + 0.5 * mag).toFixed(2) + ");color:#1D7A3A"
+                : "background:rgba(239,68,68," + (0.12 + 0.46 * mag).toFixed(2) + ");color:#B0362F";
+  }
+  function weeklyStatesHTML(ws) {
+    var h = '<table class="mx"><thead><tr><th>State at week end</th>' + ws.weeks.map(function (w) { return "<th>" + esc(w.label) + (w.partial ? "*" : "") + "</th>"; }).join("") + "</tr></thead><tbody>";
+    ws.rows.forEach(function (r) {
+      h += '<tr><td class="lbl">' + esc(r.label) + "<small>" + esc(r.hint) + "</small></td>";
+      r.values.forEach(function (v, i) {
+        var d = r.deltas[i];
+        h += '<td style="' + deltaStyle(r.tone, d) + '">' + fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + (d > 0 ? "+" + d : d) + "</small>") + "</td>";
+      });
+      h += "</tr>";
+    });
+    return h + "</tbody></table>";
   }
   function defsText() {
     var d = (AE && AE.definition) || {};
@@ -444,9 +466,11 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
           SERIES.map(function (s) { return "<span><i style=\"background:" + s.color + '"></i>' + esc(s.label) + "</span>"; }).join("") +
-          '<span><i class="dash"></i>Total network (' + fmtN(sub.network) + ")</span></div></div>" + chartSVG(sub.months, sub.network) + "</div>" +
+          '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network) + "</div>" +
         '<div class="bottom">' +
-          '<div class="panel"><div class="panel-title">Month over month movement, ' + esc(AE.year) + ' YTD</div><div class="mx-wrap">' + matrixHTML(sub.transitions) + "</div></div>" +
+          '<div class="panel"><div class="panel-title">Week over week, ' + esc(sub.weekly_states.quarter) + ': where the practices sit</div>' +
+            '<div class="panel-sub">Counts at the end of each week; the small number and the color show the change from the week before (green is good, red is bad). * partial week through yesterday.</div>' +
+            '<div class="mx-wrap">' + weeklyStatesHTML(sub.weekly_states) + "</div></div>" +
           '<div class="panel"><div class="panel-title">Plays</div><ul class="plays-list" contenteditable="true" spellcheck="false">' +
             (sub.plays || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>" +
             '<div class="plays-note">Click to edit. Edits go into the PowerPoint export but are not saved between visits yet.</div></div>' +
@@ -659,27 +683,25 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       valAxes: [{ showValAxisTitle: false }], catAxes: [{ catAxisTitle: "" }],
       showTitle: true, title: "Submitting practices by month, " + AE.year + " YTD, against the total network", titleFontSize: 10, titleColor: "5A6B79", titleFontFace: "Montserrat"
     });
-    var tr = sub.transitions;
-    var head = [{ text: "Movement", options: { bold: true, color: "5A6B79", fill: { color: "F5FAFD" } } }].concat(tr.months.map(function (m) { return { text: m, options: { bold: true, color: "5A6B79", align: "center", fill: { color: "F5FAFD" } } }; }));
+    var ws = sub.weekly_states;
+    var head = [{ text: "State at week end", options: { bold: true, color: "5A6B79", fill: { color: "F5FAFD" } } }].concat(ws.weeks.map(function (w) { return { text: w.label + (w.partial ? "*" : ""), options: { bold: true, color: "5A6B79", align: "center", fill: { color: "F5FAFD" } } }; }));
     var rows = [head];
-    tr.rows.forEach(function (r) {
-      var rowMax = Math.max.apply(null, r.values.concat([0]));
+    ws.rows.forEach(function (r) {
       var l = [{ text: r.label, options: { bold: true, color: "052030" } }];
-      r.values.forEach(function (v) {
-        var a = v > 0 ? 0.16 + 0.64 * (rowMax ? v / rowMax : 1) : 0.05;
-        l.push({ text: v > 0 ? String(v) : "·", options: { align: "center", bold: true, color: v > 0 ? TONE_INK[r.tone].replace("#", "") : "B0B7C3", fill: { color: blend(TONE_RGB[r.tone], a) } } });
+      r.values.forEach(function (v, i) {
+        var d = r.deltas[i], fill = "F3F4F6", col = "5A6B79";
+        if (d != null && d !== 0 && r.tone !== "neutral") {
+          var good = r.tone === "good_up" ? d > 0 : d < 0, mag = Math.min(1, Math.abs(d) / 6);
+          fill = good ? blend([52, 199, 89], 0.16 + 0.5 * mag) : blend([239, 68, 68], 0.12 + 0.46 * mag);
+          col = good ? "1D7A3A" : "B0362F";
+        } else if (d != null && d !== 0) { fill = blend([176, 183, 195], 0.26); }
+        l.push({ text: fmtN(v) + (d == null || d === 0 ? "" : "  (" + (d > 0 ? "+" + d : d) + ")"), options: { align: "center", bold: true, color: col, fill: { color: fill } } });
       });
       rows.push(l);
     });
-    var netLine = [{ text: "Net movement", options: { bold: true, color: "052030" } }];
-    tr.net.forEach(function (v) {
-      var tone = v > 0 ? "up" : v < 0 ? "quiet" : "flat";
-      netLine.push({ text: v > 0 ? "+" + v : String(v), options: { align: "center", bold: true, color: TONE_INK[tone].replace("#", ""), fill: { color: blend(TONE_RGB[tone], v === 0 ? 0.08 : 0.28) } } });
-    });
-    rows.push(netLine);
-    var n = tr.months.length, colW = [2.0].concat(tr.months.map(function () { return (8.2 - 2.0) / n; }));
-    s.addText("Month over month movement, " + AE.year + " YTD", { x: 0.4, y: 4.85, w: 8.2, h: 0.25, fontFace: "Montserrat", fontSize: 9, bold: true, color: "5A6B79" });
-    s.addTable(rows, { x: 0.4, y: 5.1, w: 8.2, colW: colW, fontFace: "Calibri", fontSize: 7.5, rowH: 0.19, border: { type: "solid", color: "FFFFFF", pt: 1 }, margin: 0.02 });
+    var n = ws.weeks.length, colW = [1.7].concat(ws.weeks.map(function () { return (8.2 - 1.7) / n; }));
+    s.addText("Week over week, " + ws.quarter + ": where the practices sit (count at week end, change from the week before; * partial week)", { x: 0.4, y: 4.85, w: 8.2, h: 0.25, fontFace: "Montserrat", fontSize: 9, bold: true, color: "5A6B79" });
+    s.addTable(rows, { x: 0.4, y: 5.1, w: 8.2, colW: colW, fontFace: "Calibri", fontSize: 7.5, rowH: 0.24, border: { type: "solid", color: "FFFFFF", pt: 1 }, margin: 0.02 });
     s.addShape(pptx.ShapeType.roundRect, { x: 8.85, y: 2.35, w: 4.1, h: 4.75, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
     s.addText("PLAYS", { x: 9.0, y: 2.45, w: 3.8, h: 0.3, fontFace: "Montserrat", fontSize: 10, bold: true, color: "5A6B79", charSpacing: 2 });
     var plays = playsOf(sub.key, sub.plays);

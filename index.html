@@ -229,7 +229,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.5.1</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.5.2</span></div>
 
 </main>
 
@@ -636,7 +636,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       return '<div class="sub card" id="pg-' + esc(sub.key) + '" data-sub="pg-' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
-        '<div><span class="chip chip-b">' + esc((sub.partners || []).join(" + ")) + "</span></div></div>" +
+        '<div><span class="chip chip-b">Programs</span></div></div>' +
         '<div class="b4row">' +
           tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
           tile(fmtN(c.active), "Active", "", "g") +
@@ -869,7 +869,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
   function addProgramSlide(pptx, sub, logo) {
     var c = sub.cards, s = pptx.addSlide();
-    slideHeader(pptx, s, "Programs  ·  " + sub.title, (sub.partners || []).join(" + ") + "   ·   " + ASOF);
+    slideHeader(pptx, s, "Programs  ·  " + sub.title, ASOF);
     logoBox(pptx, s, 0.4, 1.9, [logo], sub.title);
     var kp = [
       ["" + fmtN(c.submitters_ytd), "Submitters YTD", "", "0F6BA8"],

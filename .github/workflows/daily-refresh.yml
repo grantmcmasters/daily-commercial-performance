@@ -1,7 +1,7 @@
 name: daily-refresh
 on:
   schedule:
-    - cron: "30 11 * * *"   # 4:30 AM Pacific (daylight time), after the 11:00 UTC Supabase data refresh
+    - cron: "30 10 * * *"   # 3:30 AM Pacific daylight time (2:30 AM in winter); reads the raw Cases table, which syncs continuously
   workflow_dispatch: {}
 permissions:
   contents: write

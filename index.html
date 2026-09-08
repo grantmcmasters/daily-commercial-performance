@@ -64,7 +64,22 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .sec{font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2);margin:30px 0 12px}
 .sec:first-child{margin-top:2px}
 .sec .n{color:var(--killian);margin-right:8px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.sec-head .sec{margin:2px 0 12px}
 .lede{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--ink2);margin:-4px 0 14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:3px;box-shadow:var(--shadow);margin-bottom:12px}
+.segb{font-weight:700;font-size:11.5px;letter-spacing:.04em;padding:6px 14px;border-radius:999px;color:var(--ink2);transition:background .12s,color .12s}
+.segb.active{background:var(--killian);color:#FFFFFF}
+
+/* ---------- export strip ---------- */
+.export{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px;border-top:3px solid var(--gold);padding:16px 22px}
+.exp-t{font-weight:800;font-size:15px}
+.exp-s{font-size:12px;color:var(--ink2);margin-top:2px;max-width:70ch}
+.btn{margin-left:auto;background:var(--killian);color:#FFFFFF;font-weight:700;font-size:13px;letter-spacing:.03em;padding:10px 18px;border-radius:9px;transition:background .15s,color .15s,transform .15s;white-space:nowrap}
+.btn:hover{background:var(--gold);color:var(--ink);transform:translateY(-1px)}
+.btn[disabled]{opacity:.6;cursor:wait;transform:none}
+.exp-status{font-size:12px;color:var(--ink2);min-width:140px}
+@media (max-width:700px){.btn{margin-left:0}}
 
 /* ---------- tiles ---------- */
 .b3row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
@@ -80,7 +95,40 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .b3t .rv{font-size:12px;color:var(--ink2);margin-top:7px}
 .b3t.ph .n{color:var(--silver)}
 
-/* ---------- tables ---------- */
+/* ---------- subsections (Account Executives) ---------- */
+.sub{margin-top:14px}
+.sub-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+.sub-title{font-size:19px;font-weight:800}
+.sub-meta{font-size:11.5px;color:var(--ink2);font-weight:600;margin-top:2px}
+.chip{display:inline-block;font-weight:700;font-size:10px;padding:3px 8px;border-radius:999px;white-space:normal;line-height:1.25}
+.chip-b{background:rgba(24,130,199,.12);color:var(--killianink)}
+.chip-ph{background:rgba(176,183,195,.22);color:var(--ink2)}
+.chart-wrap{margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px 6px}
+.chart-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.panel-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.legend{display:flex;gap:14px;font-size:11px;font-weight:700;color:var(--ink2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.chart-wrap svg{width:100%;height:auto;display:block;margin-top:6px}
+.bottom{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-top:12px}
+@media (max-width:1000px){.bottom{grid-template-columns:1fr}}
+.panel{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.panel .panel-title{margin-bottom:8px}
+.mx-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mx{width:100%;border-collapse:separate;border-spacing:2px;font-size:12px;font-variant-numeric:tabular-nums}
+.mx th{font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;padding:4px 2px;text-align:center;white-space:nowrap}
+.mx th:first-child{text-align:left}
+.mx td{padding:5px 4px;text-align:center;border-radius:5px;font-weight:700;min-width:36px}
+.mx td.lbl{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;padding-left:2px;background:transparent}
+.mx td.lbl small{display:block;font-weight:600;color:var(--ink2);font-size:9.5px;letter-spacing:0}
+.mx tr.grp td{border-top:6px solid transparent}
+.mx tr.net td{font-weight:800}
+.mx tr.net td.lbl{padding-top:8px}
+.plays-list{margin:0 0 0 18px;font-family:var(--serif);font-size:13px;line-height:1.5;color:var(--ink);min-height:120px;outline:none;border-radius:6px}
+.plays-list li{margin-bottom:8px;padding-left:2px}
+.plays-list:focus{background:rgba(24,130,199,.05)}
+.plays-note{font-size:10.5px;color:var(--ink2);margin-top:8px;font-style:italic}
+
+/* ---------- tables (generic placeholder sections) ---------- */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
 .tbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;padding:8px 6px;border-bottom:2px solid var(--line)}
@@ -91,13 +139,6 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .tbl th.r{text-align:right}
 .tbl td.ph{color:var(--silver)}
 .note{font-size:12px;color:var(--ink2);margin-top:10px}
-.chip{display:inline-block;font-weight:700;font-size:10px;padding:3px 8px;border-radius:999px;white-space:normal;line-height:1.25}
-.chip-ph{background:rgba(176,183,195,.22);color:var(--ink2)}
-
-/* ---------- placeholder callout ---------- */
-.ph-box{border:1px dashed var(--silver);border-radius:12px;padding:14px 16px;margin-top:12px;background:transparent;font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--ink2)}
-.ph-box b{font-family:var(--head);font-style:normal;font-weight:800;color:var(--ink);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-right:8px}
-
 .footer{font-size:11.5px;color:var(--ink2);margin-top:28px;padding-top:14px;border-top:1px solid var(--line)}
 
 @media (max-width:560px){
@@ -109,6 +150,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   .b4row{grid-template-columns:1fr!important}
   .b3row{grid-template-columns:1fr!important}
   .b3t .n{font-size:24px}
+  .sub-title{font-size:17px}
 }
 </style>
 </head>
@@ -133,33 +175,30 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
 <main>
 
+  <div class="card export" id="export-strip">
+    <div>
+      <div class="exp-t">Export PowerPoint</div>
+      <div class="exp-s">Builds a deck with one slide per subsection (Account Executives, Account Managers, Programs) from the numbers on this page, using the Accounts or Practices view selected below. Charts and tables land as native PowerPoint objects.</div>
+    </div>
+    <button class="btn" id="btn-pptx" type="button">Export PowerPoint</button>
+    <span class="exp-status" id="pptx-status" aria-live="polite"></span>
+  </div>
+
   <section class="block" id="account-executives" data-key="ae">
-    <h2 class="sec"><span class="n">01</span>Account Executives</h2>
-    <p class="lede" data-role="lede">Section placeholder. Tiles and table render from data.js once the queries are defined.</p>
-    <div class="b4row" data-role="tiles">
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 1</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 2</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 3</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 4</div><div class="thr">placeholder</div></div>
-    </div>
-    <div class="card" style="margin-top:12px">
-      <div class="tbl-wrap">
-        <table class="tbl" data-role="table">
-          <thead><tr><th>Account executive</th><th class="r">Column 2</th><th class="r">Column 3</th><th class="r">Column 4</th></tr></thead>
-          <tbody>
-            <tr><td class="ph">Row placeholder</td><td class="r ph">--</td><td class="r ph">--</td><td class="r ph">--</td></tr>
-            <tr><td class="ph">Row placeholder</td><td class="r ph">--</td><td class="r ph">--</td><td class="r ph">--</td></tr>
-            <tr><td class="ph">Row placeholder</td><td class="r ph">--</td><td class="r ph">--</td><td class="r ph">--</td></tr>
-          </tbody>
-        </table>
+    <div class="sec-head">
+      <h2 class="sec"><span class="n">01</span>Account Executives</h2>
+      <div class="seg" role="group" aria-label="Count accounts or practices">
+        <button class="segb active" type="button" data-grain="accounts">Accounts</button>
+        <button class="segb" type="button" data-grain="practices">Practices</button>
       </div>
-      <p class="note" data-role="note">Metrics, columns and ordering for this section are still to be defined.</p>
     </div>
+    <p class="lede" id="ae-lede">Section placeholder. Renders from data.js once the nightly build has run.</p>
+    <div id="ae-subs"></div>
   </section>
 
   <section class="block" id="account-managers" data-key="am">
     <h2 class="sec"><span class="n">02</span>Account Managers</h2>
-    <p class="lede" data-role="lede">Section placeholder. Tiles and table render from data.js once the queries are defined.</p>
+    <p class="lede" data-role="lede">Section placeholder. One subsection per account manager, coming next.</p>
     <div class="b4row" data-role="tiles">
       <div class="b3t ph"><div class="n">--</div><div class="t">Tile 1</div><div class="thr">placeholder</div></div>
       <div class="b3t ph"><div class="n">--</div><div class="t">Tile 2</div><div class="thr">placeholder</div></div>
@@ -183,7 +222,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
   <section class="block" id="programs" data-key="programs">
     <h2 class="sec"><span class="n">03</span>Programs</h2>
-    <p class="lede" data-role="lede">Section placeholder. Tiles and table render from data.js once the queries are defined.</p>
+    <p class="lede" data-role="lede">Section placeholder. Subsections: Growth, Incisive, TRI, coming next.</p>
     <div class="b4row" data-role="tiles">
       <div class="b3t ph"><div class="n">--</div><div class="t">Tile 1</div><div class="thr">placeholder</div></div>
       <div class="b3t ph"><div class="n">--</div><div class="t">Tile 2</div><div class="thr">placeholder</div></div>
@@ -205,7 +244,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     </div>
   </section>
 
-  <div class="footer">Rebuilt from the company database on the schedule in the repo (nightly by default). The banner shows when the numbers were last refreshed. No patient information appears anywhere on this page. <span class="num" id="build-tag">Skeleton v0.1.1</span></div>
+  <div class="footer">Rebuilt from the company database on the schedule in the repo (nightly by default). The banner shows when the numbers were last refreshed. No patient information appears anywhere on this page. <span class="num" id="build-tag">Build v0.2.0</span></div>
 
 </main>
 
@@ -214,15 +253,18 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 (function () {
   "use strict";
   var D = window.DCP_DATA || { meta: {}, sections: {} };
+  var byId = function (id) { return document.getElementById(id); };
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
+  function fmtN(n) { return (n == null) ? "--" : Number(n).toLocaleString("en-US"); }
+  function fmtPct(p) { return (p == null) ? "--" : (Math.round(p * 10) / 10).toLocaleString("en-US") + "%"; }
 
   /* ---------- as-of pill (Pacific time) ---------- */
-  (function () {
+  var ASOF = (function () {
     var m = D.meta || {};
     var label = m.run_date ? "Data as of " + m.run_date : "Awaiting first data refresh";
     try {
@@ -237,58 +279,276 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
         }
       }
     } catch (e) { /* keep the fallback label */ }
-    document.getElementById("asof").textContent = label;
+    byId("asof").textContent = label;
+    return label;
   })();
 
-  /* ---------- generic section renderer ----------
-     data.js shape per section (all optional; placeholders stay until provided):
-       sections.<key> = {
-         lede: "one line under the heading",
-         tiles: [{ value: "$1.2M", label: "MTD revenue", sub: "vs plan 92%", tone: "g" | "d" | "" }],
-         columns: [{ label: "Rep" }, { label: "MTD", align: "r" }],
-         rows: [["Jillian Doss", "$190k"], ...],
-         note: "footnote under the table"
-       }
-  ------------------------------------------------- */
-  function renderSection(sec) {
+  /* ---------- generic section renderer (placeholder sections) ---------- */
+  function renderGeneric(sec) {
     var key = sec.getAttribute("data-key");
     var d = (D.sections || {})[key];
-    if (!d) return;
+    if (!d || !Object.keys(d).length) return;
     var lede = sec.querySelector('[data-role="lede"]');
     if (lede && d.lede) lede.textContent = d.lede;
-
     var tiles = sec.querySelector('[data-role="tiles"]');
     if (tiles && d.tiles && d.tiles.length) {
       tiles.className = d.tiles.length === 3 ? "b3row" : "b4row";
       tiles.innerHTML = d.tiles.map(function (t) {
-        return '<div class="b3t ' + esc(t.tone || "") + '">' +
-          '<div class="n">' + esc(t.value) + '</div>' +
-          '<div class="t">' + esc(t.label) + '</div>' +
-          (t.sub ? '<div class="rv">' + esc(t.sub) + '</div>' : "") +
-        '</div>';
+        return '<div class="b3t ' + esc(t.tone || "") + '"><div class="n">' + esc(t.value) + '</div><div class="t">' + esc(t.label) + '</div>' +
+          (t.sub ? '<div class="rv">' + esc(t.sub) + '</div>' : "") + '</div>';
       }).join("");
     }
-
     var table = sec.querySelector('[data-role="table"]');
     if (table && d.columns && d.columns.length) {
-      var thead = "<tr>" + d.columns.map(function (c) {
-        return '<th class="' + (c.align === "r" ? "r" : "") + '">' + esc(c.label) + "</th>";
-      }).join("") + "</tr>";
+      var thead = "<tr>" + d.columns.map(function (c) { return '<th class="' + (c.align === "r" ? "r" : "") + '">' + esc(c.label) + "</th>"; }).join("") + "</tr>";
       var tbody = (d.rows || []).map(function (r) {
-        return "<tr>" + r.map(function (v, i) {
-          var c = d.columns[i] || {};
-          return '<td class="' + (c.align === "r" ? "r" : "") + '">' + esc(v) + "</td>";
-        }).join("") + "</tr>";
+        return "<tr>" + r.map(function (v, i) { var c = d.columns[i] || {}; return '<td class="' + (c.align === "r" ? "r" : "") + '">' + esc(v) + "</td>"; }).join("") + "</tr>";
       }).join("");
       if (!tbody) tbody = '<tr><td class="ph" colspan="' + d.columns.length + '">No rows yet.</td></tr>';
       table.innerHTML = "<thead>" + thead + "</thead><tbody>" + tbody + "</tbody>";
     }
-
     var note = sec.querySelector('[data-role="note"]');
     if (note && d.note != null) note.textContent = d.note;
   }
+
+  /* ============================================================
+     Account Executives
+     ============================================================ */
+  var AE = (D.sections || {}).ae || null;
+  var GRAIN = (function () { try { return localStorage.getItem("dcp-grain") || "accounts"; } catch (e) { return "accounts"; } })();
+  if (GRAIN !== "accounts" && GRAIN !== "practices") GRAIN = "accounts";
+
+  var SERIES = [
+    { key: "active", label: "Active (core + super)", color: "#1882C7" },
+    { key: "dabbler", label: "Dabbler", color: "#4ABEEE" },
+    { key: "new", label: "New", color: "#B3A369" }
+  ];
+  var TONE_RGB = { "new": [24, 130, 199], up: [52, 199, 89], flat: [176, 183, 195], down: [245, 196, 66], quiet: [239, 68, 68] };
+  var TONE_INK = { "new": "#0F6BA8", up: "#1D7A3A", flat: "#5A6B79", down: "#8A6D1A", quiet: "#B0362F" };
+
+  function niceTicks(max) {
+    if (max <= 0) return [0, 1];
+    var raw = max / 4, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag;
+    var step = (r <= 1 ? 1 : r <= 2 ? 2 : r <= 2.5 ? 2.5 : r <= 5 ? 5 : 10) * mag;
+    var out = [];
+    for (var v = 0; v <= max + step - 1e-9; v += step) out.push(Math.round(v * 100) / 100);
+    if (out[out.length - 1] < max) out.push(out[out.length - 1] + step);
+    return out;
+  }
+
+  function chartSVG(months) {
+    var W = 960, H = 250, padL = 40, padR = 12, padT = 24, padB = 28;
+    var n = months.length || 1;
+    var max = 0;
+    months.forEach(function (m) { if (m.total > max) max = m.total; });
+    var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
+    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(58, slot * 0.62);
+    var y = function (v) { return padT + ih - (v / ymax) * ih; };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Submitters by month">';
+    ticks.forEach(function (t) {
+      var yy = y(t);
+      s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>';
+      s += '<text x="' + (padL - 6) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="10" font-weight="700" fill="#5A6B79">' + fmtN(t) + '</text>';
+    });
+    months.forEach(function (m, i) {
+      var x = padL + slot * i + (slot - bw) / 2, base = 0;
+      SERIES.forEach(function (ser) {
+        var v = m[ser.key] || 0;
+        if (v <= 0) return;
+        var y1 = y(base + v), h = y(base) - y1;
+        s += '<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + ser.color + '"/>';
+        if (h >= 15) s += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (y1 + h / 2 + 3.5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + (ser.key === "dabbler" ? "#052030" : "#FFFFFF") + '">' + v + '</text>';
+        base += v;
+      });
+      s += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (y(base) - 5).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="800" fill="#052030">' + fmtN(m.total) + '</text>';
+      s += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>';
+    });
+    s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>';
+    return s + "</svg>";
+  }
+
+  function cellStyle(tone, v, rowMax) {
+    var a = v > 0 ? 0.16 + 0.64 * (rowMax ? v / rowMax : 1) : 0.05;
+    return "background:rgba(" + TONE_RGB[tone].join(",") + "," + a.toFixed(2) + ");color:" + (v > 0 ? TONE_INK[tone] : "#B0B7C3");
+  }
+  function netStyle(v) {
+    var tone = v > 0 ? "up" : v < 0 ? "quiet" : "flat";
+    return "background:rgba(" + TONE_RGB[tone].join(",") + "," + (v === 0 ? 0.08 : 0.28) + ");color:" + TONE_INK[tone];
+  }
+
+  function matrixHTML(tr) {
+    var h = '<table class="mx"><thead><tr><th>Movement</th>' + tr.months.map(function (m) { return "<th>" + esc(m) + "</th>"; }).join("") + "</tr></thead><tbody>";
+    var groupStart = { returned: 1, held: 1, demote_core: 1, quiet: 1 };
+    tr.rows.forEach(function (r) {
+      var rowMax = Math.max.apply(null, r.values.concat([0]));
+      h += '<tr class="' + (groupStart[r.key] ? "grp" : "") + '"><td class="lbl">' + esc(r.label) + "<small>" + esc(r.hint) + "</small></td>";
+      r.values.forEach(function (v) { h += '<td style="' + cellStyle(r.tone, v, rowMax) + '">' + (v > 0 ? v : "·") + "</td>"; });
+      h += "</tr>";
+    });
+    h += '<tr class="net"><td class="lbl">Net movement<small>Returned + promoted, minus demoted + went quiet</small></td>';
+    tr.net.forEach(function (v) { h += '<td style="' + netStyle(v) + '">' + (v > 0 ? "+" + v : v) + "</td>"; });
+    return h + "</tr></tbody></table>";
+  }
+
+  function tile(value, label, sub, tone) {
+    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + esc(sub) + "</div></div>";
+  }
+
+  function renderAE() {
+    var host = byId("ae-subs");
+    if (!AE || !AE.subsections || !AE.subsections.length) return;
+    var word = GRAIN === "accounts" ? "accounts" : "practices";
+    var Word = word.charAt(0).toUpperCase() + word.slice(1);
+    byId("ae-lede").textContent = "Submitting " + word + " by month, year to date. Active = Core Active or Super Active by the Account Health definition (per business unit, 90 day windows). New = first ever case in that month. " +
+      (GRAIN === "practices" ? "Practices roll account numbers up through the practice map." : "Accounts are individual account numbers.");
+    // keep any plays the user has typed
+    var keep = {};
+    host.querySelectorAll(".sub").forEach(function (el) {
+      var ul = el.querySelector(".plays-list");
+      if (ul) keep[el.getAttribute("data-sub")] = [].map.call(ul.querySelectorAll("li"), function (li) { return li.textContent; });
+    });
+    host.innerHTML = AE.subsections.map(function (sub) {
+      var g = sub.by_grain[GRAIN], c = g.cards;
+      var plays = keep[sub.key] || sub.plays || [];
+      var penSub = fmtN(c.ytd_submitters) + " of " + fmtN(c.denominator) + " " + word + " sent a case this year";
+      return '<div class="sub card" id="ae-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
+        '<div class="sub-head"><div><div class="sub-title">' + esc(sub.title) + '</div><div class="sub-meta">Account executive: ' + esc(sub.ae) + " · " + Word + " view</div></div>" +
+        '<div><span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
+        '<div class="b4row">' +
+          tile(fmtN(c.total), "Total " + word, c.total_note || "", "") +
+          tile(fmtN(c.active), "Active", fmtN(c.super) + " super active, " + fmtN(c.core) + " core active", "g") +
+          tile(fmtN(c.dabblers), "Dabblers", "sent a case in the last 90 days, below the bar", "") +
+          tile(fmtPct(c.penetration_pct), "YTD penetration", penSub, "d") +
+        "</div>" +
+        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting ' + word + " by month, " + esc(AE.year) + ' YTD</div><div class="legend">' +
+          SERIES.map(function (s) { return "<span><i style=\"background:" + s.color + '"></i>' + esc(s.label) + "</span>"; }).join("") + "</div></div>" + chartSVG(g.months) + "</div>" +
+        '<div class="bottom">' +
+          '<div class="panel"><div class="panel-title">Month over month movement, ' + esc(AE.year) + ' YTD</div><div class="mx-wrap">' + matrixHTML(g.transitions) + "</div></div>" +
+          '<div class="panel"><div class="panel-title">Plays</div><ul class="plays-list" contenteditable="true" spellcheck="false">' +
+            plays.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>" +
+            '<div class="plays-note">Click to edit. Edits go into the PowerPoint export but are not saved between visits yet.</div></div>' +
+        "</div></div>";
+    }).join("");
+  }
+
+  document.querySelectorAll(".segb").forEach(function (b) {
+    b.addEventListener("click", function () {
+      GRAIN = b.getAttribute("data-grain");
+      try { localStorage.setItem("dcp-grain", GRAIN); } catch (e) { /* private mode */ }
+      document.querySelectorAll(".segb").forEach(function (x) { x.classList.toggle("active", x === b); });
+      renderAE();
+    });
+  });
+  document.querySelectorAll(".segb").forEach(function (x) { x.classList.toggle("active", x.getAttribute("data-grain") === GRAIN); });
+
+  /* ============================================================
+     PowerPoint export (PptxGenJS, loaded on demand)
+     ============================================================ */
+  function loadPptx() {
+    return new Promise(function (res, rej) {
+      if (window.PptxGenJS) return res();
+      var s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js";
+      s.onload = function () { res(); };
+      s.onerror = function () { rej(new Error("Could not load the PowerPoint library")); };
+      document.head.appendChild(s);
+    });
+  }
+  function blend(rgb, a) {
+    return rgb.map(function (c) { var v = Math.round(255 + (c - 255) * a); return ("0" + v.toString(16)).slice(-2); }).join("").toUpperCase();
+  }
+  function playsOf(subKey, fallback) {
+    var el = document.querySelector('.sub[data-sub="' + subKey + '"] .plays-list');
+    if (!el) return fallback || [];
+    var items = [].map.call(el.querySelectorAll("li"), function (li) { return li.textContent.trim(); }).filter(Boolean);
+    return items.length ? items : (fallback || []);
+  }
+
+  function addAESlide(pptx, sub) {
+    var g = sub.by_grain[GRAIN], c = g.cards, word = GRAIN === "accounts" ? "accounts" : "practices";
+    var Word = word.charAt(0).toUpperCase() + word.slice(1);
+    var s = pptx.addSlide();
+    s.background = { color: "F5FAFD" };
+    s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.95, fill: { color: "052030" }, line: { color: "052030" } });
+    s.addText("Account Executives  ·  " + sub.title, { x: 0.4, y: 0.12, w: 9, h: 0.45, fontFace: "Montserrat", fontSize: 20, bold: true, color: "FFFFFF" });
+    s.addText("Account executive: " + sub.ae + "   ·   " + Word + " view   ·   " + ASOF, { x: 0.4, y: 0.55, w: 12.5, h: 0.3, fontFace: "Montserrat", fontSize: 10, color: "A0D9EE" });
+    var kp = [
+      ["" + fmtN(c.total), "Total " + word, c.total_note || ""],
+      ["" + fmtN(c.active), "Active", fmtN(c.super) + " super active, " + fmtN(c.core) + " core active"],
+      ["" + fmtN(c.dabblers), "Dabblers", "case in the last 90 days, below the bar"],
+      [fmtPct(c.penetration_pct), "YTD penetration", fmtN(c.ytd_submitters) + " of " + fmtN(c.denominator) + " sent a case this year"]
+    ];
+    kp.forEach(function (k, i) {
+      var x = 0.4 + i * 2.05;
+      s.addShape(pptx.ShapeType.roundRect, { x: x, y: 1.15, w: 1.95, h: 1.05, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
+      s.addText(k[0], { x: x, y: 1.18, w: 1.95, h: 0.5, align: "center", fontFace: "Montserrat", fontSize: 22, bold: true, color: i === 1 ? "0F6BA8" : i === 3 ? "8A7A42" : "052030" });
+      s.addText(k[1], { x: x, y: 1.64, w: 1.95, h: 0.25, align: "center", fontFace: "Montserrat", fontSize: 9.5, bold: true, color: "052030" });
+      s.addText(k[2], { x: x + 0.05, y: 1.86, w: 1.85, h: 0.3, align: "center", fontFace: "Calibri", fontSize: 7.5, color: "5A6B79" });
+    });
+    var labels = g.months.map(function (m) { return m.label; });
+    var chartData = SERIES.map(function (ser) { return { name: ser.label, labels: labels, values: g.months.map(function (m) { return m[ser.key] || 0; }) }; });
+    s.addChart(pptx.ChartType.bar, chartData, {
+      x: 0.4, y: 2.35, w: 8.2, h: 2.45, barDir: "col", barGrouping: "stacked", barGapWidthPct: 60,
+      chartColors: SERIES.map(function (x) { return x.color.replace("#", ""); }),
+      showLegend: true, legendPos: "t", legendFontSize: 9, legendFontFace: "Calibri",
+      catAxisLabelFontSize: 9, valAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+      valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
+      showValue: true, dataLabelFontSize: 7, dataLabelColor: "FFFFFF", dataLabelFontFace: "Calibri",
+      showTitle: true, title: "Submitting " + word + " by month, " + AE.year + " YTD", titleFontSize: 10, titleColor: "5A6B79", titleFontFace: "Montserrat"
+    });
+    var tr = g.transitions;
+    var head = [{ text: "Movement", options: { bold: true, color: "5A6B79", fill: { color: "F5FAFD" } } }].concat(tr.months.map(function (m) { return { text: m, options: { bold: true, color: "5A6B79", align: "center", fill: { color: "F5FAFD" } } }; }));
+    var rows = [head];
+    tr.rows.forEach(function (r) {
+      var rowMax = Math.max.apply(null, r.values.concat([0]));
+      var line = [{ text: r.label, options: { bold: true, color: "052030" } }];
+      r.values.forEach(function (v) {
+        var a = v > 0 ? 0.16 + 0.64 * (rowMax ? v / rowMax : 1) : 0.05;
+        line.push({ text: v > 0 ? String(v) : "·", options: { align: "center", bold: true, color: v > 0 ? TONE_INK[r.tone].replace("#", "") : "B0B7C3", fill: { color: blend(TONE_RGB[r.tone], a) } } });
+      });
+      rows.push(line);
+    });
+    var netLine = [{ text: "Net movement", options: { bold: true, color: "052030" } }];
+    tr.net.forEach(function (v) {
+      var tone = v > 0 ? "up" : v < 0 ? "quiet" : "flat";
+      netLine.push({ text: v > 0 ? "+" + v : String(v), options: { align: "center", bold: true, color: TONE_INK[tone].replace("#", ""), fill: { color: blend(TONE_RGB[tone], v === 0 ? 0.08 : 0.28) } } });
+    });
+    rows.push(netLine);
+    var n = tr.months.length, colW = [2.0].concat(tr.months.map(function () { return (8.2 - 2.0) / n; }));
+    s.addText("Month over month movement, " + AE.year + " YTD", { x: 0.4, y: 4.85, w: 8.2, h: 0.25, fontFace: "Montserrat", fontSize: 9, bold: true, color: "5A6B79" });
+    s.addTable(rows, { x: 0.4, y: 5.1, w: 8.2, colW: colW, fontFace: "Calibri", fontSize: 7.5, rowH: 0.19, border: { type: "solid", color: "FFFFFF", pt: 1 }, margin: 0.02 });
+    s.addShape(pptx.ShapeType.roundRect, { x: 8.85, y: 1.15, w: 4.1, h: 5.95, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
+    s.addText("PLAYS", { x: 9.0, y: 1.25, w: 3.8, h: 0.3, fontFace: "Montserrat", fontSize: 10, bold: true, color: "5A6B79", charSpacing: 2 });
+    var plays = playsOf(sub.key, sub.plays);
+    s.addText(plays.map(function (p) { return { text: p, options: { bullet: true, breakLine: true } }; }), { x: 9.0, y: 1.6, w: 3.8, h: 5.3, fontFace: "Calibri", fontSize: 11.5, color: "052030", valign: "top", paraSpaceAfter: 6 });
+    s.addText("Active = Core or Super Active by the Account Health definition (per business unit, 90 day windows). New = first ever case in the month. Dabbler = a case in the last 90 days, below every bar.", { x: 0.4, y: 7.15, w: 12.5, h: 0.3, fontFace: "Calibri", fontSize: 7.5, color: "5A6B79", italic: true });
+  }
+
+  function exportPptx() {
+    var btn = byId("btn-pptx"), st = byId("pptx-status");
+    btn.disabled = true; st.textContent = "Loading the PowerPoint library...";
+    loadPptx().then(function () {
+      st.textContent = "Building slides...";
+      var pptx = new PptxGenJS();
+      pptx.layout = "LAYOUT_WIDE"; pptx.author = "Spectrum Killian"; pptx.company = "Spectrum Killian"; pptx.title = "Daily Commercial Performance";
+      var t = pptx.addSlide();
+      t.background = { color: "052030" };
+      t.addText("Daily Commercial Performance", { x: 0.8, y: 2.4, w: 11.7, h: 1.0, fontFace: "Montserrat", fontSize: 36, bold: true, color: "FFFFFF" });
+      t.addText("Spectrum Killian  ·  " + ASOF, { x: 0.8, y: 3.4, w: 11.7, h: 0.5, fontFace: "Montserrat", fontSize: 14, color: "A0D9EE" });
+      var count = 1;
+      if (AE && AE.subsections) AE.subsections.forEach(function (sub) { addAESlide(pptx, sub); count++; });
+      var fname = "Daily Commercial Performance " + ((D.meta && D.meta.run_date) || "") + ".pptx";
+      return pptx.writeFile({ fileName: fname }).then(function () { st.textContent = count + " slides exported."; });
+    }).catch(function (err) {
+      st.textContent = "Export failed: " + (err && err.message ? err.message : err);
+    }).then(function () { btn.disabled = false; });
+  }
+  byId("btn-pptx").addEventListener("click", exportPptx);
+
+  /* ---------- boot ---------- */
   var blocks = [].slice.call(document.querySelectorAll("section.block"));
-  blocks.forEach(renderSection);
+  blocks.forEach(function (sec) { if (sec.getAttribute("data-key") !== "ae") renderGeneric(sec); });
+  renderAE();
 
   /* ---------- scroll-spy: the pill of the section in view stays lit ---------- */
   var header = document.querySelector(".banner");
@@ -303,11 +563,8 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   function spy() {
     var y = window.scrollY + header.offsetHeight + 40;
     var cur = blocks[0].id;
-    for (var i = 0; i < blocks.length; i++) {
-      if (blocks[i].offsetTop <= y) cur = blocks[i].id;
-    }
-    var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-    if (atBottom) cur = blocks[blocks.length - 1].id;
+    for (var i = 0; i < blocks.length; i++) { if (blocks[i].offsetTop <= y) cur = blocks[i].id; }
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) cur = blocks[blocks.length - 1].id;
     setActive(cur);
   }
   var ticking = false;

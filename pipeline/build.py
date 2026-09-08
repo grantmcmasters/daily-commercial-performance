@@ -577,7 +577,7 @@ def build_am(P):
     for e in ents.values():
         e.finish()
     # invoiced lines by book: (book, month index, partner) -> [invoiced revenue, invoiced practices]
-    inv = defaultdict(lambda: [0.0, set()])
+    inv = defaultdict(lambda: [0.0, set(), set()])   # invoiced revenue, invoiced practices, invoiced cases
     inv_ytd = defaultdict(float)                # (book, partner) -> invoiced revenue YTD
     month_idx = {m0: i for i, (_, m0, _) in enumerate(months)}
     for cn, idate, price in P["lines"]:
@@ -594,6 +594,7 @@ def build_am(P):
         cell = inv[(k, mi, sp)]
         cell[0] += price
         cell[1].add(pid)
+        cell[2].add(cn)
         inv_ytd[(k, sp)] += price
 
     subsections = []
@@ -650,19 +651,26 @@ def build_am(P):
             group_of = lambda sp, allowed=allowed: sp if sp in allowed else "Other"
             groups = allowed + (["Other"] if any(sp not in allowed for sp in book_partners) else [])
         series = {g: {"name": g, "values": [], "offices": [], "revenue": []} for g in groups}
+        book_cases, book_offices, cases_per_office = [], [], []
         for mi, (label, m0, s) in enumerate(months):
             offices = defaultdict(set)
             money = defaultdict(float)
-            for (kk, mm, sp), (amount, pids) in inv.items():
+            all_off, all_cases = set(), set()
+            for (kk, mm, sp), (amount, pids, cns) in inv.items():
                 if kk == k and mm == mi:
                     g = group_of(sp)
                     offices[g] |= pids
                     money[g] += amount
+                    all_off |= pids
+                    all_cases |= cns
             for g in groups:
                 n = len(offices[g])
                 series[g]["offices"].append(n)
                 series[g]["revenue"].append(int(round(money[g])))
                 series[g]["values"].append(int(round(money[g] / n)) if n else None)
+            book_cases.append(len(all_cases))
+            book_offices.append(len(all_off))
+            cases_per_office.append(round(len(all_cases) / len(all_off), 1) if all_off else None)
         # current month at run rate: scale the MTD figure by business days in the month over business days elapsed
         last_label, last_m0, last_s = months[-1]
         mtd_factor = mtd_elapsed = mtd_total = None
@@ -676,6 +684,8 @@ def build_am(P):
             off_prev = vals["offices"][-2] if len(vals["offices"]) > 1 else 0
             denom = max(off_prev, off_mtd)          # a full month's invoiced practice count, not the partial month's
             vals["projected_last"] = int(round(rev_mtd * mtd_factor / denom)) if (mtd_factor and denom) else None
+        book_denom = max(book_offices[-2] if len(book_offices) > 1 else 0, book_offices[-1])
+        cases_projected_last = round(book_cases[-1] * mtd_factor / book_denom, 1) if (mtd_factor and book_denom) else None
         # week over week this quarter
         lv_b = {pid: [E[pid].level(b) if pid in E else QUIET for b in bounds] for pid in ids}
         weeks = []
@@ -694,6 +704,8 @@ def build_am(P):
             "months": mrows,
             "daily": {"days": daily, "total": sum(x["n"] for x in daily), "from": window60[0].isoformat() if window60 else None, "to": window60[-1].isoformat() if window60 else None},
             "revenue": {"months": [m[0] for m in months], "series": [series[g] for g in groups],
+                        "cases_per_office": cases_per_office, "cases_projected_last": cases_projected_last,
+                        "invoiced_cases": book_cases, "invoiced_practices": book_offices,
                         "mtd_factor": round(mtd_factor, 3) if mtd_factor else None, "mtd_biz_elapsed": mtd_elapsed, "mtd_biz_total": mtd_total,
                         "mtd_label": last_m0.strftime("%b")},
             "weekly": {"quarter": f"Q{(RUN_DATE.month - 1) // 3 + 1} {RUN_DATE.year}", "weeks": weeks},
@@ -705,7 +717,7 @@ def build_am(P):
             "book": "practices whose accounts carry the manager in Accounts, Account Manager Combined; Syed carries the shared Incisive book, Nikolas his non-Incisive accounts",
             "pace": "cases MTD compared with the same number of business days into last month; weekend and holiday cases count on the business day before",
             "moves": "promoted = below active to Core or Super Active; demoted = Core or Super Active down to Dabbler or quiet",
-            "revenue": "invoice level: Line Items Price Net invoiced in the month divided by the practices with an invoice that month (everything else on this page is on the case received date); the current month is shown at run rate as a dashed segment: month to date invoiced revenue scaled by business days in the month over business days elapsed, divided by last month's invoiced practice count (or this month's if already higher)",
+            "revenue": "invoice level: Line Items Price Net invoiced in the month divided by the practices with an invoice that month, and on the right axis the cases invoiced that month divided by the same practices (everything else on this page is on the case received date); the current month is shown at run rate as a dashed segment: month to date figures scaled by business days in the month over business days elapsed, divided by last month's invoiced practice count (or this month's if already higher)",
         },
         "subsections": subsections,
     }
@@ -750,7 +762,8 @@ def build_programs(P):
         subsections.append({
             "key": pg["key"], "title": pg["title"], "partners": pg["partners"], "logo": pg["logo"],
             "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active": n_super + n_core, "super": n_super, "core": n_core,
-                      "dabblers": n_dab, "inactive": len(ids) - n_super - n_core - n_dab},
+                      "dabblers": n_dab, "inactive": len(ids) - n_super - n_core - n_dab,
+                      "gone_inactive": submitters_ytd - (n_super + n_core) - n_dab},
             "months": mrows, "plays": list(PROGRAM_PLAYS),
         })
         print(f"PROGRAM {pg['title']:10s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} active={n_super + n_core} (SA {n_super}, core {n_core}) dab={n_dab} inactive={len(ids) - n_super - n_core - n_dab} new_by_month={[r['new'] for r in mrows]}", flush=True)
@@ -759,7 +772,7 @@ def build_programs(P):
         "definition": {
             "book": "every practice with an account whose Strategic Partner is one of the program's partners (Incisive: Incisive, SKDLA-Incisive; TRI: TRI Dental, SKDLA-TRI Dental)",
             "new": "first ever counted case received in that month",
-            "inactive": "no case in the last 90 days, including practices that never sent one",
+            "inactive": "gone inactive = sent a case this year but nothing in the last 90 days, so Active + Dabblers + Gone inactive = Submitters YTD",
         },
         "subsections": subsections,
     }

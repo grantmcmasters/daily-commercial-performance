@@ -96,6 +96,10 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .b3t .thr{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-top:2px}
 .b3t .rv{font-size:11.5px;color:var(--ink2);margin-top:6px;line-height:1.35}
 .b3t.ph .n{color:var(--silver)}
+.pg-tiles{display:grid;grid-template-columns:1fr auto 3fr;gap:12px;align-items:stretch;margin-top:12px}
+.pg-tiles .eq{align-self:center;font-size:30px;font-weight:800;color:var(--ink2);line-height:1}
+.tile-group{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;border-top:3px solid var(--gold);padding-top:8px}
+@media (max-width:900px){.pg-tiles{grid-template-columns:1fr}.pg-tiles .eq{display:none}.tile-group{grid-template-columns:1fr}}
 .tick{display:inline-block;font-weight:800;font-size:12px;padding:2px 8px;border-radius:999px;margin-right:4px}
 .tick.up{background:rgba(52,199,89,.18);color:var(--up)}
 .tick.down{background:rgba(239,68,68,.16);color:var(--down)}
@@ -231,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.5.6</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.5.7</span></div>
 
 </main>
 
@@ -317,7 +321,8 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   var TONE_RGB = { "new": [24, 130, 199], up: [52, 199, 89], flat: [176, 183, 195], down: [245, 196, 66], quiet: [239, 68, 68] };
   var TONE_INK = { "new": "#0F6BA8", up: "#1D7A3A", flat: "#5A6B79", down: "#8A6D1A", quiet: "#B0362F" };
   var GREEN = "#34C759", RED = "#EF4444", GREEN_INK = "#1D7A3A", RED_INK = "#B0362F";
-  var LINE_COLORS = ["#1882C7", "#B3A369", "#4ABEEE", "#8A93A3"];
+  var LINE_COLORS = ["#1882C7", "#4ABEEE", "#8A93A3", "#052030"];
+  var CASES_COLOR = "#B3A369", CASES_INK = "#8A7A42";
 
   function niceTicks(max) {
     if (max <= 0) return [0, 1];
@@ -518,7 +523,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   }
 
   function lineSVG(rev) {
-    var W = 560, H = 330, padL = 48, padR = 14, padT = 24, padB = 30;
+    var W = 560, H = 330, padL = 48, padR = 44, padT = 24, padB = 30;
     var months = rev.months, n = months.length || 1, max = 0, last = n - 1, proj = rev.mtd_factor != null;
     rev.series.forEach(function (ser) {
       ser.values.forEach(function (v, i) { var vv = (proj && i === last && ser.projected_last != null) ? ser.projected_last : v; if (vv != null && vv > max) max = vv; });
@@ -526,8 +531,29 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
     var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n;
     var y = function (v) { return padT + ih - (v / ymax) * ih; }, x = function (i) { return padL + slot * i + slot / 2; };
-    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Invoiced revenue per invoiced practice by month; the current month is at run rate and dashed">'];
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Invoiced revenue per invoiced practice (left axis) and cases invoiced per invoiced practice (right axis) by month; the current month is at run rate and dashed">'];
     grid(s, ticks, y, padL, W, padR, fmtMoney);
+    /* secondary axis: cases invoiced per invoiced practice, book level */
+    var cpo = rev.cases_per_office || [], cmax = 0;
+    cpo.forEach(function (v, i) { var vv = (proj && i === last && rev.cases_projected_last != null) ? rev.cases_projected_last : v; if (vv != null && vv > cmax) cmax = vv; });
+    var cticks = niceTicks(cmax), cymax = cticks[cticks.length - 1] || 1;
+    var y2 = function (v) { return padT + ih - (v / cymax) * ih; };
+    cticks.forEach(function (t) { s.push('<text x="' + (W - padR + 8) + '" y="' + (y2(t) + 3.5).toFixed(1) + '" text-anchor="start" font-size="10.5" font-weight="700" fill="' + CASES_INK + '">' + fmtN(t) + '</text>'); });
+    (function () {
+      var pts = [];
+      cpo.forEach(function (v, i) {
+        var est = proj && i === last && rev.cases_projected_last != null;
+        var vv = est ? rev.cases_projected_last : v;
+        if (vv != null) pts.push([x(i), y2(vv), vv, i, est]);
+      });
+      var solid = pts.filter(function (p) { return !p[4]; }), est = pts.filter(function (p) { return p[4]; })[0];
+      if (solid.length > 1) s.push('<polyline fill="none" stroke="' + CASES_COLOR + '" stroke-width="2.5" stroke-linejoin="round" points="' + solid.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
+      if (est && solid.length) { var a = solid[solid.length - 1]; s.push('<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + est[0].toFixed(1) + '" y2="' + est[1].toFixed(1) + '" stroke="' + CASES_COLOR + '" stroke-width="2.5" stroke-dasharray="7,5" stroke-linecap="round"/>'); }
+      pts.forEach(function (p) {
+        s.push('<rect x="' + (p[0] - 3.5).toFixed(1) + '" y="' + (p[1] - 3.5).toFixed(1) + '" width="7" height="7" fill="' + (p[4] ? "#FFFFFF" : CASES_COLOR) + '" stroke="' + CASES_COLOR + '" stroke-width="2"/>');
+        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] + 16).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + CASES_INK + '">' + p[2] + (p[4] ? " est" : "") + '</text>');
+      });
+    })();
     rev.series.forEach(function (ser, si) {
       var col = LINE_COLORS[si % LINE_COLORS.length], pts = [];
       ser.values.forEach(function (v, i) {
@@ -545,8 +571,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
         s.push(p[4]
           ? '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#FFFFFF" stroke="' + col + '" stroke-width="2.5"/>'
           : '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.5" fill="' + col + '" stroke="#FFFFFF" stroke-width="1.5"/>');
-        var above = si % 2 === 0;
-        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (above ? p[1] - 8 : p[1] + 15).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + col + '">' + fmtMoney(p[2]) + (p[4] ? " est" : "") + '</text>');
+        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + col + '">' + fmtMoney(p[2]) + (p[4] ? " est" : "") + '</text>');
       });
     });
     months.forEach(function (m, i) { s.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m) + '</text>'); });
@@ -623,8 +648,9 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
             '<div class="panel"><div class="chart-head"><div class="panel-title">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
           "</div>" +
           '<div class="am-right">' +
-            '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue expansion: invoiced revenue per invoiced practice by month, ' + esc(AM.year) + ' YTD</div><div class="legend">' +
-              sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name) + "</span>"; }).join("") +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' +
+              sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name === "All" ? "Revenue per invoiced practice" : ser.name + " revenue per practice") + "</span>"; }).join("") +
+              '<span><i class="ln" style="background:' + CASES_COLOR + '"></i>Cases per invoiced practice (right axis)</span>' +
               (sub.revenue.mtd_factor != null ? '<span><i class="dash-gold" style="border-color:#5A6B79"></i>' + esc(sub.revenue.mtd_label) + " at run rate</span>" : "") + "</div></div>" + lineSVG(sub.revenue) + "</div>" +
             '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend"><span><i style="background:' + GREEN + '"></i>Up to active</span><span><i style="background:' + RED + '"></i>Down from active</span></div></div>' + wowSVG(sub.weekly) + "</div>" +
           "</div></div></div>";
@@ -667,11 +693,14 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
         '<div><span class="chip chip-b">Marketing</span></div></div>' +
-        '<div class="b4row">' +
+        '<div class="pg-tiles">' +
           tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
-          tile(fmtN(c.active), "Active", "", "g") +
-          tile(fmtN(c.dabblers), "Dabblers", "", "") +
-          tile(fmtN(c.inactive), "Inactive", "", "d") +
+          '<div class="eq">=</div>' +
+          '<div class="tile-group">' +
+            tile(fmtN(c.active), "Active", "", "g") +
+            tile(fmtN(c.dabblers), "Dabblers", "", "") +
+            tile(fmtN(c.gone_inactive), "Gone inactive", "", "d") +
+          "</div>" +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New submitting practices by month, ' + esc(PG.year) + ' YTD</div></div>' + newSubmittersSVG(sub.months) + "</div>" +
         '<div class="panel" style="margin-top:12px"><div class="panel-title">Plays: initiatives and growth</div><ul class="plays-list" contenteditable="true" spellcheck="false">' +
@@ -703,10 +732,10 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       "<li><b>Submitters YTD:</b> practices in the book with a case this year. <b>Cases MTD:</b> " + esc(am.pace) + ".</li>" +
       "<li><b>Promoted / demoted, last 30 days:</b> " + esc(am.moves) + ", comparing today with 30 days ago.</li>" +
       "<li><b>Case volume by business day:</b> the trailing 60 calendar days shown as business days; Mondays are labeled and shaded darker.</li>" +
-      "<li><b>Revenue expansion:</b> " + esc(am.revenue) + ". Nikolas is split MB2 / Engel / S.I.N. 360; Ed shows his three largest partners by invoiced revenue this year plus Other.</li>" +
+      "<li><b>Revenue and case utilization:</b> " + esc(am.revenue) + ". Nikolas's revenue lines are split MB2 / Engel / S.I.N. 360; Ed shows his three largest partners by invoiced revenue this year plus Other; the cases line is the whole book.</li>" +
       "<li><b>Week over week:</b> practices that crossed the active bar up (green) or down (red) each week of the quarter, with the net below; * marks the partial week.</li></ul>" +
       "<h3>Programs</h3><ul>" +
-      "<li><b>Book:</b> " + esc(pg.book) + ".</li><li><b>Submitters YTD, Active, Dabblers, Inactive:</b> as defined above. <b>New submitters by month:</b> " + esc(pg.new) + ".</li></ul>" +
+      "<li><b>Book:</b> " + esc(pg.book) + ".</li><li><b>Submitters YTD, Active, Dabblers:</b> as defined above. <b>Gone inactive:</b> " + esc(pg.inactive) + ". <b>New submitters by month:</b> " + esc(pg.new) + ".</li></ul>" +
       "<h3>Plays</h3><p>The Plays boxes are editable on the page (click into them). Edits go into the PowerPoint export but are not saved between visits yet.</p>" +
       "<h3>Counting rules</h3><p>Cases are counted the same way as the Account Health app: one business unit per case from the primary product, manufacturing jigs dropped, TRI rebill cases dropped, corporate sample accounts dropped, lab, university and intercompany accounts dropped. The one difference is that Aspen Beacon non-LFX cases are kept here so the Beacon page shows the whole Beacon book.</p>";
   }
@@ -873,13 +902,21 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     });
     var rv = sub.revenue, rvLast = rv.months.length - 1, rvProj = rv.mtd_factor != null;
     var rvLabels = rv.months.map(function (m, i) { return (rvProj && i === rvLast) ? m + " (run rate)" : m; });
-    s.addChart(pptx.ChartType.line, rv.series.map(function (ser) { return { name: ser.name, labels: rvLabels, values: ser.values.map(function (v, i) { var vv = (rvProj && i === rvLast && ser.projected_last != null) ? ser.projected_last : v; return vv == null ? 0 : vv; }) }; }), {
-      x: 8.05, y: 2.35, w: 4.9, h: 2.3, chartColors: LINE_COLORS.map(function (x) { return x.replace("#", ""); }), lineSize: 2, lineDataSymbolSize: 5,
-      showLegend: rv.series.length > 1, legendPos: "b", legendFontSize: 8, legendFontFace: "Calibri",
-      catAxisLabelFontSize: 8, valAxisLabelFontSize: 7, valAxisLabelFormatCode: "$#,##0", catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+    var rvSeries = rv.series.map(function (ser) { return { name: (ser.name === "All" ? "Revenue per invoiced practice" : ser.name + " revenue per practice"), labels: rvLabels, values: ser.values.map(function (v, i) { var vv = (rvProj && i === rvLast && ser.projected_last != null) ? ser.projected_last : v; return vv == null ? 0 : vv; }) }; });
+    var cpoVals = (rv.cases_per_office || []).map(function (v, i) { var vv = (rvProj && i === rvLast && rv.cases_projected_last != null) ? rv.cases_projected_last : v; return vv == null ? 0 : vv; });
+    s.addChart([
+      { type: pptx.ChartType.line, data: rvSeries, options: { chartColors: LINE_COLORS.map(function (x) { return x.replace("#", ""); }), lineSize: 2, lineDataSymbolSize: 5,
+        showValue: rv.series.length === 1, dataLabelFormatCode: "$#,##0;-$#,##0;", dataLabelFontSize: 7, dataLabelColor: "052030", dataLabelPosition: "t" } },
+      { type: pptx.ChartType.line, data: [{ name: "Cases per invoiced practice (right axis)", labels: rvLabels, values: cpoVals }], options: { chartColors: ["B3A369"], lineSize: 2, lineDataSymbol: "square", lineDataSymbolSize: 5, secondaryValAxis: true, secondaryCatAxis: true,
+        showValue: true, dataLabelFormatCode: "0.0", dataLabelFontSize: 7, dataLabelColor: "8A7A42", dataLabelPosition: "b" } }
+    ], {
+      x: 8.05, y: 2.35, w: 4.9, h: 2.3,
+      showLegend: true, legendPos: "b", legendFontSize: 8, legendFontFace: "Calibri",
+      catAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
       valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
-      showValue: rv.series.length === 1, dataLabelFormatCode: "$#,##0;-$#,##0;", dataLabelFontSize: 7, dataLabelColor: "052030", dataLabelPosition: "t",
-      showTitle: true, title: "Revenue expansion: invoiced revenue per invoiced practice by month, " + AM.year + " YTD" + (rvProj ? " (current month at run rate)" : ""), titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
+      valAxes: [{ showValAxisTitle: false, valAxisLabelFormatCode: "$#,##0", valAxisLabelFontSize: 7 }, { showValAxisTitle: false, valAxisLabelFormatCode: "0", valAxisLabelFontSize: 7, valGridLine: { style: "none" } }],
+      catAxes: [{ catAxisTitle: "" }, { catAxisHidden: true }],
+      showTitle: true, title: "Revenue and case utilization, " + AM.year + " YTD" + (rvProj ? " (current month at run rate)" : ""), titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
     });
     var wk = sub.weekly.weeks;
     var wkLabels = wk.map(function (w) { return w.label + (w.partial ? "*" : "") + " net " + (w.net > 0 ? "+" + w.net : w.net); });
@@ -918,9 +955,12 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       ["" + fmtN(c.submitters_ytd), "Submitters YTD", "", "0F6BA8"],
       ["" + fmtN(c.active), "Active", "", "0F6BA8"],
       ["" + fmtN(c.dabblers), "Dabblers", "", "052030"],
-      ["" + fmtN(c.inactive), "Inactive", "", "8A7A42"]
+      ["" + fmtN(c.gone_inactive), "Gone inactive", "", "8A7A42"]
     ];
-    kp.forEach(function (k, i) { kpiBox(pptx, s, 2.45 + i * 2.65, 2.5, k[0], k[1], k[2], k[3]); });
+    kpiBox(pptx, s, 2.45, 2.3, kp[0][0], kp[0][1], "", kp[0][3]);
+    s.addText("=", { x: 4.75, y: 1.15, w: 0.4, h: 1.05, align: "center", valign: "middle", fontFace: "Montserrat", fontSize: 24, bold: true, color: "5A6B79" });
+    s.addShape(pptx.ShapeType.rect, { x: 5.15, y: 1.05, w: 7.8, h: 0.05, fill: { color: "B3A369" }, line: { color: "B3A369" } });
+    kp.slice(1).forEach(function (k, i) { kpiBox(pptx, s, 5.15 + i * 2.65, 2.5, k[0], k[1], k[2], k[3]); });
     s.addChart(pptx.ChartType.bar, [{ name: "New submitters", labels: sub.months.map(function (m) { return m.label; }), values: sub.months.map(function (m) { return m.new; }) }], {
       x: 0.4, y: 2.35, w: 8.2, h: 4.75, barDir: "col", barGapWidthPct: 55, chartColors: ["B3A369"],
       showLegend: false, catAxisLabelFontSize: 9, valAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",

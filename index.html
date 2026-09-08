@@ -235,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.6.2</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.6.3</span></div>
 
 </main>
 
@@ -515,16 +515,17 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       }
       if (d.monday) s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(d.label) + '</text>');
     });
-    /* one gold dashed level per week (average cases per business day) with a bold gold pill above that week's tallest bar */
-    var wa = weeklyAverages(days);
-    wa.weeks.forEach(function (w) {
-      var x0 = padL + slot * w.idx[0] + slot * 0.15, x1 = padL + slot * (w.idx[w.idx.length - 1] + 1) - slot * 0.15, cx = (x0 + x1) / 2;
+    /* weekly average per business day as one continuous stepped gold line, with a bold gold pill above each week's tallest bar */
+    var wa = weeklyAverages(days), path = [];
+    wa.weeks.forEach(function (w, wi) {
+      var x0 = padL + slot * w.idx[0] + slot * 0.1, x1 = padL + slot * (w.idx[w.idx.length - 1] + 1) - slot * 0.1, cx = (x0 + x1) / 2;
       var peak = 0; w.idx.forEach(function (i) { if (days[i].n > peak) peak = days[i].n; });
       var ya = y(w.avg), label = String(Math.round(w.avg * 10) / 10), pw = label.length * 8.5 + 14, py = Math.min(ya, y(peak)) - 24;
-      s.push('<line x1="' + x0.toFixed(1) + '" x2="' + x1.toFixed(1) + '" y1="' + ya.toFixed(1) + '" y2="' + ya.toFixed(1) + '" stroke="#B3A369" stroke-width="3.5" stroke-dasharray="8,5" stroke-linecap="round"/>');
+      path.push((wi === 0 ? "M" : "L") + x0.toFixed(1) + "," + ya.toFixed(1) + " L" + x1.toFixed(1) + "," + ya.toFixed(1));
       s.push('<rect x="' + (cx - pw / 2).toFixed(1) + '" y="' + py.toFixed(1) + '" width="' + pw.toFixed(1) + '" height="19" rx="5" fill="#B3A369"/>');
       s.push('<text x="' + cx.toFixed(1) + '" y="' + (py + 14).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#052030">' + label + '</text>');
     });
+    if (path.length) s.push('<path d="' + path.join(" ") + '" fill="none" stroke="#B3A369" stroke-width="3.5" stroke-dasharray="8,5" stroke-linecap="round" stroke-linejoin="round"/>');
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     return s.join("") + "</svg>";
   }

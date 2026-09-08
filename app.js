@@ -188,7 +188,7 @@
      cases bars are scaled so the tallest one stays just under the lowest revenue point */
   function lineSVG(rev, W, H) {
     W = W || 560; H = H || 380;
-    var padL = 48, padR = 44, padT = 24, padB = 30;
+    var padL = 48, padR = 44, padT = 24, padB = 42;
     var months = rev.months, n = months.length || 1, max = 0, min = Infinity, last = n - 1, proj = rev.mtd_factor != null;
     rev.series.forEach(function (ser) {
       ser.values.forEach(function (v, i) { var vv = (proj && i === last && ser.projected_last != null) ? ser.projected_last : v; if (vv != null) { if (vv > max) max = vv; if (vv < min) min = vv; } });
@@ -225,7 +225,7 @@
       s.push(est
         ? '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="none" stroke="' + CASES_COLOR + '" stroke-width="2" stroke-dasharray="5,4" rx="2"/>'
         : '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + CASES_COLOR + '" rx="2"/>');
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 - 5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="800" fill="' + CASES_INK + '">' + vv + (est ? " est" : "") + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 - 5).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="800" fill="' + CASES_INK + '">' + vv + (est ? "*" : "") + '</text>');
     });
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y2(0).toFixed(1) + '" y2="' + y2(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     rev.series.forEach(function (ser, si) {
@@ -245,10 +245,11 @@
         s.push(p[4]
           ? '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#FFFFFF" stroke="' + col + '" stroke-width="2.5"/>'
           : '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.5" fill="' + col + '" stroke="#FFFFFF" stroke-width="1.5"/>');
-        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + col + '">' + fmtMoney(p[2]) + (p[4] ? " est" : "") + '</text>');
+        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + col + '">' + fmtMoney(p[2]) + (p[4] ? "*" : "") + '</text>');
       });
     });
-    months.forEach(function (m, i) { s.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m) + '</text>'); });
+    months.forEach(function (m, i) { s.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 21) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m) + (proj && i === last ? "*" : "") + '</text>'); });
+    if (proj) s.push('<text x="' + (W - padR) + '" y="' + (H - 6) + '" text-anchor="end" font-size="9.5" font-weight="600" fill="#8A93A3">* ' + esc(rev.mtd_label) + ' at run rate: month to date scaled by business days in the month over business days elapsed</text>');
     return s.join("") + "</svg>";
   }
 
@@ -478,9 +479,8 @@
     return (c.avg_pct > 0 ? "+" : "") + Math.round(c.avg_pct) + "% from " + c.prior_month_label + " (" + fmtN(Math.round(c.avg_per_day_prior)) + " per day)";
   }
   function revenueLegend(sub) {
-    return sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name === "All" ? "Revenue per invoiced practice" : ser.name + " revenue per practice") + "</span>"; }).join("") +
-      '<span><i style="background:' + CASES_COLOR + '"></i>Cases per invoiced practice (bars, right axis)</span>' +
-      (sub.revenue.mtd_factor != null ? '<span><i class="dash-gold" style="border-color:#5A6B79"></i>' + esc(sub.revenue.mtd_label) + " at run rate</span>" : "");
+    return sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name === "All" ? "Revenue / practice" : ser.name + " revenue / practice") + "</span>"; }).join("") +
+      '<span><i style="background:' + CASES_COLOR + '"></i>Cases / practice</span>';
   }
   function renderAM() {
     var host = byId("am-subs");

@@ -144,7 +144,7 @@ AMS = [
     {"key": "susanne", "name": "Susanne Neumann", "amc": ["Susanne Neumann"], "label": "Aspen ClearChoice", "logos": ["logos/clearchoice.svg"], "lines": "all"},
     {"key": "collin", "name": "Collin Maccabe", "amc": ["Collin Maccabe"], "label": "Aspen Dental", "logos": ["logos/aspen-dental.svg"], "lines": "all"},
     {"key": "syed", "name": "Syed Zubair", "amc": ["Syed Zubair, Nikolas Olejnik"], "label": "Incisive", "logos": ["logos/incisive.png"], "lines": "all"},
-    {"key": "liezl", "name": "Liezl Evangelista", "amc": ["Liezl Evangelista"], "label": "OC Private Practice", "logos": ["logos/spectrum-killian.png"], "lines": "all"},
+    {"key": "liezl", "name": "Liezl Evangelista", "amc": ["Liezl Evangelista"], "label": "OC Private Practice", "logos": ["logos/spectrum-killian.png"], "logo_tag": "OC Private Practice", "lines": "all"},
     {"key": "nikolas", "name": "Nikolas Olejnik", "amc": ["Nikolas Olejnik"], "label": "MB2, Engel, S.I.N. 360 (non-Incisive book)",
      "logos": ["logos/mb2.png", "logos/engel.png", "logos/sin360.png"], "lines": ["MB2", "Engel", "S.I.N. 360"]},
     {"key": "ed", "name": "Ed Loonam", "amc": ["Ed Loonam"], "label": "Strategic partner book",
@@ -308,14 +308,14 @@ def load_inputs():
     rebills = {r["case_number"] for r in get("tri_rebill_cases", {"select": "case_number"})}
     print("loading Cases (all history, five columns) ...", flush=True)
     cases = get("Cases", {"select": '"Case Number","Account Number","Received Date","Primary Product Number","LFX Unit Flag"'}, key='"Case Number"')
-    print(f"loading Line Items received since {JAN1} ...", flush=True)
-    lines = get("Line Items", {"select": '"Line Item Id","Case Number","Price Net"', '"Received Date"': f"gte.{JAN1.isoformat()}"}, key='"Line Item Id"')
-    rev = defaultdict(float)
-    for r in lines:
-        if r.get("Case Number") and r.get("Price Net") is not None:
-            rev[r["Case Number"]] += float(r["Price Net"])
-    print(f"  {len(accounts):,} accounts, {len(products):,} products, {len(cases):,} cases, {len(lines):,} line items, {len(dates):,} calendar days", flush=True)
-    return {"accounts": accounts, "products": products, "dates": dates, "links": links, "rebills": rebills, "cases": cases, "rev": rev}
+    print(f"loading Line Items invoiced since {JAN1} ...", flush=True)
+    raw = get("Line Items", {"select": '"Line Item Id","Case Number","Invoice Date","Price Net"', '"Invoice Date"': f"gte.{JAN1.isoformat()}"}, key='"Line Item Id"')
+    lines = []
+    for r in raw:
+        if r.get("Case Number") and r.get("Invoice Date") and r.get("Price Net") is not None:
+            lines.append((r["Case Number"], dt.date.fromisoformat(r["Invoice Date"][:10]), float(r["Price Net"])))
+    print(f"  {len(accounts):,} accounts, {len(products):,} products, {len(cases):,} cases, {len(lines):,} invoiced line items, {len(dates):,} calendar days", flush=True)
+    return {"accounts": accounts, "products": products, "dates": dates, "links": links, "rebills": rebills, "cases": cases, "lines": lines}
 
 
 def prepare(inputs):
@@ -384,7 +384,8 @@ def prepare(inputs):
             routed_lfx += 1
         counted.append((d, line, sp, pid, amc, cn))
     print("dropped cases:", dict(dropped), "| Beacon LFX cases routed to Aspen Dental:", routed_lfx, flush=True)
-    return {"scope": scope, "counted": counted, "excluded": excluded, "cal": BizCal(inputs["dates"]), "rev": inputs["rev"]}
+    case_info = {cn: (sp, pid, amc) for d, line, sp, pid, amc, cn in counted}
+    return {"scope": scope, "counted": counted, "excluded": excluded, "cal": BizCal(inputs["dates"]), "lines": inputs["lines"], "case_info": case_info}
 
 
 # ---------------------------------------------------------------------------
@@ -537,7 +538,7 @@ def build_ae(P):
 # Account Managers
 # ---------------------------------------------------------------------------
 def build_am(P):
-    scope, counted, cal, rev = P["scope"], P["counted"], P["cal"], P["rev"]
+    scope, counted, cal, case_info = P["scope"], P["counted"], P["cal"], P["case_info"]
     months = ytd_months(RUN_DATE)
     cur_m0 = months[-1][1]
     pm0 = prev_month(cur_m0)
@@ -575,6 +576,25 @@ def build_am(P):
         universe[k].add(pid)
     for e in ents.values():
         e.finish()
+    # invoiced lines by book: (book, month index, partner) -> [invoiced revenue, invoiced practices]
+    inv = defaultdict(lambda: [0.0, set()])
+    inv_ytd = defaultdict(float)                # (book, partner) -> invoiced revenue YTD
+    month_idx = {m0: i for i, (_, m0, _) in enumerate(months)}
+    for cn, idate, price in P["lines"]:
+        info = case_info.get(cn)
+        if not info or idate >= RUN_DATE:
+            continue
+        sp, pid, amc = info
+        k = book_of.get(amc)
+        if not k:
+            continue
+        mi = month_idx.get(idate.replace(day=1))
+        if mi is None:
+            continue
+        cell = inv[(k, mi, sp)]
+        cell[0] += price
+        cell[1].add(pid)
+        inv_ytd[(k, sp)] += price
 
     subsections = []
     for am in AMS:
@@ -599,31 +619,28 @@ def build_am(P):
             per_day[fd] += 1
         daily = [{"d": d.isoformat(), "label": d.strftime("%b %-d") if os.name != "nt" else d.strftime("%b %d").replace(" 0", " "),
                   "n": per_day.get(d, 0), "monday": d.weekday() == 0} for d in window60]
-        # revenue expansion: avg revenue per submitting office per month, by partner group
+        # revenue expansion (invoice level): revenue invoiced in the month / practices invoiced that month, by partner group
+        book_partners = {sp for (kk, sp) in inv_ytd if kk == k}
         if am["lines"] == "all":
             group_of = lambda sp: "All"
             groups = ["All"]
         elif am["lines"] == "top3":
-            ytd_rev = defaultdict(float)
-            for d, pid, sp, cn in cases:
-                if d >= JAN1:
-                    ytd_rev[sp or "(none)"] += rev.get(cn, 0.0)
-            top = [sp for sp, _ in sorted(ytd_rev.items(), key=lambda x: -x[1])[:3]]
+            top = [sp for (kk, sp), v in sorted(inv_ytd.items(), key=lambda x: -x[1]) if kk == k][:3]
             group_of = lambda sp, top=top: sp if sp in top else "Other"
             groups = top + ["Other"]
         else:
             allowed = list(am["lines"])
             group_of = lambda sp, allowed=allowed: sp if sp in allowed else "Other"
-            groups = allowed + (["Other"] if any(sp not in allowed for d, _, sp, _ in cases if d >= JAN1) else [])
+            groups = allowed + (["Other"] if any(sp not in allowed for sp in book_partners) else [])
         series = {g: {"name": g, "values": [], "offices": [], "revenue": []} for g in groups}
-        for label, m0, s in months:
+        for mi, (label, m0, s) in enumerate(months):
             offices = defaultdict(set)
             money = defaultdict(float)
-            for d, pid, sp, cn in cases:
-                if m0 <= d < s:
+            for (kk, mm, sp), (amount, pids) in inv.items():
+                if kk == k and mm == mi:
                     g = group_of(sp)
-                    offices[g].add(pid)
-                    money[g] += rev.get(cn, 0.0)
+                    offices[g] |= pids
+                    money[g] += amount
             for g in groups:
                 n = len(offices[g])
                 series[g]["offices"].append(n)
@@ -639,7 +656,7 @@ def build_am(P):
             weeks.append({"label": start.strftime("%b %d").replace(" 0", " "), "start": start.isoformat(),
                           "partial": (bounds[i] - start).days < 7, "promoted": up, "demoted": down, "net": up - down})
         subsections.append({
-            "key": k, "name": am["name"], "label": am["label"], "logos": am["logos"],
+            "key": k, "name": am["name"], "label": am["label"], "logos": am["logos"], "logo_tag": am.get("logo_tag"),
             "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active_now": active_now,
                       "cases_mtd": cases_mtd, "prior_pace": prior_pace, "mtd_pct": mtd_pct, "biz_days_in": len(biz_in),
                       "month_label": cur_m0.strftime("%b"), "prior_month_label": pm0.strftime("%b"),
@@ -655,7 +672,7 @@ def build_am(P):
             "book": "practices whose accounts carry the manager in Accounts, Account Manager Combined; Syed carries the shared Incisive book, Nikolas his non-Incisive accounts",
             "pace": "cases MTD compared with the same number of business days into last month; weekend and holiday cases count on the business day before",
             "moves": "promoted = below active to Core or Super Active; demoted = Core or Super Active down to Dabbler or quiet",
-            "revenue": "Line Items Price Net per case, attributed to the month the case was received, divided by practices that sent a case that month",
+            "revenue": "invoice level: Line Items Price Net invoiced in the month divided by the practices with an invoice that month (everything else on this page is on the case received date)",
         },
         "subsections": subsections,
     }

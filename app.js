@@ -410,7 +410,7 @@
     s.push('<text x="' + (padL - 6) + '" y="' + (H - 8 - 18 * lab * 1.35 / 2 + 4).toFixed(1) + '" text-anchor="end" font-size="' + nameFs.toFixed(1) + '" font-weight="800" fill="#5A6B79">Net</text>');
     if (months.length) {
       var m0 = months[0], nv0 = m0.new || 0, qv0 = m0.gone_quiet || 0;
-      s.push('<text x="' + (padL - 10) + '" y="' + (yS(m0.submitters || 0) - 8 * lab + 11 * lab * 0.36).toFixed(1) + '" text-anchor="end" font-size="' + nameFs.toFixed(1) + '" font-weight="800" fill="#0F6BA8">Total submitters</text>');
+      s.push('<text x="' + (padL - 10) + '" y="' + (yS(m0.submitters || 0) - 8 * lab + 11 * lab * 0.36).toFixed(1) + '" text-anchor="end" font-size="' + nameFs.toFixed(1) + '" font-weight="800" fill="#0F6BA8">Total Submitters</text>');
       s.push('<text x="' + (padL - 10) + '" y="' + (yB(nv0) - 5 * lab + 11 * lab * 0.36).toFixed(1) + '" text-anchor="end" font-size="' + nameFs.toFixed(1) + '" font-weight="800" fill="' + GREEN_INK + '">New</text>');
       s.push('<text x="' + (padL - 10) + '" y="' + (yB(-qv0) + 12 * lab + 11 * lab * 0.36).toFixed(1) + '" text-anchor="end" font-size="' + nameFs.toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">Inactive</text>');
     }

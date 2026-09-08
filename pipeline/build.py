@@ -1,20 +1,26 @@
 """Daily Commercial Performance: builds data.js from Supabase.
 
-Account Executive section engine (v1, 2026-09-08)
--------------------------------------------------
-For each partner subsection (Aspen ClearChoice, Aspen Dental, Aspen Beacon, MB2) and for
-each grain (accounts = Account Number, practices = Practice ID rolled up through the
-Incisive links) this computes, from the raw Cases table:
+Account Executive section engine (v2, 2026-09-08, practice level only)
+----------------------------------------------------------------------
+For each partner subsection (Aspen ClearChoice, Aspen Dental, Aspen Beacon, MB2) this
+computes, at the PRACTICE level (Practice ID, rolled up through the Incisive links):
 
   * month by month YTD submitters split New / Active / Dabbler,
-  * current cards: total, active (super + core), dabblers, YTD penetration,
+  * current cards: total network, active (super + core), dabblers, YTD penetration,
+    MTD net new submitters,
   * month over month transitions (new, returned, promoted, held, demoted, went quiet).
 
-It applies the SAME counting rules as the Account Health pipeline's case base
-(one business unit per case from the primary product, manufacturing jigs dropped, TRI
-rebills dropped, corporate sample accounts dropped, lab / university / intercompany
-accounts dropped) with ONE deliberate difference: Aspen Beacon non-LFX cases are kept,
-because this page reports the whole Beacon book, not the modeled book.
+Counting rules mirror the Account Health pipeline's case base (one business unit per case
+from the primary product, manufacturing jigs dropped, TRI rebills dropped, corporate sample
+accounts dropped, lab / university / intercompany accounts dropped) with these deliberate
+differences, per Grant 2026-09-08:
+  * Aspen Beacon non-LFX cases are KEPT (this page reports the whole Beacon book).
+  * Any case with LFX Unit Flag = Yes billed to an Aspen Beacon account counts as an
+    Aspen Dental case for that store. Beacon and Aspen Dental accounts share the store
+    practice id (4-digit office code at the start of the practice name).
+  * Aspen Beacon = Beacon cases with LFX Unit Flag <> Yes.
+  * Network denominators: ClearChoice 106, MB2 845, Aspen Dental and Aspen Beacon share
+    the higher of their two practice counts.
 
 Activity definition (matches active-customer-logic.md and the nightly scorer):
   snapshot s evaluates cases received in [s-90, s) (q1) and [s-180, s-90) (q2), one
@@ -111,29 +117,26 @@ RUN_DATE = dt.date.fromisoformat(os.environ["DCP_RUN_DATE"]) if os.environ.get("
 # Account Executive section: definitions
 # ---------------------------------------------------------------------------
 PARTNERS = [
-    {"key": "aspen-clearchoice", "title": "Aspen ClearChoice", "partner": "Aspen ClearChoice", "ae": "Jillian Doss"},
-    {"key": "aspen-dental", "title": "Aspen Dental", "partner": "Aspen Dental", "ae": "Jillian Doss"},
-    {"key": "aspen-beacon", "title": "Aspen Beacon", "partner": "Aspen Beacon", "ae": "Jillian Doss"},
-    {"key": "mb2", "title": "MB2", "partner": "MB2", "ae": "Erin Vaughan",
-     "network_practices": 845, "network_note": "845 practices in the MB2 network; 249 have an account with us"},
+    {"key": "aspen-clearchoice", "title": "Aspen ClearChoice", "partner": "Aspen ClearChoice", "ae": "Jillian Doss",
+     "logo": "logos/clearchoice.svg", "network": 106, "network_note": "106 ClearChoice centers in the network"},
+    {"key": "aspen-dental", "title": "Aspen Dental", "partner": "Aspen Dental", "ae": "Jillian Doss",
+     "logo": "logos/aspen-dental.svg", "network": "aspen", "network_note": "Aspen stores (higher of the Aspen Dental and Beacon counts)"},
+    {"key": "aspen-beacon", "title": "Aspen Beacon", "partner": "Aspen Beacon", "ae": "Jillian Doss",
+     "logo": "logos/aspen-beacon.png", "network": "aspen", "network_note": "Aspen stores (higher of the Aspen Dental and Beacon counts)"},
+    {"key": "mb2", "title": "MB2 Dental", "partner": "MB2", "ae": "Erin Vaughan",
+     "logo": "logos/mb2.png", "network": 845, "network_note": "845 practices in the MB2 network"},
 ]
 SA_T = {"CB": 60, "IMP": 12, "REM": 30, "FA": 12, "HE": 12}          # full bar, both windows
 CORE_T = {k: math.ceil(v / 2) for k, v in SA_T.items()}               # half bar, last 90 days
-LINES = list(SA_T.keys())
 CORP_EXCLUDE = {"OC7540", "OCASP7484", "OCASP00", "OC1380", "OC6077", "OC9053", "OC7630"}
 SEG_EXCLUDE = {"Lab", "University", "Intercompany"}
 QUIET, DABBLER, CORE, SUPER = 0, 1, 2, 3
-LEVEL_NAME = {QUIET: "Quiet", DABBLER: "Dabbler", CORE: "Core Active", SUPER: "Super Active"}
 
 PLAYS_PLACEHOLDER = [
     "Play 1: rep or commercial leader fills this in",
-    "Play 2: which accounts, what action, by when",
+    "Play 2: which practices, what action, by when",
     "Play 3: owner and next check-in",
 ]
-
-
-def month_start(d):
-    return d.replace(day=1)
 
 
 def next_month(d):
@@ -141,15 +144,23 @@ def next_month(d):
 
 
 def ytd_months(run_date):
-    """[(label, month_first_day, snapshot_date)] for Jan of the run year through the run month."""
+    """[(label, month_first_day, snapshot_date)] for Jan of the run year through the run month.
+
+    Cases received on the run date are not counted (data through yesterday), so a month has
+    nothing to show until the 2nd: on the 1st the last column is the completed month.  On
+    January 1 the list would be empty, so December of the prior year is shown instead.
+    """
     out = []
     m = dt.date(run_date.year, 1, 1)
-    while m <= run_date:
+    while m < run_date:
         nm = next_month(m)
         s = nm if nm <= run_date else run_date
-        label = m.strftime("%b") + (" (MTD)" if s == run_date and run_date != nm else "")
+        label = m.strftime("%b") + (" MTD" if s == run_date and run_date != nm else "")
         out.append((label, m, s))
         m = nm
+    if not out:
+        dec = dt.date(run_date.year - 1, 12, 1)
+        out.append((dec.strftime("%b %Y"), dec, run_date))
     return out
 
 
@@ -168,7 +179,7 @@ def line_of(l1, l2):
 
 
 class Entity:
-    """Sorted case dates for one account or practice, with per-line date lists."""
+    """Sorted case dates for one practice, with per-line date lists."""
     __slots__ = ("dates", "by_line", "first")
 
     def __init__(self):
@@ -193,8 +204,7 @@ class Entity:
         return bisect.bisect_left(lst, hi) - bisect.bisect_left(lst, lo)
 
     def level(self, s):
-        q1_any = self._count(self.dates, s - dt.timedelta(days=90), s)
-        if q1_any == 0:
+        if self._count(self.dates, s - dt.timedelta(days=90), s) == 0:
             return QUIET
         sa = core = False
         for ln, lst in self.by_line.items():
@@ -219,8 +229,8 @@ def load_ae_inputs():
     print("loading Incisive links and TRI rebills ...", flush=True)
     links = get("cs_incisive_links", {"select": "new_account,legacy_practice_id"})
     rebills = {r["case_number"] for r in get("tri_rebill_cases", {"select": "case_number"})}
-    print("loading Cases (all history, four columns) ...", flush=True)
-    cases = get("Cases", {"select": '"Case Number","Account Number","Received Date","Primary Product Number"'}, key='"Case Number"')
+    print("loading Cases (all history, five columns) ...", flush=True)
+    cases = get("Cases", {"select": '"Case Number","Account Number","Received Date","Primary Product Number","LFX Unit Flag"'}, key='"Case Number"')
     print(f"  {len(accounts):,} accounts, {len(products):,} products, {len(cases):,} cases", flush=True)
     return accounts, products, links, rebills, cases
 
@@ -236,8 +246,8 @@ def build_ae(inputs=None):
             prod[pn] = (line_of(p.get("Business Unit L1"), p.get("Business Unit L2")),
                         "manufacturing jig" in (p.get("Product Name") or "").lower())
 
-    # in-scope accounts per partner, with the pipeline's universe exclusions
-    scope = {}   # account number -> (partner, pid)
+    # in-scope accounts, with the pipeline's universe exclusions
+    scope = {}   # account number -> (partner, practice id)
     excluded = defaultdict(int)
     for a in accounts:
         sp = (a.get("Strategic Partner") or "").strip()
@@ -250,15 +260,30 @@ def build_ae(inputs=None):
                 or (a.get("Intercompany") or "").strip() == "Yes" or "(dds" in (a.get("Practice Name") or "").lower():
             excluded[sp] += 1
             continue
-        pid = legacy.get(an) or (a.get("Practice ID") or "").strip() or ("acct:" + an)
+        pid = legacy.get(an) or (a.get("Practice ID") or "").strip()
+        if not pid:                      # same rule as the pipeline: no practice id, not counted
+            excluded[sp] += 1
+            continue
         scope[an] = (sp, pid)
 
-    # counted cases -> entities at both grains. Practices are rolled up WITHIN a partner
-    # (key = partner + practice id): Aspen Dental doctors and the store's Aspen Beacon account
-    # share a store-level practice id, and each partner's view must only count its own cases.
-    ents = {"accounts": defaultdict(Entity), "practices": defaultdict(Entity)}
+    # practice universe per subsection. Aspen Dental and Aspen Beacon share the store list.
+    pids_by_partner = defaultdict(set)
+    for an, (sp, pid) in scope.items():
+        pids_by_partner[sp].add(pid)
+    aspen_stores = pids_by_partner["Aspen Dental"] | pids_by_partner["Aspen Beacon"]
+    aspen_network = max(len(pids_by_partner["Aspen Dental"]), len(pids_by_partner["Aspen Beacon"]))
+    universe = {
+        "Aspen ClearChoice": pids_by_partner["Aspen ClearChoice"],
+        "Aspen Dental": aspen_stores,
+        "Aspen Beacon": aspen_stores,
+        "MB2": pids_by_partner["MB2"],
+    }
+
+    # counted cases -> practice entities per subsection, with the LFX routing rule
+    ents = defaultdict(Entity)       # (subsection partner, pid) -> Entity
     seen = set()
     dropped = defaultdict(int)
+    routed_lfx = 0
     for c in cases:
         an = (c.get("Account Number") or "").strip()
         if an not in scope:
@@ -283,123 +308,107 @@ def build_ae(inputs=None):
             dropped["jig"] += 1
             continue
         sp, pid = scope[an]
-        ents["accounts"][an].add(d, line)
-        ents["practices"][(sp, pid)].add(d, line)
-    for g in ents.values():
-        for e in g.values():
-            e.finish()
-
-    # every in-scope entity, even the ones that never sent a case (they are in the totals)
-    universe = {"accounts": defaultdict(set), "practices": defaultdict(set)}
-    for an, (sp, pid) in scope.items():
-        universe["accounts"][sp].add(an)
-        universe["practices"][sp].add(pid)
+        if sp == "Aspen Beacon" and (c.get("LFX Unit Flag") or "").strip() == "Yes":
+            sp = "Aspen Dental"          # LFX work billed to the Beacon account belongs to the Aspen Dental store
+            routed_lfx += 1
+        ents[(sp, pid)].add(d, line)
+    for e in ents.values():
+        e.finish()
 
     months = ytd_months(RUN_DATE)
     jan1 = dt.date(RUN_DATE.year, 1, 1)
-    baseline_s = jan1                      # state at the end of December = snapshot on Jan 1
-    snaps = [baseline_s] + [s for _, _, s in months]
+    snaps = [jan1] + [s for _, _, s in months]      # Jan 1 = state at the end of December (baseline)
+    cur_m0 = months[-1][1]
 
     subsections = []
     validation = {}
     for pdef in PARTNERS:
         sp = pdef["partner"]
-        sub = {"key": pdef["key"], "title": pdef["title"], "partner": sp, "ae": pdef["ae"],
-               "plays": list(PLAYS_PLACEHOLDER), "by_grain": {}}
-        for grain in ("accounts", "practices"):
-            ids = sorted(universe[grain][sp])
-            raw = ents[grain]
-            E = {eid: raw.get(eid if grain == "accounts" else (sp, eid)) for eid in ids}
-            E = {k: v for k, v in E.items() if v is not None}
-            # levels per snapshot
-            lv = {}
-            for eid in ids:
-                e = E.get(eid)
-                lv[eid] = [e.level(s) if e else QUIET for s in snaps]
-            # current cards
-            cur = [lv[eid][-1] for eid in ids]
-            n_super = sum(1 for x in cur if x == SUPER)
-            n_core = sum(1 for x in cur if x == CORE)
-            n_dab = sum(1 for x in cur if x == DABBLER)
-            ytd_sub = sum(1 for eid in ids if E.get(eid) and E[eid].cases_between(jan1, RUN_DATE) > 0)
-            total = len(ids)
-            denom = pdef.get("network_practices") if grain == "practices" and pdef.get("network_practices") else total
-            cards = {
-                "total": total, "total_note": (pdef.get("network_note") if grain == "practices" and pdef.get("network_practices") else "in our system"),
-                "denominator": denom,
-                "active": n_super + n_core, "super": n_super, "core": n_core,
-                "dabblers": n_dab, "ytd_submitters": ytd_sub,
-                "penetration_pct": round(100.0 * ytd_sub / denom, 1) if denom else None,
-            }
-            # monthly submitters: new / active / dabbler
-            mrows = []
-            for i, (label, m0, s) in enumerate(months):
-                idx = i + 1
-                new = act = dab = 0
-                for eid in ids:
-                    e = E.get(eid)
-                    if not e or e.cases_between(m0, s) == 0:
-                        continue
-                    if e.first is not None and m0 <= e.first < s:
-                        new += 1
-                    elif lv[eid][idx] >= CORE:
-                        act += 1
-                    else:
-                        dab += 1
-                mrows.append({"m": m0.strftime("%Y-%m"), "label": label, "new": new, "active": act, "dabbler": dab, "total": new + act + dab})
-            # transitions month over month
-            keys = ["new", "returned", "promo_core", "promo_super", "held", "demote_core", "demote_dab", "quiet"]
-            tr = {k: [] for k in keys}
-            net = []
-            for i, (label, m0, s) in enumerate(months):
-                idx = i + 1
-                c = dict.fromkeys(keys, 0)
-                for eid in ids:
-                    e = E.get(eid)
-                    prev, curl = lv[eid][idx - 1], lv[eid][idx]
-                    if e and e.first is not None and m0 <= e.first < s:
-                        c["new"] += 1
-                        continue
-                    if prev == QUIET and curl >= DABBLER:
-                        c["returned"] += 1
-                    elif prev == DABBLER and curl == CORE:
-                        c["promo_core"] += 1
-                    elif prev in (DABBLER, CORE) and curl == SUPER:
-                        c["promo_super"] += 1
-                    elif prev == curl and curl >= DABBLER:
-                        c["held"] += 1
-                    elif prev == SUPER and curl == CORE:
-                        c["demote_core"] += 1
-                    elif prev in (SUPER, CORE) and curl == DABBLER:
-                        c["demote_dab"] += 1
-                    elif prev >= DABBLER and curl == QUIET:
-                        c["quiet"] += 1
-                for k in keys:
-                    tr[k].append(c[k])
-                net.append(c["returned"] + c["promo_core"] + c["promo_super"] - c["demote_core"] - c["demote_dab"] - c["quiet"])
-            row_defs = [
-                ("new", "New submitters", "First ever case this month", "new"),
-                ("returned", "Returned", "Quiet for 90+ days, sent again", "up"),
-                ("promo_core", "Promoted to Core Active", "Dabbler to Core Active", "up"),
-                ("promo_super", "Promoted to Super Active", "Core (or Dabbler) to Super Active", "up"),
-                ("held", "Held", "Same level as last month", "flat"),
-                ("demote_core", "Demoted to Core Active", "Super Active to Core Active", "down"),
-                ("demote_dab", "Demoted to Dabbler", "Core or Super Active to Dabbler", "down"),
-                ("quiet", "Went quiet", "No case in 90 days", "quiet"),
-            ]
-            transitions = {
-                "months": [r["label"] for r in mrows],
-                "rows": [{"key": k, "label": lab, "hint": hint, "tone": tone, "values": tr[k]} for k, lab, hint, tone in row_defs],
-                "net": net,
-            }
-            sub["by_grain"][grain] = {"cards": cards, "months": mrows, "transitions": transitions}
-            if grain == "practices":
-                validation[sp] = {"super": n_super, "core": n_core, "dabbler": n_dab, "quiet": total - n_super - n_core - n_dab,
-                                  "total": total, "excluded_accounts": excluded.get(sp, 0)}
-        subsections.append(sub)
+        ids = sorted(universe[sp])
+        E = {pid: ents[(sp, pid)] for pid in ids if (sp, pid) in ents}
+        lv = {pid: [E[pid].level(s) if pid in E else QUIET for s in snaps] for pid in ids}
+        cur = [lv[pid][-1] for pid in ids]
+        n_super = sum(1 for x in cur if x == SUPER)
+        n_core = sum(1 for x in cur if x == CORE)
+        n_dab = sum(1 for x in cur if x == DABBLER)
+        ytd_sub = sum(1 for pid in ids if pid in E and E[pid].cases_between(jan1, RUN_DATE) > 0)
+        mtd_new = sum(1 for pid in ids if pid in E and E[pid].first is not None and cur_m0 <= E[pid].first < RUN_DATE)
+        network = aspen_network if pdef["network"] == "aspen" else pdef["network"]
+        cards = {
+            "total": network, "total_note": pdef["network_note"] + f"; {len(ids):,} in our system",
+            "in_system": len(ids),
+            "active": n_super + n_core, "super": n_super, "core": n_core,
+            "dabblers": n_dab, "ytd_submitters": ytd_sub,
+            "penetration_pct": int(round(100.0 * ytd_sub / network)) if network else None,
+            "mtd_net_new": mtd_new,
+        }
+        mrows = []
+        for i, (label, m0, s) in enumerate(months):
+            idx = i + 1
+            new = act = dab = 0
+            for pid in ids:
+                e = E.get(pid)
+                if not e or e.cases_between(m0, s) == 0:
+                    continue
+                if e.first is not None and m0 <= e.first < s:
+                    new += 1
+                elif lv[pid][idx] >= CORE:
+                    act += 1
+                else:
+                    dab += 1
+            mrows.append({"m": m0.strftime("%Y-%m"), "label": label, "new": new, "active": act, "dabbler": dab, "total": new + act + dab})
+        keys = ["new", "returned", "promo_core", "promo_super", "held", "demote_core", "demote_dab", "quiet"]
+        tr = {k: [] for k in keys}
+        net = []
+        for i, (label, m0, s) in enumerate(months):
+            idx = i + 1
+            c = dict.fromkeys(keys, 0)
+            for pid in ids:
+                e = E.get(pid)
+                prev, curl = lv[pid][idx - 1], lv[pid][idx]
+                if e and e.first is not None and m0 <= e.first < s:
+                    c["new"] += 1
+                    continue
+                if prev == QUIET and curl >= DABBLER:
+                    c["returned"] += 1
+                elif prev == DABBLER and curl == CORE:
+                    c["promo_core"] += 1
+                elif prev in (DABBLER, CORE) and curl == SUPER:
+                    c["promo_super"] += 1
+                elif prev == curl and curl >= DABBLER:
+                    c["held"] += 1
+                elif prev == SUPER and curl == CORE:
+                    c["demote_core"] += 1
+                elif prev in (SUPER, CORE) and curl == DABBLER:
+                    c["demote_dab"] += 1
+                elif prev >= DABBLER and curl == QUIET:
+                    c["quiet"] += 1
+            for k in keys:
+                tr[k].append(c[k])
+            net.append(c["returned"] + c["promo_core"] + c["promo_super"] - c["demote_core"] - c["demote_dab"] - c["quiet"])
+        row_defs = [
+            ("new", "New submitters", "First ever case this month", "new"),
+            ("returned", "Returned", "Quiet for 90+ days, sent again", "up"),
+            ("promo_core", "Promoted to Core Active", "Dabbler to Core Active", "up"),
+            ("promo_super", "Promoted to Super Active", "Core (or Dabbler) to Super Active", "up"),
+            ("held", "Held", "Same level as last month", "flat"),
+            ("demote_core", "Demoted to Core Active", "Super Active to Core Active", "down"),
+            ("demote_dab", "Demoted to Dabbler", "Core or Super Active to Dabbler", "down"),
+            ("quiet", "Went quiet", "No case in 90 days", "quiet"),
+        ]
+        subsections.append({
+            "key": pdef["key"], "title": pdef["title"], "partner": sp, "ae": pdef["ae"], "logo": pdef["logo"],
+            "network": network, "plays": list(PLAYS_PLACEHOLDER),
+            "cards": cards, "months": mrows,
+            "transitions": {"months": [r["label"] for r in mrows],
+                            "rows": [{"key": k, "label": lab, "hint": hint, "tone": tone, "values": tr[k]} for k, lab, hint, tone in row_defs],
+                            "net": net},
+        })
+        validation[sp] = {"super": n_super, "core": n_core, "dabbler": n_dab, "quiet": len(ids) - n_super - n_core - n_dab,
+                          "in_system": len(ids), "network": network, "excluded_accounts": excluded.get(sp, 0)}
 
-    print("dropped cases:", dict(dropped), flush=True)
-    print("practice-grain state at run date (compare with cs_activity_state):", json.dumps(validation), flush=True)
+    print("dropped cases:", dict(dropped), "| Beacon LFX cases routed to Aspen Dental:", routed_lfx, flush=True)
+    print("practice state at run date (compare with cs_activity_state):", json.dumps(validation), flush=True)
     return {
         "as_of": RUN_DATE.isoformat(),
         "year": RUN_DATE.year,
@@ -408,6 +417,7 @@ def build_ae(inputs=None):
             "core_active": "half bar in one business unit in the last 90 days (CB 30, REM 15, IMP 6, FA 6, HE 6)",
             "dabbler": "at least one case in the last 90 days, below every bar",
             "new": "first ever case received in that month",
+            "lfx": "LFX cases billed to an Aspen Beacon account count as Aspen Dental for that store; Aspen Beacon shows Beacon non-LFX cases",
         },
         "subsections": subsections,
     }
@@ -441,6 +451,7 @@ def main():
         "meta": {
             "run_ts": now_utc.isoformat(timespec="seconds"),
             "run_date": RUN_DATE.isoformat(),
+            "data_through": (RUN_DATE - dt.timedelta(days=1)).isoformat(),
             "latest_invoice_date": latest_invoice_date(),
             "source": "Supabase SK Public",
         },

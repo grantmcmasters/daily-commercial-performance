@@ -747,8 +747,8 @@ def build_am(P):
             "joined": joined, "active_now": active_now,
             "retained_pct": round(100.0 * stayed / len(cohort), 1) if cohort else None,
             "revenue": {"base": int(round(rev_base)), "qtd": int(round(rev_qtd)), "run_rate": int(round(rev_rr)) if rev_rr is not None else None,
-                        "pct_qtd": round(100.0 * rev_qtd / rev_base, 1) if rev_base else None,
-                        "pct_run_rate": round(100.0 * rev_rr / rev_base, 1) if (rev_base and rev_rr is not None) else None,
+                        "pct_qtd": round(100.0 * rev_qtd / rev_base, 1) if rev_base > 0 else None,
+                        "pct_run_rate": round(100.0 * rev_rr / rev_base, 1) if (rev_base > 0 and rev_rr is not None) else None,
                         "biz_elapsed": rq_elapsed, "biz_total": rq_total},
         }
         # submitters by month, YTD: new / active / dabbler (same rules as the AE chart)

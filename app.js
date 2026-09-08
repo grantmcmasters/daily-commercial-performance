@@ -325,7 +325,7 @@
       lastLabel = ly;
       yR += hR + gap; yL += hL;
     });
-    if (n === 0) s.push('<text x="' + (nodeX + nodeW + 10) + '" y="' + (y0 + avail / 2 + 5) + '" font-size="12" font-weight="700" fill="#5A6B79">no active practices at the start of the quarter</text>');
+    if (n === 0) s.push('<text x="' + (barX + barW + 12) + '" y="' + (y0 + avail / 2 + 5) + '" font-size="12" font-weight="700" fill="#5A6B79">no active practices at the start of the quarter</text>');
     var pctY = y0 + avail + 20 + big;
     if (ret.retained_pct != null) {
       var rp = Math.round(ret.retained_pct), rc = rp >= 90 ? GREEN_INK : rp >= 70 ? "#8A7A42" : RED_INK;
@@ -351,7 +351,7 @@
       var pr = Math.round(rv.pct_run_rate), col = pr >= 100 ? GREEN_INK : pr >= 85 ? "#8A7A42" : RED_INK;
       s.push('<text x="' + left + '" y="' + pct2 + '" font-size="' + big + '" font-weight="800" fill="' + col + '">' + pr + '%<tspan font-size="' + mid + '" font-weight="700" fill="#5A6B79"> revenue stability at run rate</tspan></text>');
     } else {
-      s.push('<text x="' + left + '" y="' + pct2 + '" font-size="12" font-weight="700" fill="#5A6B79">no ' + esc(pq) + ' invoiced revenue from these practices to compare against</text>');
+      s.push('<text x="' + left + '" y="' + pct2 + '" font-size="12" font-weight="700" fill="#5A6B79">' + (base > 0 ? "no business days elapsed in " + esc(q) + " yet" : "no " + esc(pq) + " invoiced revenue from these practices to compare against") + '</text>');
     }
     return s.join("") + "</svg>";
   }

@@ -208,6 +208,119 @@ def quarter_label(run_date):
     return f"Q{(run_date.month - 1) // 3 + 1} {run_date.year}"
 
 
+def quarter_start(d):
+    return dt.date(d.year, 3 * ((d.month - 1) // 3) + 1, 1)
+
+
+def period_bounds(kind, rng, run_date):
+    """[(label, start, end, partial)] month or week periods over the current year or quarter, through the run date.
+
+    Weeks are seven day blocks from the first day of the range.  The last period ends on the run date
+    (state through yesterday) and is flagged partial when it is cut short.  On the first day of a range
+    the previous range is shown instead so the table is never empty.
+    """
+    start = dt.date(run_date.year, 1, 1) if rng == "year" else quarter_start(run_date)
+    if start >= run_date:
+        start = dt.date(run_date.year - 1, 1, 1) if rng == "year" else quarter_start(start - DAY)
+    out, b = [], start
+    while b < run_date:
+        e = next_month(b) if kind == "month" else b + dt.timedelta(days=7)
+        partial = e > run_date
+        if partial:
+            e = run_date
+        label = b.strftime("%b") if kind == "month" else b.strftime("%b %d").replace(" 0", " ")
+        out.append((label, b, e, partial))
+        b = e
+    return out
+
+
+def range_label(rng, periods):
+    d = periods[0][1]
+    return str(d.year) if rng == "year" else quarter_label(d)
+
+
+STATE_ROWS = [
+    ("super", "Super Active", "full bar in both 90 day windows", "good_up"),
+    ("core", "Core Active", "half bar in the last 90 days", "good_up"),
+    ("dabbler", "Dabbler", "a case in the last 90 days, below the bar", "neutral"),
+    ("new", "New this {period}", "first ever case in that {period}", "good_up"),
+    ("inactive", "Inactive", "no case in the last 90 days", "good_down"),
+]
+
+
+def state_table(ids, E, periods, kind):
+    """Where the practices sit at the end of each period, with the change from the period before."""
+    ends = [p[2] for p in periods]
+    lv = {pid: [E[pid].level(e) if pid in E else QUIET for e in ends] for pid in ids}
+    counts = {k: [] for k, _, _, _ in STATE_ROWS}
+    for i, (label, a, b, partial) in enumerate(periods):
+        counts["super"].append(sum(1 for pid in ids if lv[pid][i] == SUPER))
+        counts["core"].append(sum(1 for pid in ids if lv[pid][i] == CORE))
+        counts["dabbler"].append(sum(1 for pid in ids if lv[pid][i] == DABBLER))
+        counts["inactive"].append(sum(1 for pid in ids if lv[pid][i] == QUIET))
+        counts["new"].append(sum(1 for pid in ids if pid in E and E[pid].first is not None and a <= E[pid].first < b))
+
+    def deltas(v):
+        return [None] + [v[j] - v[j - 1] for j in range(1, len(v))]
+    return {
+        "kind": kind,
+        "columns": [{"label": label, "start": a.isoformat(), "end": b.isoformat(), "partial": partial} for label, a, b, partial in periods],
+        "rows": [{"key": k, "label": lab.format(period=kind), "hint": hint.format(period=kind), "tone": tone,
+                  "values": counts[k], "deltas": deltas(counts[k])} for k, lab, hint, tone in STATE_ROWS],
+    }
+
+
+def states_bundle(ids, E, run_date):
+    """The four views behind the picker: month or week, current year or current quarter."""
+    out = {}
+    for rng in ("year", "quarter"):
+        for kind in ("month", "week"):
+            periods = period_bounds(kind, rng, run_date)
+            t = state_table(ids, E, periods, kind)
+            t["range"] = rng
+            t["range_label"] = range_label(rng, periods)
+            out[f"{rng}_{kind}"] = t
+    out["default"] = "year_month"
+    return out
+
+
+def moves(ids, E, periods):
+    """Level crossings per period: up to active, Core to Super Active, down from active, Dabbler to inactive."""
+    snaps = [periods[0][1]] + [p[2] for p in periods]
+    lv = {pid: [E[pid].level(s) if pid in E else QUIET for s in snaps] for pid in ids}
+    out = []
+    for i, (label, a, b, partial) in enumerate(periods):
+        up = up_super = down = down_quiet = 0
+        for pid in ids:
+            p, c = lv[pid][i], lv[pid][i + 1]
+            if p < CORE <= c:
+                up += 1
+            elif p == CORE and c == SUPER:
+                up_super += 1
+            elif p >= CORE > c:
+                down += 1
+            elif p == DABBLER and c == QUIET:
+                down_quiet += 1
+        out.append({"label": label, "start": a.isoformat(), "partial": partial,
+                    "promoted": up, "up_super": up_super, "demoted": down, "down_quiet": down_quiet,
+                    "net": up + up_super - down - down_quiet})
+    return out
+
+
+def quiet_dates(e, run_date):
+    """Days on which the practice went quiet: 91 days after a case that no case followed within 90 days."""
+    out, ds = [], e.dates
+    for i, d in enumerate(ds):
+        q = d + dt.timedelta(days=91)
+        nxt = ds[i + 1] if i + 1 < len(ds) else None
+        if nxt is None:
+            if q <= run_date:
+                out.append(q)
+        elif nxt >= q:
+            out.append(q)
+    return out
+
+
 def line_of(l1, l2):
     if l2 == "Implant":
         return "IMP"
@@ -485,35 +598,12 @@ def build_ae(P):
             ("demote_dab", "Demoted to Dabbler", "Core or Super Active to Dabbler", "down"),
             ("quiet", "Went quiet", "No case in 90 days", "quiet"),
         ]
-        # week over week this quarter: where the practices sit at the end of each week
-        bounds = quarter_bounds(RUN_DATE)
-        lv_b = {pid: [E[pid].level(b) if pid in E else QUIET for b in bounds] for pid in ids}
-        wk, counts = [], {"super": [], "core": [], "dabbler": [], "new": [], "inactive": []}
-        for i in range(1, len(bounds)):
-            a, b = bounds[i - 1], bounds[i]
-            wk.append({"label": a.strftime("%b %d").replace(" 0", " "), "start": a.isoformat(), "partial": (b - a).days < 7})
-            counts["super"].append(sum(1 for pid in ids if lv_b[pid][i] == SUPER))
-            counts["core"].append(sum(1 for pid in ids if lv_b[pid][i] == CORE))
-            counts["dabbler"].append(sum(1 for pid in ids if lv_b[pid][i] == DABBLER))
-            counts["inactive"].append(sum(1 for pid in ids if lv_b[pid][i] == QUIET))
-            counts["new"].append(sum(1 for pid in ids if pid in E and E[pid].first is not None and a <= E[pid].first < b))
-
-        def deltas(v):
-            return [None] + [v[j] - v[j - 1] for j in range(1, len(v))]
-        state_rows = [
-            ("super", "Super Active", "full bar in both 90 day windows", "good_up"),
-            ("core", "Core Active", "half bar in the last 90 days", "good_up"),
-            ("dabbler", "Dabbler", "a case in the last 90 days, below the bar", "neutral"),
-            ("new", "New this week", "first ever case that week", "good_up"),
-            ("inactive", "Inactive", "no case in the last 90 days", "good_down"),
-        ]
-        weekly_states = {"quarter": quarter_label(RUN_DATE), "weeks": wk,
-                         "rows": [{"key": k, "label": lab, "hint": hint, "tone": tone, "values": counts[k], "deltas": deltas(counts[k])} for k, lab, hint, tone in state_rows]}
+        states = states_bundle(ids, E, RUN_DATE)
         subsections.append({
             "key": pdef["key"], "title": pdef["title"], "partner": sp, "ae": pdef["ae"], "logo": pdef["logo"],
             "network": network, "plays": list(PLAYS_PLACEHOLDER),
             "cards": cards, "months": mrows,
-            "weekly_states": weekly_states,
+            "states": states,
             "transitions": {"months": [r["label"] for r in mrows],
                             "rows": [{"key": k, "label": lab, "hint": hint, "tone": tone, "values": tr[k]} for k, lab, hint, tone in row_defs],
                             "net": net},
@@ -609,6 +699,12 @@ def build_am(P):
         cases_mtd = sum(1 for fd, _, _, _ in folded if cur_m0 <= fd < RUN_DATE)
         prior_pace = sum(1 for fd, _, _, _ in folded if fd in prior_days)
         mtd_pct = round(100.0 * (cases_mtd / prior_pace - 1), 1) if prior_pace else None
+        # average cases per business day: this month to date against all of last month
+        prior_cases = sum(1 for fd, _, _, _ in folded if pm0 <= fd < cur_m0)
+        prior_biz = len(cal.between(pm0, cur_m0))
+        avg_mtd = (cases_mtd / len(biz_in)) if biz_in else None
+        avg_prior = (prior_cases / prior_biz) if prior_biz else None
+        avg_pct = round(100.0 * (avg_mtd / avg_prior - 1), 1) if (avg_mtd is not None and avg_prior) else None
         lv_now = {pid: (E[pid].level(RUN_DATE) if pid in E else QUIET) for pid in ids}
         lv_30 = {pid: (E[pid].level(s30) if pid in E else QUIET) for pid in ids}
         promoted_30 = sum(1 for pid in ids if lv_30[pid] < CORE <= lv_now[pid])
@@ -686,19 +782,14 @@ def build_am(P):
             vals["projected_last"] = int(round(rev_mtd * mtd_factor / denom)) if (mtd_factor and denom) else None
         book_denom = max(book_offices[-2] if len(book_offices) > 1 else 0, book_offices[-1])
         cases_projected_last = round(book_cases[-1] * mtd_factor / book_denom, 1) if (mtd_factor and book_denom) else None
-        # week over week this quarter
-        lv_b = {pid: [E[pid].level(b) if pid in E else QUIET for b in bounds] for pid in ids}
-        weeks = []
-        for i in range(1, len(bounds)):
-            up = sum(1 for pid in ids if lv_b[pid][i - 1] < CORE <= lv_b[pid][i])
-            down = sum(1 for pid in ids if lv_b[pid][i - 1] >= CORE > lv_b[pid][i])
-            start = bounds[i - 1]
-            weeks.append({"label": start.strftime("%b %d").replace(" 0", " "), "start": start.isoformat(),
-                          "partial": (bounds[i] - start).days < 7, "promoted": up, "demoted": down, "net": up - down})
+        weeks = moves(ids, E, period_bounds("week", "quarter", RUN_DATE))
         subsections.append({
             "key": k, "name": am["name"], "label": am["label"], "logos": am["logos"], "logo_tag": am.get("logo_tag"),
             "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active_now": active_now,
                       "cases_mtd": cases_mtd, "prior_pace": prior_pace, "mtd_pct": mtd_pct, "biz_days_in": len(biz_in),
+                      "avg_per_day_mtd": round(avg_mtd, 1) if avg_mtd is not None else None,
+                      "avg_per_day_prior": round(avg_prior, 1) if avg_prior is not None else None,
+                      "avg_pct": avg_pct, "prior_cases": prior_cases, "prior_biz_days": prior_biz,
                       "month_label": cur_m0.strftime("%b"), "prior_month_label": pm0.strftime("%b"),
                       "promoted_30": promoted_30, "demoted_30": demoted_30},
             "months": mrows,
@@ -708,7 +799,7 @@ def build_am(P):
                         "invoiced_cases": book_cases, "invoiced_practices": book_offices,
                         "mtd_factor": round(mtd_factor, 3) if mtd_factor else None, "mtd_biz_elapsed": mtd_elapsed, "mtd_biz_total": mtd_total,
                         "mtd_label": last_m0.strftime("%b")},
-            "weekly": {"quarter": f"Q{(RUN_DATE.month - 1) // 3 + 1} {RUN_DATE.year}", "weeks": weeks},
+            "weekly": {"quarter": quarter_label(RUN_DATE), "weeks": weeks},
         })
         print(f"AM {am['name']:18s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} casesMTD={cases_mtd:5d} priorPace={prior_pace:5d} pct={mtd_pct} up30={promoted_30} down30={demoted_30} active={active_now} groups={groups}", flush=True)
     return {
@@ -717,6 +808,7 @@ def build_am(P):
             "book": "practices whose accounts carry the manager in Accounts, Account Manager Combined; Syed carries the shared Incisive book, Nikolas his non-Incisive accounts",
             "pace": "cases MTD compared with the same number of business days into last month; weekend and holiday cases count on the business day before",
             "moves": "promoted = below active to Core or Super Active; demoted = Core or Super Active down to Dabbler or quiet",
+            "pace_avg": "average cases per business day this month to date against last month's average over all of its business days; weekend and holiday cases count on the business day before",
             "revenue": "invoice level: Line Items Price Net invoiced in the month divided by the practices with an invoice that month, and on the right axis the cases invoiced that month divided by the same practices (everything else on this page is on the case received date); the current month is shown at run rate as a dashed segment: month to date figures scaled by business days in the month over business days elapsed, divided by last month's invoiced practice count (or this month's if already higher)",
         },
         "subsections": subsections,
@@ -725,7 +817,7 @@ def build_am(P):
 
 PROGRAMS = [
     {"key": "incisive", "title": "Incisive", "partners": ["Incisive", "SKDLA-Incisive"], "logo": "logos/incisive.png"},
-    {"key": "tri", "title": "TRI Dental", "partners": ["TRI Dental", "SKDLA-TRI Dental"], "logo": "logos/tri.png"},
+    {"key": "tri", "title": "TRI", "partners": ["TRI Dental", "SKDLA-TRI Dental"], "logo": "logos/tri.png"},
 ]
 PROGRAM_PLAYS = [
     "Initiative 1: name, owner, target date",
@@ -754,25 +846,33 @@ def build_programs(P):
         n_core = sum(1 for pid in ids if lv[pid] == CORE)
         n_dab = sum(1 for pid in ids if lv[pid] == DABBLER)
         submitters_ytd = sum(1 for pid in ids if pid in ents and ents[pid].cases_between(JAN1, RUN_DATE) > 0)
+        qd = {pid: quiet_dates(ents[pid], RUN_DATE) for pid in ids if pid in ents}
         mrows = []
         for label, m0, s in months:
             new = sum(1 for pid in ids if pid in ents and ents[pid].first is not None and m0 <= ents[pid].first < s)
             subm = sum(1 for pid in ids if pid in ents and ents[pid].cases_between(m0, s) > 0)
-            mrows.append({"m": m0.strftime("%Y-%m"), "label": label, "new": new, "submitters": subm})
+            hi = s if s == next_month(m0) else RUN_DATE + DAY      # a practice quiet as of today counts in the current month
+            gone = sum(1 for pid, qs in qd.items() if any(m0 <= q < hi for q in qs))
+            mrows.append({"m": m0.strftime("%Y-%m"), "label": label, "new": new, "submitters": subm, "gone_quiet": gone})
+        E = {pid: ents[pid] for pid in ids if pid in ents}
+        states = states_bundle(ids, E, RUN_DATE)
+        weeks = moves(ids, E, period_bounds("week", "quarter", RUN_DATE))
         subsections.append({
             "key": pg["key"], "title": pg["title"], "partners": pg["partners"], "logo": pg["logo"],
             "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active": n_super + n_core, "super": n_super, "core": n_core,
                       "dabblers": n_dab, "inactive": len(ids) - n_super - n_core - n_dab,
-                      "gone_inactive": submitters_ytd - (n_super + n_core) - n_dab},
+                      "gone_quiet": submitters_ytd - (n_super + n_core) - n_dab},
             "months": mrows, "plays": list(PROGRAM_PLAYS),
+            "states": states, "weekly": {"quarter": quarter_label(RUN_DATE), "weeks": weeks},
         })
-        print(f"PROGRAM {pg['title']:10s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} active={n_super + n_core} (SA {n_super}, core {n_core}) dab={n_dab} inactive={len(ids) - n_super - n_core - n_dab} new_by_month={[r['new'] for r in mrows]}", flush=True)
+        print(f"PROGRAM {pg['title']:10s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} active={n_super + n_core} (SA {n_super}, core {n_core}) dab={n_dab} inactive={len(ids) - n_super - n_core - n_dab} new_by_month={[r['new'] for r in mrows]} gone_quiet_by_month={[r['gone_quiet'] for r in mrows]}", flush=True)
     return {
         "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,
         "definition": {
             "book": "every practice with an account whose Strategic Partner is one of the program's partners (Incisive: Incisive, SKDLA-Incisive; TRI: TRI Dental, SKDLA-TRI Dental)",
             "new": "first ever counted case received in that month",
-            "inactive": "gone inactive = sent a case this year but nothing in the last 90 days, so Active + Dabblers + Gone inactive = Submitters YTD",
+            "quiet": "gone quiet = sent a case this year but nothing in the last 90 days, so Active + Dabblers + Gone quiet = Submitters YTD",
+            "gone_quiet_month": "practices in the program that passed 90 days without a case during that month (91 days after their last case), whether or not they came back later",
         },
         "subsections": subsections,
     }

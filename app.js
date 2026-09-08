@@ -360,6 +360,59 @@
     try { var p = iso.split("-"); return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(+p[0], +p[1] - 1, +p[2])); } catch (e) { return iso; }
   }
 
+  /* programs: new submitters above the axis, practices that became inactive below, net under each month,
+     and total submitters that month as a line in its own band above the bars (right axis) */
+  function programFlowSVG(months, W, H, lab) {
+    W = W || 960; H = H || 400; lab = lab || 1;
+    var padL = 46, padR = 48, padT = 14 + 10 * lab, padB = 40 + 16 * lab;
+    var n = months.length || 1, iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, x = function (i) { return padL + slot * i + slot / 2; };
+    var topH = ih * 0.40, gapBand = 18, botTop = padT + topH + gapBand, botH = ih - topH - gapBand, half = botH / 2;
+    var smin = Infinity, smax = 0, bmax = 1;
+    months.forEach(function (m) { var v = m.submitters || 0; if (v < smin) smin = v; if (v > smax) smax = v; bmax = Math.max(bmax, m.new || 0, m.gone_quiet || 0); });
+    if (!isFinite(smin)) smin = 0;
+    var s = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="New submitters above the axis, practices that became inactive below, net per month, and total submitters as a line">'];
+    /* line band: auto-fit so the line sits in its own space */
+    var step = niceTicks(Math.max(smax - smin, smax * 0.15, 1))[1] || 1, lo = Math.max(0, Math.floor((smin - step) / step) * step), hi = Math.ceil((smax + step * 0.5) / step) * step;
+    if (hi <= lo) hi = lo + step;
+    var yS = function (v) { return padT + topH - ((v - lo) / (hi - lo)) * topH; };
+    for (var t = lo; t <= hi + 1e-9; t += step) {
+      s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yS(t).toFixed(1) + '" y2="' + yS(t).toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>');
+      s.push('<text x="' + (W - padR + 8) + '" y="' + (yS(t) + 3.5).toFixed(1) + '" text-anchor="start" font-size="10" font-weight="700" fill="#052030">' + fmtN(t) + '</text>');
+    }
+    /* bars band: mirrored ticks */
+    var bt = niceTicks(bmax), bm = bt[bt.length - 1] || 1, yB = function (v) { return botTop + half - (v / bm) * half; };
+    bt.forEach(function (tt) {
+      [tt, -tt].forEach(function (v) {
+        s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yB(v).toFixed(1) + '" y2="' + yB(v).toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>');
+        s.push('<text x="' + (padL - 8) + '" y="' + (yB(v) + 3.5).toFixed(1) + '" text-anchor="end" font-size="10" font-weight="700" fill="#5A6B79">' + (v < 0 ? "-" + fmtN(-v) : fmtN(v)) + '</text>');
+      });
+    });
+    var bw = Math.min(46, slot * 0.5), pts = [];
+    months.forEach(function (m, i) {
+      var cx = x(i), nv = m.new || 0, qv = m.gone_quiet || 0;
+      if (nv > 0) {
+        s.push('<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(nv).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(0) - yB(nv)).toFixed(1) + '" fill="' + NEW_COLOR + '" rx="2"/>');
+        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yB(nv) - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="#0F6BA8">+' + nv + '</text>');
+      }
+      if (qv > 0) {
+        s.push('<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(0).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(-qv) - yB(0)).toFixed(1) + '" fill="' + QUIET_COLOR + '" rx="2"/>');
+        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yB(-qv) + 12 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">-' + qv + '</text>');
+      }
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - padB + 16).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
+      var net = nv - qv, netCol = net > 0 ? GREEN_INK : net < 0 ? RED_INK : "#5A6B79";
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="' + (14 * lab).toFixed(1) + '" font-weight="800" fill="' + netCol + '">' + signed(net) + '</text>');
+      pts.push([cx, yS(m.submitters || 0), m.submitters || 0]);
+    });
+    s.push('<text x="' + (padL - 6) + '" y="' + (H - 10) + '" text-anchor="end" font-size="9.5" font-weight="800" fill="#5A6B79">NET</text>');
+    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yB(0).toFixed(1) + '" y2="' + yB(0).toFixed(1) + '" stroke="#052030" stroke-width="1.5"/>');
+    if (pts.length > 1) s.push('<polyline fill="none" stroke="#052030" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
+    pts.forEach(function (p) {
+      s.push('<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#052030" stroke="#FFFFFF" stroke-width="1.5"/>');
+      s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="#052030">' + fmtN(p[2]) + '</text>');
+    });
+    return s.join("") + "</svg>";
+  }
+
   /* programs: new submitters (blue) beside practices that went quiet (red) each month */
   function newQuietSVG(months, W, H) {
     W = W || 960; H = H || 300;
@@ -411,10 +464,10 @@
     return h + "</tbody></table>";
   }
   function statesTitle(t) { return (t.kind === "month" ? "Month over month, " : "Week over week, ") + t.range_label; }
-  function statesPanel(id, states) {
+  function statesPanel(id, states, large) {
     STATE_TABLES[id] = states;
     var key = states["default"] || "year_month", t = states[key], parts = key.split("_");
-    return '<div class="panel states" data-states="' + esc(id) + '"><div class="chart-head"><div class="panel-title" data-role="title">' + esc(statesTitle(t)) + '</div>' +
+    return '<div class="panel states' + (large ? " lg" : "") + '" data-states="' + esc(id) + '"><div class="chart-head"><div class="panel-title" data-role="title">' + esc(statesTitle(t)) + '</div>' +
       '<div class="seg-row"><div class="seg" data-dim="kind">' +
         '<button type="button" data-v="month" class="' + (parts[1] === "month" ? "on" : "") + '">Month</button><button type="button" data-v="week" class="' + (parts[1] === "week" ? "on" : "") + '">Week</button></div>' +
       '<div class="seg" data-dim="range">' +
@@ -436,7 +489,7 @@
   });
 
   function legendHTML(items) {
-    return items.map(function (it) { return '<span><i style="background:' + it.color + '"></i>' + esc(it.label) + "</span>"; }).join("");
+    return items.map(function (it) { return '<span><i class="' + (it.line ? "ln" : "") + '" style="background:' + it.color + '"></i>' + esc(it.label) + "</span>"; }).join("");
   }
   function playsPanel(title, plays, extraClass) {
     return '<div class="panel' + (extraClass ? " " + extraClass : "") + '"><div class="panel-title">' + esc(title) + '</div><ul class="plays-list" contenteditable="true" spellcheck="false">' +
@@ -515,7 +568,7 @@
      Programs (practice level)
      ============================================================ */
   var PG = (D.sections || {}).programs || null;
-  var PG_LEGEND = [{ label: "New submitters (first ever case that month)", color: NEW_COLOR }, { label: "Gone quiet (90+ days without a case)", color: QUIET_COLOR }];
+  var PG_LEGEND = [{ label: "New submitters", color: NEW_COLOR }, { label: "Inactive (90+ days without a case)", color: QUIET_COLOR }, { label: "Total submitters (line, right axis)", color: "#052030", line: true }];
   function renderPrograms() {
     var host = byId("pg-subs");
     if (!PG || !PG.subsections || !PG.subsections.length) return;
@@ -531,12 +584,12 @@
           '<div class="tile-group">' +
             tile(fmtN(c.active), "Active", "", "g") +
             tile(fmtN(c.dabblers), "Dabblers", "", "") +
-            tile(fmtN(c.gone_quiet), "Gone quiet", "", "q") +
+            tile(fmtN(c.gone_quiet), "Inactive", "", "q") +
           "</div>" +
         "</div>" +
-        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New submitters and gone quiet by month, ' + esc(PG.year) + ' YTD</div><div class="legend">' + legendHTML(PG_LEGEND) + "</div></div>" + newQuietSVG(sub.months) + "</div>" +
-        '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states) +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend">' + legendHTML(WOW_LEGEND) + "</div></div>" + wowSVG(sub.weekly) + "</div></div>" +
+        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div><div class="legend">' + legendHTML(PG_LEGEND) + "</div></div>" + programFlowSVG(sub.months, 960, 420, 1.35) + "</div>" +
+        '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true) +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend">' + legendHTML(WOW_LEGEND) + "</div></div>" + wowSVG(sub.weekly, 560, 420, 1.5) + "</div></div>" +
         playsPanel("Plays: initiatives and growth", sub.plays, "plays-wide") +
       "</div>";
     }).join("");
@@ -572,8 +625,8 @@
       "<li><b>Week over week:</b> for each week of the quarter, practices that crossed the active bar upward (green) or moved from Core to Super Active (dark green) stack above the axis; practices that crossed the active bar downward (red) or went from Dabbler to inactive (dark red) stack below; the net of all four is under each week. * marks the partial week.</li></ul>" +
       "<h3>Programs</h3><ul>" +
       "<li><b>Book:</b> " + esc(pg.book) + ". There is no network cap: the program's universe is the whole marketable universe.</li>" +
-      "<li><b>Submitters YTD, Active, Dabblers:</b> as defined above. <b>Gone quiet:</b> " + esc(pg.quiet) + ".</li>" +
-      "<li><b>Chart:</b> new submitters = " + esc(pg.new) + "; gone quiet by month = " + esc(pg.gone_quiet_month) + ". The state table and the week over week chart follow the same rules as the other sections.</li></ul>" +
+      "<li><b>Submitters YTD, Active, Dabblers:</b> as defined above. <b>Inactive (tile):</b> " + esc(pg.quiet) + ".</li>" +
+      "<li><b>Chart:</b> new submitters (up) = " + esc(pg.new) + "; inactive (down) = " + esc(pg.gone_quiet_month) + "; the net of the two is under each month; the line is the practices that sent at least one case that month, on the right axis. The state table and the week over week chart follow the same rules as the other sections.</li></ul>" +
       "<h3>Plays</h3><p>The Plays boxes are editable on the page (click into them). Edits go into the slide export but are not saved between visits yet.</p>" +
       "<h3>Counting rules</h3><p>Cases are counted the same way as the Account Health app: one business unit per case from the primary product, manufacturing jigs dropped, TRI rebill cases dropped, corporate sample accounts dropped, lab, university and intercompany accounts dropped. The one difference is that Aspen Beacon non-LFX cases are kept here so the Beacon page shows the whole Beacon book.</p>";
   }
@@ -881,15 +934,15 @@
     this.logoCard(0.5, 1.05, 1.9, 1.05, [logo], sub.title);
     this.kpi(2.55, 1.05, 2.3, 1.05, "" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, DECK.killian);
     this.text("=", 5.05, 1.6, { size: 24, weight: 700, color: DECK.muted, align: "center", baseline: "middle" });
-    [["" + fmtN(c.active), "Active", DECK.killian], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy], ["" + fmtN(c.gone_quiet), "Gone quiet", DECK.red]]
+    [["" + fmtN(c.active), "Active", DECK.killian], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy], ["" + fmtN(c.gone_quiet), "Inactive", DECK.red]]
       .forEach(function (k, i) { self.kpi(5.25 + i * 2.6, 1.05, 2.45, 1.05, k[0], k[1], "", DECK.killian, k[2]); });
-    this.label(0.5, 2.3, 8.2, "New submitters and gone quiet by month", PG.year + " YTD; blue = first ever case, red = 90 days without a case");
+    this.label(0.5, 2.3, 8.2, "New, inactive and total submitters by month", PG.year + " YTD; up = new, down = inactive, line = total submitters");
     var t = defaultStates(sub.states);
-    return this.svg(newQuietSVG(sub.months, 960, 300), 0.5, 2.55, 8.2, 2.6).then(function () {
+    return this.svg(programFlowSVG(sub.months, 960, 300, 1.3), 0.5, 2.55, 8.2, 2.6).then(function () {
       self.label(0.5, 5.22, 8.2, statesTitle(t), "count at " + t.kind + " end, change from the " + t.kind + " before; * partial " + t.kind);
       self.stateTable(0.5, 5.5, 8.2, t, 0.24);
       self.label(8.95, 2.3, 3.9, "Week over week, " + sub.weekly.quarter, "up in greens, down in reds");
-      return self.svg(wowSVG(sub.weekly, 560, 330), 8.95, 2.55, 3.9, 2.3);
+      return self.svg(wowSVG(sub.weekly, 470, 330, 1.4), 8.95, 2.55, 3.9, 2.3);
     }).then(function () {
       self.plays(8.95, 5.0, 3.9, 1.95, "Plays: initiatives and growth", playsOf("pg-" + sub.key, sub.plays));
     });

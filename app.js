@@ -259,11 +259,14 @@
     { label: "Dabbler → Active", color: GREEN }, { label: "Active → Super Active", color: GREEN2 },
     { label: "Active → Dabbler", color: RED }, { label: "Dabbler → Inactive", color: RED2 }
   ];
+  function wowLegendHTML() {
+    return '<div class="legend-rows"><div class="legend">' + legendHTML(WOW_LEGEND.slice(0, 2)) + '</div><div class="legend">' + legendHTML(WOW_LEGEND.slice(2)) + "</div></div>";
+  }
   function wowSVG(weekly, W, H, lab) {
     W = W || 560; H = H || 330; lab = lab || 1;
-    var weeks = weekly.weeks, padL = 36, padR = 10, padT = 14 + 12 * lab, padB = 40 + 16 * lab;
-    var n = weeks.length || 1, top = 1;
-    weeks.forEach(function (w) { top = Math.max(top, w.promoted + (w.up_super || 0), w.demoted + (w.down_quiet || 0)); });
+    var weeks = weekly.weeks, padL = 36, padR = 10, padT = 14 + 12 * lab, drop = 13 * lab, weekRow = 14, netRow = 20 * lab, padB = drop + 6 + weekRow + 8 + netRow + 4;
+    var n = weeks.length || 1, top = 1, deepest = 0;
+    weeks.forEach(function (w) { top = Math.max(top, w.promoted + (w.up_super || 0), w.demoted + (w.down_quiet || 0)); deepest = Math.max(deepest, w.demoted + (w.down_quiet || 0)); });
     var ticks = niceTicks(top), m = ticks[ticks.length - 1] || 1;
     var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(34, slot * 0.62), half = ih / 2;
     var y = function (v) { return padT + half - (v / m) * half; };
@@ -289,7 +292,7 @@
       if (dn > 0) seg(x, 0, -dn, RED, cx);
       if (dn2 > 0) seg(x, -dn, -dn - dn2, RED2, cx);
       if (dn + dn2 > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(-dn - dn2) + 13 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">-' + (dn + dn2) + '</text>');
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - padB + 16).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (Math.max(padT + ih + 4, y(-deepest) + drop + 6) + 11).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
       var netCol = w.net > 0 ? GREEN_INK : w.net < 0 ? RED_INK : "#5A6B79";
       s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="' + (14 * lab).toFixed(1) + '" font-weight="800" fill="' + netCol + '">' + signed(w.net) + '</text>');
     });
@@ -364,11 +367,11 @@
      and total submitters that month as a line in its own band above the bars (right axis) */
   function programFlowSVG(months, W, H, lab) {
     W = W || 960; H = H || 400; lab = lab || 1;
-    var padL = 46, padR = 48, padT = 14 + 10 * lab, padB = 40 + 16 * lab;
+    var padL = 46, padR = 48, padT = 14 + 10 * lab, dropB = 12 * lab, padB = dropB + 6 + 14 + 8 + 26 * lab + 4;
     var n = months.length || 1, iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, x = function (i) { return padL + slot * i + slot / 2; };
     var topH = ih * 0.40, gapBand = 18, botTop = padT + topH + gapBand, botH = ih - topH - gapBand, half = botH / 2;
-    var smin = Infinity, smax = 0, bmax = 1;
-    months.forEach(function (m) { var v = m.submitters || 0; if (v < smin) smin = v; if (v > smax) smax = v; bmax = Math.max(bmax, m.new || 0, m.gone_quiet || 0); });
+    var smin = Infinity, smax = 0, bmax = 1, deepQ = 0;
+    months.forEach(function (m) { var v = m.submitters || 0; if (v < smin) smin = v; if (v > smax) smax = v; bmax = Math.max(bmax, m.new || 0, m.gone_quiet || 0); deepQ = Math.max(deepQ, m.gone_quiet || 0); });
     if (!isFinite(smin)) smin = 0;
     var s = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="New submitters above the axis, practices that became inactive below, net per month, and total submitters as a line">'];
     /* line band: auto-fit so the line sits in its own space */
@@ -377,7 +380,7 @@
     var yS = function (v) { return padT + topH - ((v - lo) / (hi - lo)) * topH; };
     for (var t = lo; t <= hi + 1e-9; t += step) {
       s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yS(t).toFixed(1) + '" y2="' + yS(t).toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>');
-      s.push('<text x="' + (W - padR + 8) + '" y="' + (yS(t) + 3.5).toFixed(1) + '" text-anchor="start" font-size="10" font-weight="700" fill="#052030">' + fmtN(t) + '</text>');
+      s.push('<text x="' + (W - padR + 8) + '" y="' + (yS(t) + 3.5).toFixed(1) + '" text-anchor="start" font-size="10" font-weight="700" fill="#0F6BA8">' + fmtN(t) + '</text>');
     }
     /* bars band: mirrored ticks */
     var bt = niceTicks(bmax), bm = bt[bt.length - 1] || 1, yB = function (v) { return botTop + half - (v / bm) * half; };
@@ -391,24 +394,26 @@
     months.forEach(function (m, i) {
       var cx = x(i), nv = m.new || 0, qv = m.gone_quiet || 0;
       if (nv > 0) {
-        s.push('<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(nv).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(0) - yB(nv)).toFixed(1) + '" fill="' + NEW_COLOR + '" rx="2"/>');
-        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yB(nv) - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="#0F6BA8">+' + nv + '</text>');
+        s.push('<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(nv).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(0) - yB(nv)).toFixed(1) + '" fill="' + GREEN + '" rx="2"/>');
+        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yB(nv) - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + GREEN_INK + '">+' + nv + '</text>');
       }
       if (qv > 0) {
         s.push('<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(0).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(-qv) - yB(0)).toFixed(1) + '" fill="' + QUIET_COLOR + '" rx="2"/>');
         s.push('<text x="' + cx.toFixed(1) + '" y="' + (yB(-qv) + 12 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">-' + qv + '</text>');
       }
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - padB + 16).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
-      var net = nv - qv, netCol = net > 0 ? GREEN_INK : net < 0 ? RED_INK : "#5A6B79";
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 10) + '" text-anchor="middle" font-size="' + (14 * lab).toFixed(1) + '" font-weight="800" fill="' + netCol + '">' + signed(net) + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (Math.max(botTop + botH + 4, yB(-deepQ) + dropB + 6) + 11).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
+      var net = nv - qv, netCol = net > 0 ? GREEN_INK : net < 0 ? RED_INK : "#5A6B79", netBg = net > 0 ? "rgba(52,199,89,0.18)" : net < 0 ? "rgba(239,68,68,0.16)" : "rgba(176,183,195,0.25)";
+      var nfs = 18 * lab, nlab = signed(net), pw = nlab.length * nfs * 0.62 + 14, ph = nfs * 1.35;
+      s.push('<rect x="' + (cx - pw / 2).toFixed(1) + '" y="' + (H - 8 - ph).toFixed(1) + '" width="' + pw.toFixed(1) + '" height="' + ph.toFixed(1) + '" rx="' + (ph / 2).toFixed(1) + '" fill="' + netBg + '"/>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 8 - ph / 2 + nfs * 0.36).toFixed(1) + '" text-anchor="middle" font-size="' + nfs.toFixed(1) + '" font-weight="800" fill="' + netCol + '">' + nlab + '</text>');
       pts.push([cx, yS(m.submitters || 0), m.submitters || 0]);
     });
-    s.push('<text x="' + (padL - 6) + '" y="' + (H - 10) + '" text-anchor="end" font-size="9.5" font-weight="800" fill="#5A6B79">NET</text>');
+    s.push('<text x="' + (padL - 6) + '" y="' + (H - 8 - 18 * lab * 1.35 / 2 + 4).toFixed(1) + '" text-anchor="end" font-size="10" font-weight="800" fill="#5A6B79">NET</text>');
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yB(0).toFixed(1) + '" y2="' + yB(0).toFixed(1) + '" stroke="#052030" stroke-width="1.5"/>');
-    if (pts.length > 1) s.push('<polyline fill="none" stroke="#052030" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
+    if (pts.length > 1) s.push('<polyline fill="none" stroke="#1882C7" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
     pts.forEach(function (p) {
-      s.push('<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#052030" stroke="#FFFFFF" stroke-width="1.5"/>');
-      s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="#052030">' + fmtN(p[2]) + '</text>');
+      s.push('<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#1882C7" stroke="#FFFFFF" stroke-width="1.5"/>');
+      s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="#0F6BA8">' + fmtN(p[2]) + '</text>');
     });
     return s.join("") + "</svg>";
   }
@@ -559,7 +564,7 @@
         '<div class="am-grid3">' +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Active Book Maintenance, ' + esc(shortQ(sub.retention.quarter)) + '</div></div>' + retentionSVG(sub.retention, 470, 470) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' + revenueLegend(sub) + "</div></div>" + lineSVG(sub.revenue, 470, 400, 1.5) + "</div>" +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend">' + legendHTML(WOW_LEGEND) + "</div></div>" + wowSVG(sub.weekly, 470, 400, 1.5) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 470, 400, 1.5) + "</div>" +
         "</div></div>";
     }).join("");
   }
@@ -568,7 +573,7 @@
      Programs (practice level)
      ============================================================ */
   var PG = (D.sections || {}).programs || null;
-  var PG_LEGEND = [{ label: "New submitters", color: NEW_COLOR }, { label: "Inactive (90+ days without a case)", color: QUIET_COLOR }, { label: "Total submitters (line, right axis)", color: "#052030", line: true }];
+  var PG_LEGEND = [{ label: "New submitters", color: GREEN }, { label: "Inactive (90+ days without a case)", color: QUIET_COLOR }, { label: "Total submitters (line, right axis)", color: "#1882C7", line: true }];
   function renderPrograms() {
     var host = byId("pg-subs");
     if (!PG || !PG.subsections || !PG.subsections.length) return;
@@ -587,9 +592,9 @@
             tile(fmtN(c.gone_quiet), "Inactive", "", "q") +
           "</div>" +
         "</div>" +
-        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div><div class="legend">' + legendHTML(PG_LEGEND) + "</div></div>" + programFlowSVG(sub.months, 960, 420, 1.35) + "</div>" +
+        '<div class="chart-wrap"><div class="chart-head stack"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div><div class="legend">' + legendHTML(PG_LEGEND) + "</div></div>" + programFlowSVG(sub.months, 960, 420, 1.35) + "</div>" +
         '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true) +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend">' + legendHTML(WOW_LEGEND) + "</div></div>" + wowSVG(sub.weekly, 560, 420, 1.5) + "</div></div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 560, 420, 1.5) + "</div></div>" +
         playsPanel("Plays: initiatives and growth", sub.plays, "plays-wide") +
       "</div>";
     }).join("");
@@ -936,7 +941,7 @@
     this.text("=", 5.05, 1.6, { size: 24, weight: 700, color: DECK.muted, align: "center", baseline: "middle" });
     [["" + fmtN(c.active), "Active", DECK.killian], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy], ["" + fmtN(c.gone_quiet), "Inactive", DECK.red]]
       .forEach(function (k, i) { self.kpi(5.25 + i * 2.6, 1.05, 2.45, 1.05, k[0], k[1], "", DECK.killian, k[2]); });
-    this.label(0.5, 2.3, 8.2, "New, inactive and total submitters by month", PG.year + " YTD; up = new, down = inactive, line = total submitters");
+    this.label(0.5, 2.3, 8.2, "New, inactive and total submitters by month", PG.year + " YTD; green up = new, red down = inactive, blue line = total submitters");
     var t = defaultStates(sub.states);
     return this.svg(programFlowSVG(sub.months, 960, 300, 1.3), 0.5, 2.55, 8.2, 2.6).then(function () {
       self.label(0.5, 5.22, 8.2, statesTitle(t), "count at " + t.kind + " end, change from the " + t.kind + " before; * partial " + t.kind);

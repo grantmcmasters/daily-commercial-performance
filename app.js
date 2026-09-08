@@ -434,8 +434,8 @@
         '<div class="b4row">' +
           tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
           tileHTML(fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerHTML(c), "") +
-          tile("+" + fmtN(c.promoted_30), "Promoted to active, last 30 days", "", "up") +
-          tile("-" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "dn") +
+          tile("+" + fmtN(c.promoted_30), "Became active L30D", "", "up") +
+          tile("-" + fmtN(c.demoted_30), "Lost active status L30D", "", "dn") +
         "</div>" +
         '<div class="chart-wrap hero"><div class="chart-head"><div class="panel-title big">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received per day</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
         '<div class="am-grid3">' +
@@ -500,7 +500,7 @@
       "<h3>Account Managers</h3><ul>" +
       "<li><b>Book:</b> " + esc(am.book) + ". Beacon LFX cases go to whoever manages that store's Aspen Dental account.</li>" +
       "<li><b>Submitters YTD:</b> practices in the book with a case this year. <b>Cases per business day:</b> " + esc(am.pace_avg || am.pace) + ".</li>" +
-      "<li><b>Promoted / demoted, last 30 days:</b> " + esc(am.moves) + ", comparing today with 30 days ago.</li>" +
+      "<li><b>Became active / lost active status, L30D (last 30 days):</b> " + esc(am.moves) + ", comparing today with 30 days ago.</li>" +
       "<li><b>Case volume by business day:</b> the trailing 60 calendar days shown as business days; Mondays are labeled and shaded darker; the gold line is the average per business day for each week.</li>" +
       "<li><b>Revenue and case utilization:</b> " + esc(am.revenue) + ". One line per book; the cases bars are the whole book.</li>" +
       "<li><b>Week over week:</b> for each week of the quarter, practices that crossed the active bar upward (green) or moved from Core to Super Active (dark green) stack above the axis; practices that crossed the active bar downward (red) or went from Dabbler to inactive (dark red) stack below; the net of all four is under each week. * marks the partial week.</li></ul>" +
@@ -792,8 +792,8 @@
     this.logoCard(0.5, 1.05, 2.6, 1.05, logos, sub.name, sub.logo_tag);
     [["" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, null],
      [fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerText(c), DECK.navy, c.avg_pct == null ? DECK.ink : c.avg_pct >= 0 ? DECK.green : DECK.red],
-     ["+" + fmtN(c.promoted_30), "Promoted to active, last 30 days", "", DECK.green, null],
-     ["-" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", DECK.red, null]
+     ["+" + fmtN(c.promoted_30), "Became active L30D", "", DECK.green, null],
+     ["-" + fmtN(c.demoted_30), "Lost active status L30D", "", DECK.red, null]
     ].forEach(function (k, i) { self.kpi(3.25 + i * 2.42, 1.05, 2.32, 1.05, k[0], k[1], k[2], DECK.strips[i], k[3], k[4]); });
     this.label(0.5, 2.3, 12.33, "Case volume by business day", "trailing 60 days, " + fmtN(sub.daily.total) + " cases; gold = weekly average per business day");
     var colW = 3.98, gap = 0.195, y2 = 4.9, cy = 5.16, ch = 1.94, fs = 1.3;

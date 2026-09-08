@@ -249,7 +249,7 @@
       });
     });
     months.forEach(function (m, i) { s.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 21) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m) + (proj && i === last ? "*" : "") + '</text>'); });
-    if (proj) s.push('<text x="' + (W - padR) + '" y="' + (H - 6) + '" text-anchor="end" font-size="9.5" font-weight="600" fill="#8A93A3">* ' + esc(rev.mtd_label) + ' at run rate: month to date scaled by business days in the month over business days elapsed</text>');
+    if (proj) s.push('<text x="' + (W - padR) + '" y="' + (H - 6) + '" text-anchor="end" font-size="9.5" font-weight="600" fill="#8A93A3">* ' + esc(rev.mtd_label) + ' at run rate</text>');
     return s.join("") + "</svg>";
   }
 

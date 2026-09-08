@@ -1,23 +1,33 @@
 """Daily Commercial Performance: builds data.js from Supabase.
 
-Account Executive section engine (v2, 2026-09-08, practice level only)
-----------------------------------------------------------------------
-For each partner subsection (Aspen ClearChoice, Aspen Dental, Aspen Beacon, MB2) this
-computes, at the PRACTICE level (Practice ID, rolled up through the Incisive links):
-
+Account Executive section (practice level)
+------------------------------------------
+For each partner subsection (Aspen ClearChoice, Aspen Dental, Aspen Beacon, MB2), at the
+PRACTICE level (Practice ID, rolled up through the Incisive links):
   * month by month YTD submitters split New / Active / Dabbler,
-  * current cards: total network, active (super + core), dabblers, YTD penetration,
-    MTD net new submitters,
+  * cards: total network, active (super + core), dabblers, YTD penetration, MTD net new,
   * month over month transitions (new, returned, promoted, held, demoted, went quiet).
+
+Account Manager section (practice level)
+----------------------------------------
+One subsection per account manager (book = Accounts."Account Manager Combined"):
+  * cards: submitters YTD, cases MTD with the pace against the same number of business days
+    into last month, promoted to active and demoted from active in the last 30 days,
+  * case volume by business day over the trailing 60 days (weekend and holiday volume is
+    attributed to the business day before),
+  * average revenue per submitting office per month, YTD, by partner group where the book
+    spans several partners,
+  * week over week this quarter: practices that moved up to active, down from active, net.
 
 Counting rules mirror the Account Health pipeline's case base (one business unit per case
 from the primary product, manufacturing jigs dropped, TRI rebills dropped, corporate sample
 accounts dropped, lab / university / intercompany accounts dropped) with these deliberate
 differences, per Grant 2026-09-08:
-  * Aspen Beacon non-LFX cases are KEPT (this page reports the whole Beacon book).
+  * Aspen Beacon non-LFX cases are KEPT (the AE page reports the whole Beacon book).
   * Any case with LFX Unit Flag = Yes billed to an Aspen Beacon account counts as an
-    Aspen Dental case for that store. Beacon and Aspen Dental accounts share the store
-    practice id (4-digit office code at the start of the practice name).
+    Aspen Dental case for that store (Beacon and Aspen Dental accounts share the store
+    practice id: the 4-digit office code at the start of the practice name). For the
+    account managers the same LFX cases go to whoever manages the store's Aspen Dental account.
   * Aspen Beacon = Beacon cases with LFX Unit Flag <> Yes.
   * Network denominators: ClearChoice 106, MB2 845, Aspen Dental and Aspen Beacon share
     the higher of their two practice counts.
@@ -29,6 +39,7 @@ Activity definition (matches active-customer-logic.md and the nightly scorer):
   bar cleared.  QUIET = no counted case in q1.  NEW = first ever counted case falls in the
   month (New wins over the other three in the monthly chart).
   Month M is evaluated at s = first day of M+1; the current month at s = run date.
+  Revenue = sum of Line Items "Price Net" per case, attributed to the case's received date.
 
 Run locally:   python pipeline/build.py            (writes ./data.js next to index.html)
 In CI:         SUPABASE_URL / SUPABASE_SERVICE_KEY come from repo secrets.
@@ -112,9 +123,11 @@ def pacific_today():
 
 
 RUN_DATE = dt.date.fromisoformat(os.environ["DCP_RUN_DATE"]) if os.environ.get("DCP_RUN_DATE") else pacific_today()
+JAN1 = dt.date(RUN_DATE.year, 1, 1)
+DAY = dt.timedelta(days=1)
 
 # ---------------------------------------------------------------------------
-# Account Executive section: definitions
+# Definitions
 # ---------------------------------------------------------------------------
 PARTNERS = [
     {"key": "aspen-clearchoice", "title": "Aspen ClearChoice", "partner": "Aspen ClearChoice", "ae": "Jillian Doss",
@@ -125,6 +138,17 @@ PARTNERS = [
      "logo": "logos/aspen-beacon.png", "network": "aspen", "network_note": "Aspen stores (higher of the Aspen Dental and Beacon counts)"},
     {"key": "mb2", "title": "MB2 Dental", "partner": "MB2", "ae": "Erin Vaughan",
      "logo": "logos/mb2.png", "network": 845, "network_note": "845 practices in the MB2 network"},
+]
+AMS = [
+    {"key": "avery", "name": "Avery Neamand", "amc": ["Avery Neamand"], "label": "Aspen ClearChoice", "logos": ["logos/clearchoice.svg"], "lines": "all"},
+    {"key": "susanne", "name": "Susanne Neumann", "amc": ["Susanne Neumann"], "label": "Aspen ClearChoice", "logos": ["logos/clearchoice.svg"], "lines": "all"},
+    {"key": "collin", "name": "Collin Maccabe", "amc": ["Collin Maccabe"], "label": "Aspen Dental", "logos": ["logos/aspen-dental.svg"], "lines": "all"},
+    {"key": "syed", "name": "Syed Zubair", "amc": ["Syed Zubair, Nikolas Olejnik"], "label": "Incisive", "logos": ["logos/incisive.png"], "lines": "all"},
+    {"key": "liezl", "name": "Liezl Evangelista", "amc": ["Liezl Evangelista"], "label": "OC Private Practice", "logos": ["logos/spectrum-killian.png"], "lines": "all"},
+    {"key": "nikolas", "name": "Nikolas Olejnik", "amc": ["Nikolas Olejnik"], "label": "MB2, Engel, S.I.N. 360 (non-Incisive book)",
+     "logos": ["logos/mb2.png", "logos/engel.png", "logos/sin360.png"], "lines": ["MB2", "Engel", "S.I.N. 360"]},
+    {"key": "ed", "name": "Ed Loonam", "amc": ["Ed Loonam"], "label": "Strategic partner book",
+     "logos": ["logos/advantage-dental.png", "logos/affordable-dentures.png", "logos/pds.svg"], "lines": "top3"},
 ]
 SA_T = {"CB": 60, "IMP": 12, "REM": 30, "FA": 12, "HE": 12}          # full bar, both windows
 CORE_T = {k: math.ceil(v / 2) for k, v in SA_T.items()}               # half bar, last 90 days
@@ -141,6 +165,10 @@ PLAYS_PLACEHOLDER = [
 
 def next_month(d):
     return (d.replace(day=28) + dt.timedelta(days=4)).replace(day=1)
+
+
+def prev_month(d):
+    return (d.replace(day=1) - DAY).replace(day=1)
 
 
 def ytd_months(run_date):
@@ -220,79 +248,105 @@ class Entity:
         return self._count(self.dates, lo, hi)
 
 
-def load_ae_inputs():
+class BizCal:
+    """Company business-day calendar from the Dates table (weekends and holidays out)."""
+
+    def __init__(self, rows):
+        self.biz = sorted(dt.date.fromisoformat(r["Date"][:10]) for r in rows if r.get("Is Business Day") == 1)
+        self.bizset = set(self.biz)
+        self.lo = self.biz[0] if self.biz else None
+        self.hi = self.biz[-1] if self.biz else None
+
+    def is_biz(self, d):
+        if self.lo and self.lo <= d <= self.hi:
+            return d in self.bizset
+        return d.weekday() < 5
+
+    def fold(self, d):
+        """attribute a non-business day to the business day before it"""
+        while not self.is_biz(d):
+            d -= DAY
+        return d
+
+    def between(self, lo, hi):
+        """business days lo <= d < hi"""
+        out, d = [], lo
+        while d < hi:
+            if self.is_biz(d):
+                out.append(d)
+            d += DAY
+        return out
+
+
+# ---------------------------------------------------------------------------
+# Inputs (loaded once, shared by both sections)
+# ---------------------------------------------------------------------------
+def load_inputs():
     print("loading Accounts ...", flush=True)
-    accounts = get("Accounts", {"select": '"Account Number","Strategic Partner","Practice ID","Practice Name","Market Segment","Intercompany"'},
+    accounts = get("Accounts", {"select": '"Account Number","Strategic Partner","Practice ID","Practice Name","Market Segment","Intercompany","Account Manager Combined"'},
                    key='"Account Number"')
-    print("loading Products ...", flush=True)
+    print("loading Products, Dates, Incisive links, TRI rebills ...", flush=True)
     products = get("Products", {"select": '"Product Number","Product Name","Business Unit L1","Business Unit L2"'}, key='"Product Number"')
-    print("loading Incisive links and TRI rebills ...", flush=True)
+    dates = get("Dates", {"select": '"Date","Is Business Day"'}, key='"Date"')
     links = get("cs_incisive_links", {"select": "new_account,legacy_practice_id"})
     rebills = {r["case_number"] for r in get("tri_rebill_cases", {"select": "case_number"})}
     print("loading Cases (all history, five columns) ...", flush=True)
     cases = get("Cases", {"select": '"Case Number","Account Number","Received Date","Primary Product Number","LFX Unit Flag"'}, key='"Case Number"')
-    print(f"  {len(accounts):,} accounts, {len(products):,} products, {len(cases):,} cases", flush=True)
-    return accounts, products, links, rebills, cases
+    print(f"loading Line Items received since {JAN1} ...", flush=True)
+    lines = get("Line Items", {"select": '"Line Item Id","Case Number","Price Net"', '"Received Date"': f"gte.{JAN1.isoformat()}"}, key='"Line Item Id"')
+    rev = defaultdict(float)
+    for r in lines:
+        if r.get("Case Number") and r.get("Price Net") is not None:
+            rev[r["Case Number"]] += float(r["Price Net"])
+    print(f"  {len(accounts):,} accounts, {len(products):,} products, {len(cases):,} cases, {len(lines):,} line items, {len(dates):,} calendar days", flush=True)
+    return {"accounts": accounts, "products": products, "dates": dates, "links": links, "rebills": rebills, "cases": cases, "rev": rev}
 
 
-def build_ae(inputs=None):
-    accounts, products, links, rebills, cases = inputs or load_ae_inputs()
-    partner_of = {p["partner"] for p in PARTNERS}
-    legacy = {l["new_account"]: l["legacy_practice_id"] for l in links if l.get("new_account")}
+def prepare(inputs):
+    """Shared scope: exclusions, practice ids, product lines, counted cases."""
+    legacy = {l["new_account"]: l["legacy_practice_id"] for l in inputs["links"] if l.get("new_account")}
     prod = {}
-    for p in products:
+    for p in inputs["products"]:
         pn = p.get("Product Number")
         if pn and pn not in prod:
             prod[pn] = (line_of(p.get("Business Unit L1"), p.get("Business Unit L2")),
                         "manufacturing jig" in (p.get("Product Name") or "").lower())
-
-    # in-scope accounts, with the pipeline's universe exclusions
-    scope = {}   # account number -> (partner, practice id)
+    scope = {}          # account number -> {sp, pid, amc}
     excluded = defaultdict(int)
-    for a in accounts:
-        sp = (a.get("Strategic Partner") or "").strip()
-        if sp not in partner_of:
-            continue
+    for a in inputs["accounts"]:
         an = (a.get("Account Number") or "").strip()
         if not an:
             continue
+        sp = (a.get("Strategic Partner") or "").strip()
         if an in CORP_EXCLUDE or (a.get("Market Segment") or "").strip() in SEG_EXCLUDE \
                 or (a.get("Intercompany") or "").strip() == "Yes" or "(dds" in (a.get("Practice Name") or "").lower():
-            excluded[sp] += 1
+            excluded[sp or "(none)"] += 1
             continue
         pid = legacy.get(an) or (a.get("Practice ID") or "").strip()
         if not pid:                      # same rule as the pipeline: no practice id, not counted
-            excluded[sp] += 1
+            excluded[sp or "(none)"] += 1
             continue
-        scope[an] = (sp, pid)
-
-    # practice universe per subsection. Aspen Dental and Aspen Beacon share the store list.
-    pids_by_partner = defaultdict(set)
-    for an, (sp, pid) in scope.items():
-        pids_by_partner[sp].add(pid)
-    aspen_stores = pids_by_partner["Aspen Dental"] | pids_by_partner["Aspen Beacon"]
-    aspen_network = max(len(pids_by_partner["Aspen Dental"]), len(pids_by_partner["Aspen Beacon"]))
-    universe = {
-        "Aspen ClearChoice": pids_by_partner["Aspen ClearChoice"],
-        "Aspen Dental": aspen_stores,
-        "Aspen Beacon": aspen_stores,
-        "MB2": pids_by_partner["MB2"],
-    }
-
-    # counted cases -> practice entities per subsection, with the LFX routing rule
-    ents = defaultdict(Entity)       # (subsection partner, pid) -> Entity
+        scope[an] = {"sp": sp, "pid": pid, "amc": (a.get("Account Manager Combined") or "").strip()}
+    # who manages each Aspen store's Aspen Dental account (for the LFX routing)
+    dental_owner = {}
+    for an, s in scope.items():
+        if s["sp"] == "Aspen Dental" and s["amc"] and not s["amc"].startswith("(x)"):
+            dental_owner[s["pid"]] = s["amc"]
+    # counted cases: (date, line, sp_effective, pid, amc_effective, case_number)
+    counted = []
     seen = set()
     dropped = defaultdict(int)
     routed_lfx = 0
-    for c in cases:
+    for c in inputs["cases"]:
         an = (c.get("Account Number") or "").strip()
-        if an not in scope:
+        s = scope.get(an)
+        if not s:
             continue
         cn = c.get("Case Number")
         if not cn or cn in seen:
             continue
         seen.add(cn)
-        if cn in rebills:
+        if cn in inputs["rebills"]:
             dropped["tri_rebill"] += 1
             continue
         rd = c.get("Received Date")
@@ -307,21 +361,39 @@ def build_ae(inputs=None):
         if jig:
             dropped["jig"] += 1
             continue
-        sp, pid = scope[an]
+        sp, pid, amc = s["sp"], s["pid"], s["amc"]
         if sp == "Aspen Beacon" and (c.get("LFX Unit Flag") or "").strip() == "Yes":
-            sp = "Aspen Dental"          # LFX work billed to the Beacon account belongs to the Aspen Dental store
+            sp = "Aspen Dental"                          # LFX work billed to Beacon belongs to the Aspen Dental store
+            amc = dental_owner.get(pid, "")
             routed_lfx += 1
-        ents[(sp, pid)].add(d, line)
+        counted.append((d, line, sp, pid, amc, cn))
+    print("dropped cases:", dict(dropped), "| Beacon LFX cases routed to Aspen Dental:", routed_lfx, flush=True)
+    return {"scope": scope, "counted": counted, "excluded": excluded, "cal": BizCal(inputs["dates"]), "rev": inputs["rev"]}
+
+
+# ---------------------------------------------------------------------------
+# Account Executives
+# ---------------------------------------------------------------------------
+def build_ae(P):
+    scope, counted = P["scope"], P["counted"]
+    pids_by_partner = defaultdict(set)
+    for s in scope.values():
+        pids_by_partner[s["sp"]].add(s["pid"])
+    aspen_stores = pids_by_partner["Aspen Dental"] | pids_by_partner["Aspen Beacon"]
+    aspen_network = max(len(pids_by_partner["Aspen Dental"]), len(pids_by_partner["Aspen Beacon"]))
+    universe = {"Aspen ClearChoice": pids_by_partner["Aspen ClearChoice"], "Aspen Dental": aspen_stores,
+                "Aspen Beacon": aspen_stores, "MB2": pids_by_partner["MB2"]}
+    ents = defaultdict(Entity)
+    for d, line, sp, pid, amc, cn in counted:
+        if sp in universe:
+            ents[(sp, pid)].add(d, line)
     for e in ents.values():
         e.finish()
 
     months = ytd_months(RUN_DATE)
-    jan1 = dt.date(RUN_DATE.year, 1, 1)
-    snaps = [jan1] + [s for _, _, s in months]      # Jan 1 = state at the end of December (baseline)
+    snaps = [JAN1] + [s for _, _, s in months]      # Jan 1 = state at the end of December (baseline)
     cur_m0 = months[-1][1]
-
-    subsections = []
-    validation = {}
+    subsections, validation = [], {}
     for pdef in PARTNERS:
         sp = pdef["partner"]
         ids = sorted(universe[sp])
@@ -331,7 +403,7 @@ def build_ae(inputs=None):
         n_super = sum(1 for x in cur if x == SUPER)
         n_core = sum(1 for x in cur if x == CORE)
         n_dab = sum(1 for x in cur if x == DABBLER)
-        ytd_sub = sum(1 for pid in ids if pid in E and E[pid].cases_between(jan1, RUN_DATE) > 0)
+        ytd_sub = sum(1 for pid in ids if pid in E and E[pid].cases_between(JAN1, RUN_DATE) > 0)
         mtd_new = sum(1 for pid in ids if pid in E and E[pid].first is not None and cur_m0 <= E[pid].first < RUN_DATE)
         network = aspen_network if pdef["network"] == "aspen" else pdef["network"]
         cards = {
@@ -405,13 +477,10 @@ def build_ae(inputs=None):
                             "net": net},
         })
         validation[sp] = {"super": n_super, "core": n_core, "dabbler": n_dab, "quiet": len(ids) - n_super - n_core - n_dab,
-                          "in_system": len(ids), "network": network, "excluded_accounts": excluded.get(sp, 0)}
-
-    print("dropped cases:", dict(dropped), "| Beacon LFX cases routed to Aspen Dental:", routed_lfx, flush=True)
-    print("practice state at run date (compare with cs_activity_state):", json.dumps(validation), flush=True)
+                          "in_system": len(ids), "network": network, "excluded_accounts": P["excluded"].get(sp, 0)}
+    print("AE practice state at run date (compare with cs_activity_state):", json.dumps(validation), flush=True)
     return {
-        "as_of": RUN_DATE.isoformat(),
-        "year": RUN_DATE.year,
+        "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,
         "definition": {
             "super_active": "full bar in one business unit in each of the last two 90 day windows (CB 60, REM 30, IMP 12, FA 12, HE 12)",
             "core_active": "half bar in one business unit in the last 90 days (CB 30, REM 15, IMP 6, FA 6, HE 6)",
@@ -423,12 +492,135 @@ def build_ae(inputs=None):
     }
 
 
-def build_am():
-    """Account Managers. TODO: metrics to be defined."""
-    return {}
+# ---------------------------------------------------------------------------
+# Account Managers
+# ---------------------------------------------------------------------------
+def build_am(P):
+    scope, counted, cal, rev = P["scope"], P["counted"], P["cal"], P["rev"]
+    months = ytd_months(RUN_DATE)
+    cur_m0 = months[-1][1]
+    pm0 = prev_month(cur_m0)
+    biz_in = cal.between(cur_m0, RUN_DATE)                       # business days elapsed this month (through yesterday)
+    prior_days = set(cal.between(pm0, cur_m0)[:len(biz_in)])      # same number of business days into last month
+    window60 = cal.between(RUN_DATE - dt.timedelta(days=60), RUN_DATE)
+    q0 = dt.date(RUN_DATE.year, 3 * ((RUN_DATE.month - 1) // 3) + 1, 1)
+    bounds = []
+    b = q0
+    while b < RUN_DATE:
+        bounds.append(b)
+        b += dt.timedelta(days=7)
+    if bounds[-1] != RUN_DATE:
+        bounds.append(RUN_DATE)
+    s30 = RUN_DATE - dt.timedelta(days=30)
+
+    # book membership
+    book_of = {}
+    for am in AMS:
+        for name in am["amc"]:
+            book_of[name] = am["key"]
+    universe = defaultdict(set)
+    for s in scope.values():
+        k = book_of.get(s["amc"])
+        if k:
+            universe[k].add(s["pid"])
+    ents = defaultdict(Entity)                 # (book, pid) -> Entity
+    by_book = defaultdict(list)                # book -> [(date, pid, sp, cn)]
+    for d, line, sp, pid, amc, cn in counted:
+        k = book_of.get(amc)
+        if not k:
+            continue
+        ents[(k, pid)].add(d, line)
+        by_book[k].append((d, pid, sp, cn))
+        universe[k].add(pid)
+    for e in ents.values():
+        e.finish()
+
+    subsections = []
+    for am in AMS:
+        k = am["key"]
+        ids = sorted(universe[k])
+        E = {pid: ents[(k, pid)] for pid in ids if (k, pid) in ents}
+        cases = by_book[k]
+        # cards
+        submitters_ytd = sum(1 for pid in ids if pid in E and E[pid].cases_between(JAN1, RUN_DATE) > 0)
+        folded = [(cal.fold(d), pid, sp, cn) for d, pid, sp, cn in cases if d >= JAN1 - dt.timedelta(days=100)]
+        cases_mtd = sum(1 for fd, _, _, _ in folded if cur_m0 <= fd < RUN_DATE)
+        prior_pace = sum(1 for fd, _, _, _ in folded if fd in prior_days)
+        mtd_pct = round(100.0 * (cases_mtd / prior_pace - 1), 1) if prior_pace else None
+        lv_now = {pid: (E[pid].level(RUN_DATE) if pid in E else QUIET) for pid in ids}
+        lv_30 = {pid: (E[pid].level(s30) if pid in E else QUIET) for pid in ids}
+        promoted_30 = sum(1 for pid in ids if lv_30[pid] < CORE <= lv_now[pid])
+        demoted_30 = sum(1 for pid in ids if lv_30[pid] >= CORE > lv_now[pid])
+        active_now = sum(1 for pid in ids if lv_now[pid] >= CORE)
+        # daily volume by business day, trailing 60 days
+        per_day = defaultdict(int)
+        for fd, _, _, _ in folded:
+            per_day[fd] += 1
+        daily = [{"d": d.isoformat(), "label": d.strftime("%b %-d") if os.name != "nt" else d.strftime("%b %d").replace(" 0", " "),
+                  "n": per_day.get(d, 0), "monday": d.weekday() == 0} for d in window60]
+        # revenue expansion: avg revenue per submitting office per month, by partner group
+        if am["lines"] == "all":
+            group_of = lambda sp: "All"
+            groups = ["All"]
+        elif am["lines"] == "top3":
+            ytd_rev = defaultdict(float)
+            for d, pid, sp, cn in cases:
+                if d >= JAN1:
+                    ytd_rev[sp or "(none)"] += rev.get(cn, 0.0)
+            top = [sp for sp, _ in sorted(ytd_rev.items(), key=lambda x: -x[1])[:3]]
+            group_of = lambda sp, top=top: sp if sp in top else "Other"
+            groups = top + ["Other"]
+        else:
+            allowed = list(am["lines"])
+            group_of = lambda sp, allowed=allowed: sp if sp in allowed else "Other"
+            groups = allowed + (["Other"] if any(sp not in allowed for d, _, sp, _ in cases if d >= JAN1) else [])
+        series = {g: {"name": g, "values": [], "offices": [], "revenue": []} for g in groups}
+        for label, m0, s in months:
+            offices = defaultdict(set)
+            money = defaultdict(float)
+            for d, pid, sp, cn in cases:
+                if m0 <= d < s:
+                    g = group_of(sp)
+                    offices[g].add(pid)
+                    money[g] += rev.get(cn, 0.0)
+            for g in groups:
+                n = len(offices[g])
+                series[g]["offices"].append(n)
+                series[g]["revenue"].append(int(round(money[g])))
+                series[g]["values"].append(int(round(money[g] / n)) if n else None)
+        # week over week this quarter
+        lv_b = {pid: [E[pid].level(b) if pid in E else QUIET for b in bounds] for pid in ids}
+        weeks = []
+        for i in range(1, len(bounds)):
+            up = sum(1 for pid in ids if lv_b[pid][i - 1] < CORE <= lv_b[pid][i])
+            down = sum(1 for pid in ids if lv_b[pid][i - 1] >= CORE > lv_b[pid][i])
+            start = bounds[i - 1]
+            weeks.append({"label": start.strftime("%b %d").replace(" 0", " "), "start": start.isoformat(),
+                          "partial": (bounds[i] - start).days < 7, "promoted": up, "demoted": down, "net": up - down})
+        subsections.append({
+            "key": k, "name": am["name"], "label": am["label"], "logos": am["logos"],
+            "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active_now": active_now,
+                      "cases_mtd": cases_mtd, "prior_pace": prior_pace, "mtd_pct": mtd_pct, "biz_days_in": len(biz_in),
+                      "month_label": cur_m0.strftime("%b"), "prior_month_label": pm0.strftime("%b"),
+                      "promoted_30": promoted_30, "demoted_30": demoted_30},
+            "daily": {"days": daily, "total": sum(x["n"] for x in daily), "from": window60[0].isoformat() if window60 else None, "to": window60[-1].isoformat() if window60 else None},
+            "revenue": {"months": [m[0] for m in months], "series": [series[g] for g in groups]},
+            "weekly": {"quarter": f"Q{(RUN_DATE.month - 1) // 3 + 1} {RUN_DATE.year}", "weeks": weeks},
+        })
+        print(f"AM {am['name']:18s} practices={len(ids):5d} submittersYTD={submitters_ytd:4d} casesMTD={cases_mtd:5d} priorPace={prior_pace:5d} pct={mtd_pct} up30={promoted_30} down30={demoted_30} active={active_now} groups={groups}", flush=True)
+    return {
+        "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,
+        "definition": {
+            "book": "practices whose accounts carry the manager in Accounts, Account Manager Combined; Syed carries the shared Incisive book, Nikolas his non-Incisive accounts",
+            "pace": "cases MTD compared with the same number of business days into last month; weekend and holiday cases count on the business day before",
+            "moves": "promoted = below active to Core or Super Active; demoted = Core or Super Active down to Dabbler or quiet",
+            "revenue": "Line Items Price Net per case, attributed to the month the case was received, divided by practices that sent a case that month",
+        },
+        "subsections": subsections,
+    }
 
 
-def build_programs():
+def build_programs(P):
     """Programs. TODO: metrics to be defined."""
     return {}
 
@@ -447,18 +639,19 @@ def sanitize(text):
 def main():
     out = os.environ.get("DCP_OUT") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data.js")
     now_utc = dt.datetime.now(dt.timezone.utc)
+    P = prepare(load_inputs())
     data = {
         "meta": {
             "run_ts": now_utc.isoformat(timespec="seconds"),
             "run_date": RUN_DATE.isoformat(),
-            "data_through": (RUN_DATE - dt.timedelta(days=1)).isoformat(),
+            "data_through": (RUN_DATE - DAY).isoformat(),
             "latest_invoice_date": latest_invoice_date(),
             "source": "Supabase SK Public",
         },
         "sections": {
-            "ae": build_ae(),
-            "am": build_am(),
-            "programs": build_programs(),
+            "ae": build_ae(P),
+            "am": build_am(P),
+            "programs": build_programs(P),
         },
     }
     body = "window.DCP_DATA = " + sanitize(json.dumps(data, ensure_ascii=True, separators=(",", ":"))) + ";\n"

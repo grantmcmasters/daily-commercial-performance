@@ -26,6 +26,8 @@
   --alliance:#C3E8FA;
   --silver:#B0B7C3;
   --white:#FFFFFF;
+  --up:#1D7A3A;
+  --down:#B0362F;
   --head:'Montserrat','Segoe UI',Arial,sans-serif;
   --serif:'Lora',Georgia,'Times New Roman',serif;
   --shadow:0 1px 3px rgba(5,32,48,.07),0 4px 14px rgba(5,32,48,.04);
@@ -94,12 +96,18 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .b3t .thr{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-top:2px}
 .b3t .rv{font-size:11.5px;color:var(--ink2);margin-top:6px;line-height:1.35}
 .b3t.ph .n{color:var(--silver)}
+.tick{display:inline-block;font-weight:800;font-size:12px;padding:2px 8px;border-radius:999px;margin-right:4px}
+.tick.up{background:rgba(52,199,89,.18);color:var(--up)}
+.tick.down{background:rgba(239,68,68,.16);color:var(--down)}
+.tick.flat{background:rgba(176,183,195,.25);color:var(--ink2)}
 
 /* ---------- subsections (one pagers) ---------- */
 .sub{margin-top:16px;padding:22px 24px 20px}
 .sub-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.sub-brand{display:flex;align-items:center;gap:16px;min-width:0}
+.sub-brand{display:flex;align-items:center;gap:16px;min-width:0;flex-wrap:wrap}
+.sub-logos{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .sub-logo{height:46px;width:auto;max-width:210px;object-fit:contain;display:block}
+.sub-logo.sm{height:36px;max-width:150px}
 .sub-title{font-size:20px;font-weight:800;line-height:1.15}
 .sub-meta{font-size:11.5px;color:var(--ink2);font-weight:600;margin-top:2px}
 .chip{display:inline-block;font-weight:700;font-size:10.5px;padding:4px 10px;border-radius:999px;white-space:nowrap;line-height:1.25}
@@ -108,12 +116,17 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .chart-wrap{margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px 4px}
 .chart-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .panel-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.panel-sub{font-size:11px;color:var(--ink2);margin-top:-4px;margin-bottom:6px}
 .legend{display:flex;gap:16px;font-size:11.5px;font-weight:700;color:var(--ink2);flex-wrap:wrap}
 .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 .legend i.dash{background:transparent;border:1.5px dashed #6C7A88;border-radius:1px}
-.chart-wrap svg{width:100%;height:auto;display:block;margin-top:4px}
+.legend i.ln{height:3px;border-radius:2px;vertical-align:3px}
+.chart-wrap svg,.panel svg{width:100%;height:auto;display:block;margin-top:4px}
 .bottom{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-top:12px}
 @media (max-width:1000px){.bottom{grid-template-columns:1fr}}
+.am-grid{display:grid;grid-template-columns:3fr 2fr;gap:12px;margin-top:12px}
+@media (max-width:1000px){.am-grid{grid-template-columns:1fr}}
+.am-right{display:flex;flex-direction:column;gap:12px}
 .panel{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .panel .panel-title{margin-bottom:8px}
 .mx-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -180,7 +193,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   <div class="card export" id="export-strip">
     <div>
       <div class="exp-t">Export PowerPoint</div>
-      <div class="exp-s">Builds a deck with one slide per one pager below (Account Executives, then Account Managers and Programs as they come online). Logos, cards, the chart and the movement table land as native PowerPoint objects.</div>
+      <div class="exp-s">Builds a deck with one slide per one pager below (Account Executives, Account Managers, then Programs as it comes online). Logos, cards, charts and tables land as native PowerPoint objects.</div>
     </div>
     <button class="btn" id="btn-pptx" type="button">Export PowerPoint</button>
     <span class="exp-status" id="pptx-status" aria-live="polite"></span>
@@ -195,25 +208,9 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
   <section class="block" id="account-managers" data-key="am">
     <h2 class="sec"><span class="n">02</span>Account Managers</h2>
-    <p class="lede" data-role="lede">Section placeholder. One one pager per account manager, coming next.</p>
-    <div class="b4row" data-role="tiles">
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 1</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 2</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 3</div><div class="thr">placeholder</div></div>
-      <div class="b3t ph"><div class="n">--</div><div class="t">Tile 4</div><div class="thr">placeholder</div></div>
-    </div>
-    <div class="card" style="margin-top:12px">
-      <div class="tbl-wrap">
-        <table class="tbl" data-role="table">
-          <thead><tr><th>Account manager</th><th class="r">Column 2</th><th class="r">Column 3</th><th class="r">Column 4</th></tr></thead>
-          <tbody>
-            <tr><td class="ph">Row placeholder</td><td class="r ph">--</td><td class="r ph">--</td><td class="r ph">--</td></tr>
-            <tr><td class="ph">Row placeholder</td><td class="r ph">--</td><td class="r ph">--</td><td class="r ph">--</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p class="note" data-role="note">Metrics, columns and ordering for this section are still to be defined.</p>
-    </div>
+    <p class="lede" id="am-lede">Section placeholder. Renders from data.js once the nightly build has run.</p>
+    <p class="defs" id="am-defs"></p>
+    <div id="am-subs"></div>
   </section>
 
   <section class="block" id="programs" data-key="programs">
@@ -239,7 +236,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     </div>
   </section>
 
-  <div class="footer">Rebuilt from the company database every night at 3:30 AM Pacific. The banner shows the last day of data included and when the page was refreshed. No patient information appears anywhere on this page. <span class="num" id="build-tag">Build v0.3.0</span></div>
+  <div class="footer">Rebuilt from the company database every night at 3:30 AM Pacific. The banner shows the last day of data included and when the page was refreshed. No patient information appears anywhere on this page. <span class="num" id="build-tag">Build v0.4.0</span></div>
 
 </main>
 
@@ -257,11 +254,22 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
   }
   function fmtN(n) { return (n == null) ? "--" : Number(n).toLocaleString("en-US"); }
   function fmtPct(p) { return (p == null) ? "--" : Math.round(p).toLocaleString("en-US") + "%"; }
+  function fmtMoney(v) {
+    if (v == null) return "--";
+    var a = Math.abs(v);
+    if (a >= 1e6) return "$" + (v / 1e6).toFixed(2) + "M";
+    if (a >= 1e4) return "$" + Math.round(v / 1e3) + "k";
+    if (a >= 1e3) return "$" + (v / 1e3).toFixed(1) + "k";
+    return "$" + Math.round(v);
+  }
   function longDate(iso) {
     try {
       var p = iso.split("-");
       return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(+p[0], +p[1] - 1, +p[2]));
     } catch (e) { return iso; }
+  }
+  function shortDate(iso) {
+    try { var p = iso.split("-"); return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(+p[0], +p[1] - 1, +p[2])); } catch (e) { return iso; }
   }
 
   /* ---------- as-of pill (data through yesterday, refreshed at the run time in Pacific) ---------- */
@@ -309,18 +317,12 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     if (note && d.note != null) note.textContent = d.note;
   }
 
-  /* ============================================================
-     Account Executives (practice level)
-     ============================================================ */
-  var AE = (D.sections || {}).ae || null;
-  var SERIES = [
-    { key: "active", label: "Active (core + super)", color: "#1882C7", ink: "#FFFFFF" },
-    { key: "dabbler", label: "Dabbler", color: "#4ABEEE", ink: "#052030" },
-    { key: "new", label: "New", color: "#B3A369", ink: "#052030" }
-  ];
+  /* ---------- shared chart helpers ---------- */
   var NET_STROKE = "#6C7A88";
   var TONE_RGB = { "new": [24, 130, 199], up: [52, 199, 89], flat: [176, 183, 195], down: [245, 196, 66], quiet: [239, 68, 68] };
   var TONE_INK = { "new": "#0F6BA8", up: "#1D7A3A", flat: "#5A6B79", down: "#8A6D1A", quiet: "#B0362F" };
+  var GREEN = "#34C759", RED = "#EF4444", GREEN_INK = "#1D7A3A", RED_INK = "#B0362F";
+  var LINE_COLORS = ["#1882C7", "#B3A369", "#4ABEEE", "#8A93A3"];
 
   function niceTicks(max) {
     if (max <= 0) return [0, 1];
@@ -332,6 +334,29 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     if (out[out.length - 1] < max) out.push(out[out.length - 1] + step);
     return out;
   }
+  function grid(s, ticks, y, padL, W, padR, fmt) {
+    ticks.forEach(function (t) {
+      var yy = y(t);
+      s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>');
+      s.push('<text x="' + (padL - 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + (fmt ? fmt(t) : fmtN(t)) + '</text>');
+    });
+  }
+  function tile(value, label, sub, tone) {
+    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + esc(sub) + "</div></div>";
+  }
+  function tileHTML(value, label, subHTML, tone) {
+    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + subHTML + "</div></div>";
+  }
+
+  /* ============================================================
+     Account Executives (practice level)
+     ============================================================ */
+  var AE = (D.sections || {}).ae || null;
+  var SERIES = [
+    { key: "active", label: "Active (core + super)", color: "#1882C7", ink: "#FFFFFF" },
+    { key: "dabbler", label: "Dabbler", color: "#4ABEEE", ink: "#052030" },
+    { key: "new", label: "New", color: "#B3A369", ink: "#052030" }
+  ];
 
   function chartSVG(months, network) {
     var W = 960, H = 360, padL = 46, padR = 12, padT = 34, padB = 30;
@@ -341,37 +366,33 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
     var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(64, slot * 0.56), dw = bw + 14;
     var y = function (v) { return padT + ih - (v / ymax) * ih; };
-    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Submitting practices by month against the total network">';
-    ticks.forEach(function (t) {
-      var yy = y(t);
-      s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) + '" stroke="#DDE2E9" stroke-width="1"/>';
-      s += '<text x="' + (padL - 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + fmtN(t) + '</text>';
-    });
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Submitting practices by month against the total network">'];
+    grid(s, ticks, y, padL, W, padR);
     months.forEach(function (m, i) {
       var cx = padL + slot * i + slot / 2, x = cx - bw / 2, base = 0;
       if (network) {
         var yn = y(network);
-        s += '<rect x="' + (cx - dw / 2).toFixed(1) + '" y="' + yn.toFixed(1) + '" width="' + dw.toFixed(1) + '" height="' + (y(0) - yn).toFixed(1) + '" fill="none" stroke="' + NET_STROKE + '" stroke-width="1.4" stroke-dasharray="5,4" rx="3"/>';
-        s += '<text x="' + cx.toFixed(1) + '" y="' + (yn - 6).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6C7A88">' + fmtN(network) + '</text>';
+        s.push('<rect x="' + (cx - dw / 2).toFixed(1) + '" y="' + yn.toFixed(1) + '" width="' + dw.toFixed(1) + '" height="' + (y(0) - yn).toFixed(1) + '" fill="none" stroke="' + NET_STROKE + '" stroke-width="1.4" stroke-dasharray="5,4" rx="3"/>');
+        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yn - 6).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6C7A88">' + fmtN(network) + '</text>');
       }
       SERIES.forEach(function (ser) {
         var v = m[ser.key] || 0;
         if (v <= 0) return;
         var y1 = y(base + v), h = y(base) - y1;
-        s += '<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + ser.color + '"/>';
-        if (h >= 15) s += '<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + ser.ink + '">' + v + '</text>';
+        s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + ser.color + '"/>');
+        if (h >= 15) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + ser.ink + '">' + v + '</text>');
         base += v;
       });
       var yt = y(base), crowded = network && (yt - y(network)) < 18;
       if (m.total > 0) {
-        s += crowded
+        s.push(crowded
           ? '<text x="' + cx.toFixed(1) + '" y="' + (yt + 13).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">' + fmtN(m.total) + '</text>'
-          : '<text x="' + cx.toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#052030">' + fmtN(m.total) + '</text>';
+          : '<text x="' + cx.toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#052030">' + fmtN(m.total) + '</text>');
       }
-      s += '<text x="' + cx.toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>';
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
     });
-    s += '<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>';
-    return s + "</svg>";
+    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
+    return s.join("") + "</svg>";
   }
 
   function cellStyle(tone, v, rowMax) {
@@ -395,13 +416,12 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     tr.net.forEach(function (v) { h += '<td style="' + netStyle(v) + '">' + (v > 0 ? "+" + v : v) + "</td>"; });
     return h + "</tr></tbody></table>";
   }
-  function tile(value, label, sub, tone) {
-    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + esc(sub) + "</div></div>";
-  }
-
   function defsText() {
     var d = (AE && AE.definition) || {};
     return "Super Active: " + (d.super_active || "") + ". Core Active: " + (d.core_active || "") + ". Dabbler: " + (d.dabbler || "") + ". New: " + (d.new || "") + ". " + (d.lfx ? d.lfx + "." : "");
+  }
+  function logoImg(path, title, small) {
+    return '<img class="sub-logo' + (small ? " sm" : "") + '" src="' + esc(path) + '" alt="' + esc(title) + ' logo" onerror="this.style.display=\'none\'">';
   }
 
   function renderAE() {
@@ -412,8 +432,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     host.innerHTML = AE.subsections.map(function (sub) {
       var c = sub.cards;
       return '<div class="sub card" id="ae-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
-        '<div class="sub-head"><div class="sub-brand">' +
-          (sub.logo ? '<img class="sub-logo" src="' + esc(sub.logo) + '" alt="' + esc(sub.title) + ' logo">' : "") +
+        '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div><div class="sub-title">' + esc(sub.title) + '</div><div class="sub-meta">Account executive: ' + esc(sub.ae) + " · practice level · " + esc(AE.year) + " YTD</div></div></div>" +
         '<div><span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
         '<div class="b5row">' +
@@ -432,6 +451,120 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
             (sub.plays || []).map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") + "</ul>" +
             '<div class="plays-note">Click to edit. Edits go into the PowerPoint export but are not saved between visits yet.</div></div>' +
         "</div></div>";
+    }).join("");
+  }
+
+  /* ============================================================
+     Account Managers (practice level)
+     ============================================================ */
+  var AM = (D.sections || {}).am || null;
+
+  function dailySVG(days) {
+    var W = 900, H = 420, padL = 42, padR = 10, padT = 26, padB = 34;
+    var n = days.length || 1, max = 0;
+    days.forEach(function (d) { if (d.n > max) max = d.n; });
+    var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
+    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = slot * 0.7;
+    var y = function (v) { return padT + ih - (v / ymax) * ih; };
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Case volume by business day, trailing 60 days">'];
+    grid(s, ticks, y, padL, W, padR);
+    days.forEach(function (d, i) {
+      var cx = padL + slot * i + slot / 2, x = cx - bw / 2, y1 = y(d.n), h = y(0) - y1;
+      s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + (d.monday ? "#0F6BA8" : "#1882C7") + '" rx="1.5"/>');
+      if (d.n > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 - 4).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="#052030">' + d.n + '</text>');
+      if (d.monday) s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(d.label) + '</text>');
+    });
+    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
+    return s.join("") + "</svg>";
+  }
+
+  function lineSVG(rev) {
+    var W = 560, H = 270, padL = 48, padR = 14, padT = 22, padB = 30;
+    var months = rev.months, n = months.length || 1, max = 0;
+    rev.series.forEach(function (ser) { ser.values.forEach(function (v) { if (v != null && v > max) max = v; }); });
+    var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
+    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n;
+    var y = function (v) { return padT + ih - (v / ymax) * ih; }, x = function (i) { return padL + slot * i + slot / 2; };
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Average revenue per submitting office by month">'];
+    grid(s, ticks, y, padL, W, padR, fmtMoney);
+    rev.series.forEach(function (ser, si) {
+      var col = LINE_COLORS[si % LINE_COLORS.length], pts = [];
+      ser.values.forEach(function (v, i) { if (v != null) pts.push([x(i), y(v), v, i]); });
+      if (pts.length > 1) s.push('<polyline fill="none" stroke="' + col + '" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
+      pts.forEach(function (p) {
+        s.push('<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3.5" fill="' + col + '" stroke="#FFFFFF" stroke-width="1.5"/>');
+        var above = si % 2 === 0;
+        s.push('<text x="' + p[0].toFixed(1) + '" y="' + (above ? p[1] - 8 : p[1] + 15).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + col + '">' + fmtMoney(p[2]) + '</text>');
+      });
+    });
+    months.forEach(function (m, i) { s.push('<text x="' + x(i).toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(m) + '</text>'); });
+    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
+    return s.join("") + "</svg>";
+  }
+
+  function wowSVG(weekly) {
+    var weeks = weekly.weeks, W = 560, H = 250, padL = 36, padR = 10, padT = 22, padB = 52;
+    var n = weeks.length || 1, max = 1;
+    weeks.forEach(function (w) { if (w.promoted > max) max = w.promoted; if (w.demoted > max) max = w.demoted; });
+    var ticks = niceTicks(max), ymax = ticks[ticks.length - 1] || 1;
+    var iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, bw = Math.min(18, slot * 0.34);
+    var y = function (v) { return padT + ih - (v / ymax) * ih; };
+    var s = ['<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Week over week moves up to active and down from active">'];
+    grid(s, ticks, y, padL, W, padR);
+    weeks.forEach(function (w, i) {
+      var cx = padL + slot * i + slot / 2;
+      var xg = cx - bw - 2, xr = cx + 2;
+      s.push('<rect x="' + xg.toFixed(1) + '" y="' + y(w.promoted).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (y(0) - y(w.promoted)).toFixed(1) + '" fill="' + GREEN + '" rx="1.5"/>');
+      s.push('<rect x="' + xr.toFixed(1) + '" y="' + y(w.demoted).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (y(0) - y(w.demoted)).toFixed(1) + '" fill="' + RED + '" rx="1.5"/>');
+      if (w.promoted > 0) s.push('<text x="' + (xg + bw / 2).toFixed(1) + '" y="' + (y(w.promoted) - 4).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + GREEN_INK + '">' + w.promoted + '</text>');
+      if (w.demoted > 0) s.push('<text x="' + (xr + bw / 2).toFixed(1) + '" y="' + (y(w.demoted) - 4).toFixed(1) + '" text-anchor="middle" font-size="9.5" font-weight="700" fill="' + RED_INK + '">' + w.demoted + '</text>');
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 30) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
+      var netCol = w.net > 0 ? GREEN_INK : w.net < 0 ? RED_INK : "#5A6B79";
+      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="12" font-weight="800" fill="' + netCol + '">' + (w.net > 0 ? "+" + w.net : w.net) + '</text>');
+    });
+    s.push('<text x="' + (padL - 6) + '" y="' + (H - 12) + '" text-anchor="end" font-size="9" font-weight="800" fill="#5A6B79">NET</text>');
+    s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
+    return s.join("") + "</svg>";
+  }
+
+  function tickerHTML(c) {
+    if (c.mtd_pct == null) return '<span class="tick flat">n/a</span> no ' + esc(c.prior_month_label) + ' cases in the first ' + c.biz_days_in + ' business days';
+    var tone = c.mtd_pct > 0.5 ? "up" : c.mtd_pct < -0.5 ? "down" : "flat";
+    var sign = c.mtd_pct > 0 ? "+" : "";
+    return '<span class="tick ' + tone + '">' + sign + Math.round(c.mtd_pct) + "%</span> vs " + esc(c.prior_month_label) + " pace (" + fmtN(c.prior_pace) + ") at " + c.biz_days_in + " business days in";
+  }
+  function amDefs() {
+    var d = (AM && AM.definition) || {};
+    return "Book: " + (d.book || "") + ". Pace: " + (d.pace || "") + ". Moves: " + (d.moves || "") + ". Revenue: " + (d.revenue || "") + ".";
+  }
+
+  function renderAM() {
+    var host = byId("am-subs");
+    if (!AM || !AM.subsections || !AM.subsections.length) return;
+    byId("am-lede").textContent = "One pager per account manager, practice level. Case volume by business day, revenue per submitting office, and the weekly moves up to and down from active.";
+    byId("am-defs").innerHTML = amDefs().replace(/(Book|Pace|Moves|Revenue):/g, "<b>$1:</b>");
+    host.innerHTML = AM.subsections.map(function (sub) {
+      var c = sub.cards, dly = sub.daily;
+      var range = dly.from && dly.to ? shortDate(dly.from) + " to " + shortDate(dly.to) : "";
+      return '<div class="sub card" id="am-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
+        '<div class="sub-head"><div class="sub-brand"><div class="sub-logos">' + (sub.logos || []).map(function (p) { return logoImg(p, sub.label, sub.logos.length > 1); }).join("") + "</div>" +
+          '<div><div class="sub-title">' + esc(sub.name) + '</div><div class="sub-meta">' + esc(sub.label) + " · account manager · practice level · " + fmtN(c.practices) + " practices in book</div></div></div>" +
+        '<div><span class="chip chip-b">' + esc(sub.name) + "</span></div></div>" +
+        '<div class="b4row">' +
+          tile(fmtN(c.submitters_ytd), "Submitters YTD", "practices with a case this year; " + fmtN(c.active_now) + " active today", "g") +
+          tileHTML(fmtN(c.cases_mtd), "Cases MTD (" + esc(c.month_label) + ")", tickerHTML(c), "") +
+          tile(fmtN(c.promoted_30), "Promoted to active", "last 30 days, below active up to Core or Super Active", "g") +
+          tile(fmtN(c.demoted_30), "Demoted from active", "last 30 days, Core or Super Active down to Dabbler or quiet", "d") +
+        "</div>" +
+        '<div class="am-grid">' +
+          '<div class="panel"><div class="panel-title">Case volume by business day, trailing 60 days</div><div class="panel-sub">' + esc(range) + " · " + fmtN(dly.total) + " cases · weekend and holiday cases count on the business day before · Mondays labeled and shaded darker</div>" + dailySVG(dly.days) + "</div>" +
+          '<div class="am-right">' +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue expansion, ' + esc(AM.year) + ' YTD</div><div class="legend">' +
+              sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name) + "</span>"; }).join("") + "</div></div>" +
+              '<div class="panel-sub">Average revenue per submitting office per month</div>' + lineSVG(sub.revenue) + "</div>" +
+            '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div><div class="legend"><span><i style="background:' + GREEN + '"></i>Up to active</span><span><i style="background:' + RED + '"></i>Down from active</span></div></div>' +
+              '<div class="panel-sub">Practices that crossed the active bar each week; net below. * partial week through yesterday</div>' + wowSVG(sub.weekly) + "</div>" +
+          "</div></div></div>";
     }).join("");
   }
 
@@ -474,23 +607,35 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       img.src = path;
     });
   }
-
-  function addAESlide(pptx, sub, logo) {
-    var c = sub.cards;
-    var s = pptx.addSlide();
+  function slideHeader(pptx, s, title, subtitle) {
     s.background = { color: "F5FAFD" };
     s.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.333, h: 0.95, fill: { color: "052030" }, line: { color: "052030" } });
-    s.addText("Account Executives  ·  " + sub.title, { x: 0.4, y: 0.12, w: 9, h: 0.45, fontFace: "Montserrat", fontSize: 20, bold: true, color: "FFFFFF" });
-    s.addText("Account executive: " + sub.ae + "   ·   practice level   ·   " + ASOF, { x: 0.4, y: 0.55, w: 12.5, h: 0.3, fontFace: "Montserrat", fontSize: 10, color: "A0D9EE" });
-    // logo box + five KPI boxes
-    s.addShape(pptx.ShapeType.roundRect, { x: 0.4, y: 1.15, w: 1.9, h: 1.05, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
-    if (logo && logo.data) {
-      var lw = 1.6, lh = lw / (logo.ratio || 3);
-      if (lh > 0.75) { lh = 0.75; lw = lh * (logo.ratio || 3); }
-      s.addImage({ data: logo.data, x: 0.4 + (1.9 - lw) / 2, y: 1.15 + (1.05 - lh) / 2, w: lw, h: lh });
-    } else {
-      s.addText(sub.title, { x: 0.4, y: 1.15, w: 1.9, h: 1.05, align: "center", valign: "middle", fontFace: "Montserrat", fontSize: 12, bold: true, color: "052030" });
-    }
+    s.addText(title, { x: 0.4, y: 0.12, w: 9, h: 0.45, fontFace: "Montserrat", fontSize: 20, bold: true, color: "FFFFFF" });
+    s.addText(subtitle, { x: 0.4, y: 0.55, w: 12.5, h: 0.3, fontFace: "Montserrat", fontSize: 10, color: "A0D9EE" });
+  }
+  function kpiBox(pptx, s, x, w, value, label, sub, color) {
+    s.addShape(pptx.ShapeType.roundRect, { x: x, y: 1.15, w: w, h: 1.05, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
+    s.addText(value, { x: x, y: 1.17, w: w, h: 0.48, align: "center", fontFace: "Montserrat", fontSize: 22, bold: true, color: color || "052030" });
+    s.addText(label, { x: x, y: 1.62, w: w, h: 0.24, align: "center", fontFace: "Montserrat", fontSize: 9, bold: true, color: "052030" });
+    s.addText(sub, { x: x + 0.05, y: 1.84, w: w - 0.1, h: 0.34, align: "center", fontFace: "Calibri", fontSize: 7.5, color: "5A6B79", valign: "top" });
+  }
+  function logoBox(pptx, s, x, w, logos, fallback) {
+    s.addShape(pptx.ShapeType.roundRect, { x: x, y: 1.15, w: w, h: 1.05, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
+    var ok = (logos || []).filter(function (l) { return l && l.data; });
+    if (!ok.length) { s.addText(fallback, { x: x, y: 1.15, w: w, h: 1.05, align: "center", valign: "middle", fontFace: "Montserrat", fontSize: 11, bold: true, color: "052030" }); return; }
+    var gap = 0.12, cellW = (w - 0.2 - gap * (ok.length - 1)) / ok.length, maxH = 0.72;
+    ok.forEach(function (l, i) {
+      var lw = cellW, lh = lw / (l.ratio || 3);
+      if (lh > maxH) { lh = maxH; lw = lh * (l.ratio || 3); }
+      var cx = x + 0.1 + i * (cellW + gap) + cellW / 2;
+      s.addImage({ data: l.data, x: cx - lw / 2, y: 1.15 + (1.05 - lh) / 2, w: lw, h: lh });
+    });
+  }
+
+  function addAESlide(pptx, sub, logo) {
+    var c = sub.cards, s = pptx.addSlide();
+    slideHeader(pptx, s, "Account Executives  ·  " + sub.title, "Account executive: " + sub.ae + "   ·   practice level   ·   " + ASOF);
+    logoBox(pptx, s, 0.4, 1.9, [logo], sub.title);
     var kp = [
       ["" + fmtN(c.total), "Total practices", c.total_note || "", "052030"],
       ["" + fmtN(c.active), "Active", fmtN(c.super) + " super active, " + fmtN(c.core) + " core active", "0F6BA8"],
@@ -498,14 +643,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       [fmtPct(c.penetration_pct), "YTD penetration", fmtN(c.ytd_submitters) + " of " + fmtN(c.total) + " sent a case this year", "8A7A42"],
       ["" + fmtN(c.mtd_net_new), "MTD net new submitters", "first ever case this month", "0F6BA8"]
     ];
-    kp.forEach(function (k, i) {
-      var x = 2.45 + i * 2.12, w = 2.0;
-      s.addShape(pptx.ShapeType.roundRect, { x: x, y: 1.15, w: w, h: 1.05, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
-      s.addText(k[0], { x: x, y: 1.17, w: w, h: 0.48, align: "center", fontFace: "Montserrat", fontSize: 22, bold: true, color: k[3] });
-      s.addText(k[1], { x: x, y: 1.62, w: w, h: 0.24, align: "center", fontFace: "Montserrat", fontSize: 9, bold: true, color: "052030" });
-      s.addText(k[2], { x: x + 0.05, y: 1.84, w: w - 0.1, h: 0.34, align: "center", fontFace: "Calibri", fontSize: 7.5, color: "5A6B79", valign: "top" });
-    });
-    // stacked bars with the total network as a dashed line
+    kp.forEach(function (k, i) { kpiBox(pptx, s, 2.45 + i * 2.12, 2.0, k[0], k[1], k[2], k[3]); });
     var labels = sub.months.map(function (m) { return m.label; });
     var bars = SERIES.map(function (ser) { return { name: ser.label, labels: labels, values: sub.months.map(function (m) { return m[ser.key] || 0; }) }; });
     var line = [{ name: "Total network (" + fmtN(sub.network) + ")", labels: labels, values: sub.months.map(function () { return sub.network; }) }];
@@ -521,7 +659,6 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       valAxes: [{ showValAxisTitle: false }], catAxes: [{ catAxisTitle: "" }],
       showTitle: true, title: "Submitting practices by month, " + AE.year + " YTD, against the total network", titleFontSize: 10, titleColor: "5A6B79", titleFontFace: "Montserrat"
     });
-    // movement table
     var tr = sub.transitions;
     var head = [{ text: "Movement", options: { bold: true, color: "5A6B79", fill: { color: "F5FAFD" } } }].concat(tr.months.map(function (m) { return { text: m, options: { bold: true, color: "5A6B79", align: "center", fill: { color: "F5FAFD" } } }; }));
     var rows = [head];
@@ -543,7 +680,6 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     var n = tr.months.length, colW = [2.0].concat(tr.months.map(function () { return (8.2 - 2.0) / n; }));
     s.addText("Month over month movement, " + AE.year + " YTD", { x: 0.4, y: 4.85, w: 8.2, h: 0.25, fontFace: "Montserrat", fontSize: 9, bold: true, color: "5A6B79" });
     s.addTable(rows, { x: 0.4, y: 5.1, w: 8.2, colW: colW, fontFace: "Calibri", fontSize: 7.5, rowH: 0.19, border: { type: "solid", color: "FFFFFF", pt: 1 }, margin: 0.02 });
-    // plays
     s.addShape(pptx.ShapeType.roundRect, { x: 8.85, y: 2.35, w: 4.1, h: 4.75, fill: { color: "FFFFFF" }, line: { color: "DDE2E9", width: 0.75 }, rectRadius: 0.08 });
     s.addText("PLAYS", { x: 9.0, y: 2.45, w: 3.8, h: 0.3, fontFace: "Montserrat", fontSize: 10, bold: true, color: "5A6B79", charSpacing: 2 });
     var plays = playsOf(sub.key, sub.plays);
@@ -551,14 +687,61 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     s.addText(defsText(), { x: 0.4, y: 7.12, w: 12.5, h: 0.34, fontFace: "Calibri", fontSize: 7, color: "5A6B79", italic: true, valign: "top" });
   }
 
+  function addAMSlide(pptx, sub, logos) {
+    var c = sub.cards, s = pptx.addSlide();
+    slideHeader(pptx, s, "Account Managers  ·  " + sub.name, sub.label + "   ·   practice level   ·   " + fmtN(c.practices) + " practices in book   ·   " + ASOF);
+    logoBox(pptx, s, 0.4, 2.6, logos, sub.name);
+    var pace = c.mtd_pct == null ? "no " + c.prior_month_label + " cases to compare" : (c.mtd_pct > 0 ? "+" : "") + Math.round(c.mtd_pct) + "% vs " + c.prior_month_label + " pace (" + fmtN(c.prior_pace) + ") at " + c.biz_days_in + " business days in";
+    var kp = [
+      ["" + fmtN(c.submitters_ytd), "Submitters YTD", fmtN(c.active_now) + " active today", "0F6BA8"],
+      ["" + fmtN(c.cases_mtd), "Cases MTD (" + c.month_label + ")", pace, c.mtd_pct == null ? "052030" : c.mtd_pct >= 0 ? "1D7A3A" : "B0362F"],
+      ["" + fmtN(c.promoted_30), "Promoted to active", "last 30 days", "1D7A3A"],
+      ["" + fmtN(c.demoted_30), "Demoted from active", "last 30 days, to dabbler or quiet", "B0362F"]
+    ];
+    kp.forEach(function (k, i) { kpiBox(pptx, s, 3.15 + i * 2.42, 2.3, k[0], k[1], k[2], k[3]); });
+    var days = sub.daily.days;
+    s.addChart(pptx.ChartType.bar, [{ name: "Cases", labels: days.map(function (d) { return d.monday ? d.label : ""; }), values: days.map(function (d) { return d.n; }) }], {
+      x: 0.4, y: 2.35, w: 7.5, h: 4.75, barDir: "col", barGapWidthPct: 35, chartColors: ["1882C7"],
+      showLegend: false, catAxisLabelFontSize: 7, valAxisLabelFontSize: 8, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+      valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
+      showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelColor: "052030", dataLabelFontSize: 6, dataLabelFontFace: "Calibri", dataLabelPosition: "outEnd",
+      showTitle: true, title: "Case volume by business day, trailing 60 days (" + fmtN(sub.daily.total) + " cases)", titleFontSize: 10, titleColor: "5A6B79", titleFontFace: "Montserrat"
+    });
+    var rv = sub.revenue;
+    s.addChart(pptx.ChartType.line, rv.series.map(function (ser) { return { name: ser.name, labels: rv.months, values: ser.values.map(function (v) { return v == null ? 0 : v; }) }; }), {
+      x: 8.05, y: 2.35, w: 4.9, h: 2.3, chartColors: LINE_COLORS.map(function (x) { return x.replace("#", ""); }), lineSize: 2, lineDataSymbolSize: 5,
+      showLegend: rv.series.length > 1, legendPos: "b", legendFontSize: 8, legendFontFace: "Calibri",
+      catAxisLabelFontSize: 8, valAxisLabelFontSize: 7, valAxisLabelFormatCode: "$#,##0", catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+      valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
+      showValue: rv.series.length === 1, dataLabelFormatCode: "$#,##0;-$#,##0;", dataLabelFontSize: 7, dataLabelColor: "052030", dataLabelPosition: "t",
+      showTitle: true, title: "Revenue expansion: average revenue per submitting office per month, " + AM.year + " YTD", titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
+    });
+    var wk = sub.weekly.weeks;
+    s.addChart(pptx.ChartType.bar, [
+      { name: "Up to active", labels: wk.map(function (w) { return w.label + (w.partial ? "*" : "") + " (" + (w.net > 0 ? "+" + w.net : w.net) + ")"; }), values: wk.map(function (w) { return w.promoted; }) },
+      { name: "Down from active", labels: wk.map(function (w) { return w.label + (w.partial ? "*" : "") + " (" + (w.net > 0 ? "+" + w.net : w.net) + ")"; }), values: wk.map(function (w) { return w.demoted; }) }
+    ], {
+      x: 8.05, y: 4.8, w: 4.9, h: 2.3, barDir: "col", barGrouping: "clustered", barGapWidthPct: 60, chartColors: ["34C759", "EF4444"],
+      showLegend: true, legendPos: "b", legendFontSize: 8, legendFontFace: "Calibri",
+      catAxisLabelFontSize: 7, valAxisLabelFontSize: 7, catAxisLabelFontFace: "Calibri", valAxisLabelFontFace: "Calibri",
+      valGridLine: { color: "DDE2E9", size: 0.5 }, catAxisLineShow: false, valAxisLineShow: false,
+      showValue: true, dataLabelFormatCode: "#,##0;-#,##0;", dataLabelFontSize: 7, dataLabelColor: "052030", dataLabelPosition: "outEnd",
+      showTitle: true, title: "Week over week, " + sub.weekly.quarter + ": practices up to and down from active (net in label; * partial week)", titleFontSize: 9, titleColor: "5A6B79", titleFontFace: "Montserrat"
+    });
+    s.addText(amDefs(), { x: 0.4, y: 7.12, w: 12.5, h: 0.34, fontFace: "Calibri", fontSize: 7, color: "5A6B79", italic: true, valign: "top" });
+  }
+
   function exportPptx() {
     var btn = byId("btn-pptx"), st = byId("pptx-status");
     btn.disabled = true; st.textContent = "Loading the PowerPoint library...";
-    var subs = (AE && AE.subsections) || [];
+    var aeSubs = (AE && AE.subsections) || [], amSubs = (AM && AM.subsections) || [];
     loadPptx().then(function () {
       st.textContent = "Preparing logos...";
-      return Promise.all(subs.map(function (sub) { return logoData(sub.logo); }));
-    }).then(function (logos) {
+      return Promise.all([
+        Promise.all(aeSubs.map(function (sub) { return logoData(sub.logo); })),
+        Promise.all(amSubs.map(function (sub) { return Promise.all((sub.logos || []).map(logoData)); }))
+      ]);
+    }).then(function (res) {
       st.textContent = "Building slides...";
       var pptx = new PptxGenJS();
       pptx.layout = "LAYOUT_WIDE"; pptx.author = "Spectrum Killian"; pptx.company = "Spectrum Killian"; pptx.title = "Daily Commercial Performance";
@@ -566,9 +749,10 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       t.background = { color: "052030" };
       t.addText("Daily Commercial Performance", { x: 0.8, y: 2.4, w: 11.7, h: 1.0, fontFace: "Montserrat", fontSize: 36, bold: true, color: "FFFFFF" });
       t.addText("Spectrum Killian  ·  " + ASOF, { x: 0.8, y: 3.4, w: 11.7, h: 0.5, fontFace: "Montserrat", fontSize: 14, color: "A0D9EE" });
-      subs.forEach(function (sub, i) { addAESlide(pptx, sub, logos[i]); });
+      aeSubs.forEach(function (sub, i) { addAESlide(pptx, sub, res[0][i]); });
+      amSubs.forEach(function (sub, i) { addAMSlide(pptx, sub, res[1][i]); });
       var fname = "Daily Commercial Performance " + ((D.meta && D.meta.run_date) || "") + ".pptx";
-      return pptx.writeFile({ fileName: fname }).then(function () { st.textContent = (subs.length + 1) + " slides exported."; });
+      return pptx.writeFile({ fileName: fname }).then(function () { st.textContent = (aeSubs.length + amSubs.length + 1) + " slides exported."; });
     }).catch(function (err) {
       st.textContent = "Export failed: " + (err && err.message ? err.message : err);
     }).then(function () { btn.disabled = false; });
@@ -577,8 +761,9 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 
   /* ---------- boot ---------- */
   var blocks = [].slice.call(document.querySelectorAll("section.block"));
-  blocks.forEach(function (sec) { if (sec.getAttribute("data-key") !== "ae") renderGeneric(sec); });
+  blocks.forEach(function (sec) { var k = sec.getAttribute("data-key"); if (k !== "ae" && k !== "am") renderGeneric(sec); });
   renderAE();
+  renderAM();
 
   /* ---------- scroll-spy: the pill of the section in view stays lit; anchor offset follows the banner height ---------- */
   var header = document.querySelector(".banner");

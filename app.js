@@ -434,8 +434,8 @@
         '<div class="b4row">' +
           tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
           tileHTML(fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerHTML(c), "") +
-          tile(fmtN(c.promoted_30), "Promoted to active, last 30 days", "", "g") +
-          tile(fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "d") +
+          tile("+" + fmtN(c.promoted_30), "Promoted to active, last 30 days", "", "up") +
+          tile("-" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", "dn") +
         "</div>" +
         '<div class="chart-wrap hero"><div class="chart-head"><div class="panel-title big">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received per day</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
         '<div class="am-grid3">' +
@@ -792,8 +792,8 @@
     this.logoCard(0.5, 1.05, 2.6, 1.05, logos, sub.name, sub.logo_tag);
     [["" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, null],
      [fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerText(c), DECK.navy, c.avg_pct == null ? DECK.ink : c.avg_pct >= 0 ? DECK.green : DECK.red],
-     ["" + fmtN(c.promoted_30), "Promoted to active, last 30 days", "", DECK.green, null],
-     ["" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", DECK.red, null]
+     ["+" + fmtN(c.promoted_30), "Promoted to active, last 30 days", "", DECK.green, null],
+     ["-" + fmtN(c.demoted_30), "Demoted from active, last 30 days", "", DECK.red, null]
     ].forEach(function (k, i) { self.kpi(3.25 + i * 2.42, 1.05, 2.32, 1.05, k[0], k[1], k[2], DECK.strips[i], k[3], k[4]); });
     this.label(0.5, 2.3, 12.33, "Case volume by business day", "trailing 60 days, " + fmtN(sub.daily.total) + " cases; gold = weekly average per business day");
     var colW = 3.98, gap = 0.195, y2 = 4.9, cy = 5.16, ch = 1.94, fs = 1.3;

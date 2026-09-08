@@ -773,7 +773,7 @@
 
   Deck.prototype.aeSlide = function (sub, logo) {
     var c = sub.cards, self = this;
-    this.content("Account Executives  |  " + sub.title, sub.ae);
+    this.content(sub.title, "Account Executives  |  " + sub.ae);
     this.logoCard(0.5, 1.05, 1.9, 1.05, [logo], sub.title);
     [["" + fmtN(c.total), "Total practices", DECK.navy], ["" + fmtN(c.active), "Active", DECK.killian], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy],
      [fmtPct(c.penetration_pct), "YTD penetration", DECK.goldInk], ["" + fmtN(c.mtd_net_new), "MTD net new submitters", DECK.killian]
@@ -788,7 +788,7 @@
   };
   Deck.prototype.amSlide = function (sub, logos) {
     var c = sub.cards, self = this;
-    this.content("Account Managers  |  " + sub.name, sub.label);
+    this.content(sub.name, "Account Managers  |  " + sub.label);
     this.logoCard(0.5, 1.05, 2.6, 1.05, logos, sub.name, sub.logo_tag);
     [["" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, null],
      [fmt1(c.avg_per_day_mtd), "Cases per business day, " + c.month_label + " MTD", avgTickerText(c), DECK.navy, c.avg_pct == null ? DECK.ink : c.avg_pct >= 0 ? DECK.green : DECK.red],
@@ -810,7 +810,7 @@
   };
   Deck.prototype.programSlide = function (sub, logo) {
     var c = sub.cards, self = this;
-    this.content("Programs  |  " + sub.title, "Marketing");
+    this.content(sub.title, "Programs  |  Marketing");
     this.logoCard(0.5, 1.05, 1.9, 1.05, [logo], sub.title);
     this.kpi(2.55, 1.05, 2.3, 1.05, "" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, DECK.killian);
     this.text("=", 5.05, 1.6, { size: 24, weight: 700, color: DECK.muted, align: "center", baseline: "middle" });

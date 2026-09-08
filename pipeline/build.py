@@ -136,7 +136,7 @@ PARTNERS = [
      "logo": "logos/aspen-dental.svg", "network": "aspen", "network_note": "Aspen stores (higher of the Aspen Dental and Beacon counts)"},
     {"key": "aspen-beacon", "title": "Aspen Beacon", "partner": "Aspen Beacon", "ae": "Jillian Doss",
      "logo": "logos/aspen-beacon.png", "network": "aspen", "network_note": "Aspen stores (higher of the Aspen Dental and Beacon counts)"},
-    {"key": "mb2", "title": "MB2 Dental", "partner": "MB2", "ae": "Erin Vaughan",
+    {"key": "mb2", "title": "MB2", "partner": "MB2", "ae": "Erin Vaughan",
      "logo": "logos/mb2.png", "network": 845, "network_note": "845 practices in the MB2 network"},
 ]
 AMS = [

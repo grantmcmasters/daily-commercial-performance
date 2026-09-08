@@ -235,7 +235,7 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.6.4</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.6.5</span></div>
 
 </main>
 
@@ -515,17 +515,21 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
       }
       if (d.monday) s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 12) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5A6B79">' + esc(d.label) + '</text>');
     });
-    /* weekly average per business day as one continuous stepped gold line, with a bold gold pill above each week's tallest bar */
-    var wa = weeklyAverages(days), path = [];
-    wa.weeks.forEach(function (w, wi) {
-      var x0 = padL + slot * w.idx[0] + slot * 0.1, x1 = padL + slot * (w.idx[w.idx.length - 1] + 1) - slot * 0.1, cx = (x0 + x1) / 2;
+    /* weekly average per business day: one point per week at the week's center, joined by a single dashed gold line */
+    var wa = weeklyAverages(days), pts = [], pills = [];
+    wa.weeks.forEach(function (w) {
+      var cx = padL + slot * (w.idx[0] + w.idx[w.idx.length - 1] + 1) / 2;
       var peak = 0; w.idx.forEach(function (i) { if (days[i].n > peak) peak = days[i].n; });
       var ya = y(w.avg), label = String(Math.round(w.avg * 10) / 10), pw = label.length * 8.5 + 14, py = Math.min(ya, y(peak)) - 24;
-      path.push((wi === 0 ? "M" : "L") + x0.toFixed(1) + "," + ya.toFixed(1) + " L" + x1.toFixed(1) + "," + ya.toFixed(1));
-      s.push('<rect x="' + (cx - pw / 2).toFixed(1) + '" y="' + py.toFixed(1) + '" width="' + pw.toFixed(1) + '" height="19" rx="5" fill="#B3A369"/>');
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (py + 14).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#052030">' + label + '</text>');
+      pts.push(cx.toFixed(1) + "," + ya.toFixed(1));
+      pills.push({ cx: cx, ya: ya, py: py, pw: pw, label: label });
     });
-    if (path.length) s.push('<path d="' + path.join(" ") + '" fill="none" stroke="#B3A369" stroke-width="3.5" stroke-dasharray="8,5" stroke-linecap="round" stroke-linejoin="round"/>');
+    if (pts.length) s.push('<polyline points="' + pts.join(" ") + '" fill="none" stroke="#B3A369" stroke-width="3.5" stroke-dasharray="8,5" stroke-linecap="round" stroke-linejoin="round"/>');
+    pills.forEach(function (p) {
+      s.push('<circle cx="' + p.cx.toFixed(1) + '" cy="' + p.ya.toFixed(1) + '" r="4.5" fill="#B3A369" stroke="#fff" stroke-width="1.5"/>');
+      s.push('<rect x="' + (p.cx - p.pw / 2).toFixed(1) + '" y="' + p.py.toFixed(1) + '" width="' + p.pw.toFixed(1) + '" height="19" rx="5" fill="#B3A369"/>');
+      s.push('<text x="' + p.cx.toFixed(1) + '" y="' + (p.py + 14).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#052030">' + p.label + '</text>');
+    });
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     return s.join("") + "</svg>";
   }

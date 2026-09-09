@@ -84,7 +84,7 @@ jobs:
         run: python pipeline/summarize.py --today data.js --yesterday prev.js --out summary.md
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-sonnet-5' }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-fable-5-1' }}
       - name: Send the email
         run: python pipeline/send_mail.py --summary summary.html --pdf deck.pdf ${{ inputs.send_to && format('--to "{0}"', inputs.send_to) || '' }}
         env:

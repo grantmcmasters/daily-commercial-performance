@@ -182,11 +182,11 @@
 
   /* ---------- volume over time: the Account Health chart, live from the same history ----------
      The history comes from the two public read-only functions the Account Health page calls (one row per day,
-     business unit and basis; one row per case). 90 day buckets are the default because that is the window
-     behind Core Active and Super Active, and the left date is set so the last bucket ends today. */
+     business unit and basis; one row per case). By month is the default; 90 day buckets are the window behind
+     Core Active and Super Active, and when buckets are chosen the left date is set so the last bucket ends today. */
   var SUPA_URL = "https://asdunkqodixbhbohxtuq.supabase.co", SUPA_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZHVua3FvZGl4Ymhib2h4dHVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNDUwNTcsImV4cCI6MjA5MDgyMTA1N30.lStrSSEpwFFk5GuXl2qzh2tr6bLZFY4_x9u6q4FcVeo";
   var LINE_ORDER = ["CB", "IMP", "REM", "FA", "HE"], MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  var dd = { basis: "recv", metric: "cases", gran: "month", an: "", roll: 90, from: "", to: "" };
+  var dd = { basis: "recv", metric: "cases", gran: "month", an: "", roll: 0, from: "", to: "" };
   var DRILL = null, CASES = null, ddTimer = null, CHARTS = {}, chartSeq = 0, tipEl = null, ddMin = "";
   function pad2(n) { return (n < 10 ? "0" : "") + n; }
   function todayStr() { var d = new Date(); return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
@@ -464,7 +464,7 @@
   var volume = '<div class="card" id="vol-card"><div class="spark-h">Volume over time</div>' +
     '<div class="bar" id="dd-controls"></div><div class="bar" id="dd-range"></div>' +
     '<div id="dd-chart"><p class="dt-note">Loading history&hellip;</p></div><div id="dd-stance"></div>' +
-    '<p class="dt-note">Received = when the case arrived; invoiced = when it billed. Units count only main products. Buckets group the range into fixed 7, 30, or 90 day windows counted from the left date, and the left date is set so the last bucket ends today. 90 day buckets are the window behind Core Active and Super Active, so the dashed lines are the bars for the business units on the chart. Refreshes automatically every 15 minutes.</p>' +
+    '<p class="dt-note">Received = when the case arrived; invoiced = when it billed. Units count only main products. Buckets group the range into fixed 7, 30, or 90 day windows counted from the left date, and the left date is set so the last bucket ends today. Pick 90 day buckets to see where the practice stands: that is the window behind Core Active and Super Active, and the dashed lines are the bars for the business units on the chart. Refreshes automatically every 15 minutes.</p>' +
     '<button class="xbtn" id="cd-toggle" type="button">Show all cases in this period</button><div id="cd-body" hidden></div></div>';
 
   /* open cases and category table */

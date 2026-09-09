@@ -28,6 +28,19 @@
   var monthLabel = function (i) { return (months[i] || "that month").replace(" MTD", ""); };
   var weekLabel = function (list, i) { var w = list[i]; return w ? "the week of " + w.label : "that week"; };
 
+  /* the navigator: every partner, account manager and program, one click away */
+  (function () {
+    var el = byId("dt-nav");
+    if (!el) return;
+    el.innerHTML = ["ae", "am", "programs"].map(function (sec) {
+      var subs = D.sections[sec] || {}, keys = Object.keys(subs);
+      if (!keys.length) return "";
+      return '<div class="grp"><span class="lbl">' + esc(SECTION_NAMES[sec]) + "</span>" + keys.map(function (k) {
+        return '<a class="' + (sec === SEC && k === KEY ? "on" : "") + '" href="details.html?sec=' + sec + "&key=" + encodeURIComponent(k) + '">' + esc(subs[k].title) + "</a>";
+      }).join("") + "</div>";
+    }).join("");
+  })();
+
   var S = (D.sections[SEC] || {})[KEY];
   if (!S) {
     byId("dt-head").innerHTML = '<div class="sub-title">Pick a page first</div>';
@@ -96,10 +109,31 @@
         V.cols = [["Start of week", function (r) { return stateAt(r.wkq, i); }], ["End of week", function (r) { return stateAt(r.wkq, i + 1); }]];
         break;
       }
+      case "mon": {
+        /* past, present, future: everyone who was anything but inactive in the month, the month before or the month after */
+        var hasPrev = i > 0, hasNext = i < last;
+        V.title = "State at the end of " + monthLabel(i) + ", with the month before and the month after";
+        V.filter = function (r) { return stateAt(r.hist, i) !== "0" || (hasPrev && stateAt(r.hist, i - 1) !== "0") || (hasNext && stateAt(r.hist, i + 1) !== "0") || inMonth(r, i); };
+        V.cols = [[(hasPrev ? monthLabel(i - 1) : "Before") + " \u2192 " + monthLabel(i) + " \u2192 " + (hasNext ? monthLabel(i + 1) : "Next"),
+          function (r) { return [hasPrev ? stateAt(r.hist, i - 1) : null, stateAt(r.hist, i), hasNext ? stateAt(r.hist, i + 1) : null]; }, "path"]];
+        V.sort = pathSort(V.cols[0][1]);
+        break;
+      }
+      case "wkp": case "wkyp": {
+        var list = k === "wkp" ? qweeks : yweeks, str = k === "wkp" ? "wkq" : "wky", hasNextW = i + 1 < list.length, w0 = list[i];
+        V.title = "State at the end of " + weekLabel(list, i) + ", with the week before and the week after";
+        V.filter = function (r) { var s = r[str]; return stateAt(s, i + 1) !== "0" || stateAt(s, i) !== "0" || (hasNextW && stateAt(s, i + 2) !== "0"); };
+        V.cols = [[(i > 0 ? list[i - 1].label : "Start") + " \u2192 " + (w0 ? w0.label : "that week") + " \u2192 " + (hasNextW ? list[i + 1].label : "Next"),
+          function (r) { var s = r[str]; return [stateAt(s, i), stateAt(s, i + 1), hasNextW ? stateAt(s, i + 2) : null]; }, "path"]];
+        V.sort = pathSort(V.cols[0][1]);
+        break;
+      }
       default: V.title = "All practices"; V.filter = function () { return true; };
     }
     return V;
   }
+  function pathKey(p) { return (+p[1] || 0) * 100 + (+p[2] || 0) * 10 + (+p[0] || 0); }
+  function pathSort(fn) { return function (a, b) { return (pathKey(fn(b)) - pathKey(fn(a))) || (b.ytd - a.ytd); }; }
 
   /* ---------- the tiles: the numbers of the one pager, each one a list ---------- */
   function tiles() {
@@ -150,6 +184,10 @@
 
   /* ---------- the list ---------- */
   function stateChip(c) { var s = STATE[String(c)] || STATE["0"]; return '<span class="stchip" style="background:' + s.bg + ';color:' + s.ink + '">' + s.label + "</span>"; }
+  function pathHTML(p) {
+    var arrow = '<span class="arw">\u2192</span>';
+    return '<span class="path">' + (p[0] == null ? '<span class="stchip none">Before the year</span>' : stateChip(p[0])) + arrow + '<span class="now">' + stateChip(p[1]) + "</span>" + arrow + (p[2] == null ? '<span class="stchip none">Not yet</span>' : stateChip(p[2])) + "</span>";
+  }
   function buTags(r) {
     var bu = r.bu || {}, keys = Object.keys(bu).sort(function (a, b) { return bu[b] - bu[a]; });
     return keys.map(function (k) { return '<span class="butag ' + (bu[k] === 3 ? "s" : "c") + '" title="' + esc(BU[k] || k) + ": " + (bu[k] === 3 ? "Super Active" : "Core Active") + '">' + esc(k) + "</span>"; }).join("");
@@ -168,7 +206,8 @@
   function columns() {
     var cols = [{ key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { return '<a href="' + esc(accountURL(r)) + '">' + esc(r.name) + "</a>"; }, cls: "pname" }];
     (current.cols || []).forEach(function (c, i) {
-      cols.push(c[2] ? { key: "ctx" + i, label: c[0], get: c[1], num: true } : { key: "ctx" + i, label: c[0], get: function (r) { return +c[1](r); }, html: function (r) { return stateChip(c[1](r)); } });
+      if (c[2] === "path") cols.push({ key: "ctx" + i, label: c[0], get: function (r) { return pathKey(c[1](r)); }, html: function (r) { return pathHTML(c[1](r)); }, cls: "wrap" });
+      else cols.push(c[2] ? { key: "ctx" + i, label: c[0], get: c[1], num: true } : { key: "ctx" + i, label: c[0], get: function (r) { return +c[1](r); }, html: function (r) { return stateChip(c[1](r)); } });
     });
     cols.push({ key: "st", label: "Today", get: function (r) { return st(r) * 10 + Object.keys(r.bu || {}).length; }, html: function (r) { return stateChip(r.st) + buTags(r); }, cls: "wrap" });
     cols.push({ key: "hist", label: "Movement " + (months.length ? monthLabel(0) + " to " + monthLabel(lastIdx()) : "this year"), get: function (r) { return r.hist; }, html: movement, nosort: true, cls: "opt" });
@@ -217,7 +256,7 @@
     var lines = [head.map(cell).join(",")];
     rows.forEach(function (r) {
       var vals = [r.pid, r.name, (r.acc || []).join("; "), code(r.st), Object.keys(r.bu || {}).map(function (k) { return (BU[k] || k) + " " + (r.bu[k] === 3 ? "Super" : "Core"); }).join("; ")]
-        .concat(ctx.map(function (c) { var v = c[1](r); return c[2] ? v : code(v); }))
+        .concat(ctx.map(function (c) { var v = c[1](r); return c[2] === "path" ? v.map(function (x) { return x == null ? "" : code(x); }).join(" > ") : c[2] ? v : code(v); }))
         .concat([code(r.l30), code(r.q0)]).concat((r.hist || "").split("").map(code)).concat(r.cm || []).concat([r.ytd, r.c90, r.first || "", r.last || ""]);
       lines.push(vals.map(cell).join(","));
     });

@@ -475,11 +475,19 @@
     if (t.kind === "month") return "m:" + (+col.start.slice(5, 7) - 1) + ":" + code;
     return (t.range === "year" ? "wy:" : "w:") + i + ":" + code;
   }
+  function headMetric(t, col) {
+    /* the whole column: every practice around that period, with the period before and the one after */
+    if (t.kind === "month") return "mon:" + (+col.start.slice(5, 7) - 1);
+    return (t.range === "year" ? "wkyp:" : "wkp:") + t.columns.indexOf(col);
+  }
   function statesTableHTML(t, link) {
     var n = t.columns.length, per = n > 13 ? Math.ceil(n / Math.ceil(n / 13)) : n, out = "";
     for (var start = 0; start < n; start += per) {
       var end = Math.min(n, start + per);
-      var h = '<table class="mx' + (n > 13 ? " dense" : "") + '"><thead><tr><th>State at ' + esc(t.kind) + ' end</th>' + t.columns.slice(start, end).map(function (c) { return "<th>" + esc(c.label) + (c.partial ? "*" : "") + "</th>"; }).join("") + "</tr></thead><tbody>";
+      var h = '<table class="mx' + (n > 13 ? " dense" : "") + '"><thead><tr><th>State at ' + esc(t.kind) + ' end</th>' + t.columns.slice(start, end).map(function (c) {
+        var lab = esc(c.label) + (c.partial ? "*" : "");
+        return "<th>" + (link ? '<a class="cell head" href="' + esc(link(headMetric(t, c))) + '" title="Every practice around ' + esc(c.label) + ': before, then and after">' + lab + "</a>" : lab) + "</th>";
+      }).join("") + "</tr></thead><tbody>";
       t.rows.forEach(function (r) {
         h += '<tr><td class="lbl">' + esc(r.label) + "</td>";
         var lo = Math.min.apply(null, r.values), hi = Math.max.apply(null, r.values);
@@ -543,7 +551,7 @@
   }
   function renderAE() {
     var host = byId("ae-subs");
-    if (!AE || !AE.subsections || !AE.subsections.length) return;
+    if (!host || !AE || !AE.subsections || !AE.subsections.length) return;
     host.innerHTML = subNav("ae", AE.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + AE.subsections.map(function (sub) {
       var c = sub.cards, lk = function (m) { return detailsURL("ae", sub.key, m); };
       return subWrap("ae", sub.key, "account-executives", "Account Executives", '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
@@ -582,7 +590,7 @@
   }
   function renderAM() {
     var host = byId("am-subs");
-    if (!AM || !AM.subsections || !AM.subsections.length) return;
+    if (!host || !AM || !AM.subsections || !AM.subsections.length) return;
     host.innerHTML = subNav("am", AM.subsections.map(function (s) { return { key: s.key, title: s.name }; })) + AM.subsections.map(function (sub) {
       var c = sub.cards, dly = sub.daily, lk = function (m) { return detailsURL("am", sub.key, m); };
       return subWrap("am", sub.key, "account-managers", "Account Managers", '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
@@ -612,7 +620,7 @@
   var PG_LEGEND = [{ label: "New submitters", color: GREEN }, { label: "Inactive (90+ days without a case)", color: QUIET_COLOR }, { label: "Total submitters (line, right axis)", color: "#1882C7", line: true }];
   function renderPrograms() {
     var host = byId("pg-subs");
-    if (!PG || !PG.subsections || !PG.subsections.length) return;
+    if (!host || !PG || !PG.subsections || !PG.subsections.length) return;
     host.innerHTML = subNav("pg", PG.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + PG.subsections.map(function (sub) {
       var c = sub.cards, lk = function (m) { return detailsURL("programs", sub.key, m); };
       return subWrap("pg", sub.key, "programs", "Programs", '<div class="sub card" data-sub="pg-' + esc(sub.key) + '">' +
@@ -678,7 +686,7 @@
       .replace(/\n{2,}/g, "\n").replace(/\n@@H@@/g, "\n\n").replace(/@@H@@/g, "")
       .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
   }
-  function renderAbout() { byId("about-body").innerHTML = aboutHTML(); }
+  function renderAbout() { var el = byId("about-body"); if (el) el.innerHTML = aboutHTML(); }
 
   /* ============================================================
      Slide export: a PDF deck drawn with jsPDF (vector text in the brand fonts) and
@@ -1067,7 +1075,7 @@
       throw err;
     });
   }
-  byId("btn-pptx").addEventListener("click", function () { exportSlides().catch(function () { /* reported in the status line */ }); });
+  if (byId("btn-pptx")) byId("btn-pptx").addEventListener("click", function () { exportSlides().catch(function () { /* reported in the status line */ }); });
   window.__dcpExport = exportSlides;
 
   /* ---------- boot ---------- */
@@ -1089,6 +1097,7 @@
   }
   function spy() {
     document.documentElement.style.scrollPaddingTop = (header.offsetHeight + 24) + "px";
+    if (!blocks.length) return;
     var y = window.scrollY + header.offsetHeight + 40;
     var cur = blocks[0].id;
     for (var i = 0; i < blocks.length; i++) { if (blocks[i].offsetTop <= y) cur = blocks[i].id; }

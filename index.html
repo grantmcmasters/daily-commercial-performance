@@ -55,6 +55,13 @@ h1,h2,h3,h4{font-family:var(--head);color:var(--ink)}
 .pill{display:inline-block;text-decoration:none;font-family:var(--head);font-weight:700;font-size:12px;letter-spacing:.04em;color:#C3E8FA;border:1px solid #1B4763;border-radius:999px;padding:8px 16px;white-space:nowrap;transition:background .12s,color .12s,border-color .12s}
 .pill:hover{border-color:#1882C7;color:#FFFFFF}
 .pill.active{background:#4ABEEE;border-color:#4ABEEE;color:#052030}
+.pill.g2{color:#EBE3C6;border-color:#7E7449}
+.pill.g2:hover{border-color:#B3A369;color:#FFFFFF}
+.pill.g2.active{background:#B3A369;border-color:#B3A369;color:#052030}
+.pill.g3{color:#B0B7C3;border-color:#3E4C5A;margin-left:10px}
+.pill.g3:hover{border-color:#8A93A3;color:#FFFFFF}
+.pill.g3.active{background:#B0B7C3;border-color:#B0B7C3;color:#052030}
+.pill.g1 + .pill.g2{margin-left:10px}
 .asof{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#B3A369;border:1px solid #B3A369;border-radius:999px;padding:7px 14px;white-space:nowrap}
 .asof .dot{width:7px;height:7px;border-radius:50%;background:#B3A369;flex-shrink:0}
 @media (max-width:900px){.asof{display:none}.pills{margin-left:0;width:100%}}
@@ -186,6 +193,8 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .mx th:first-child{text-align:left}
 .mx td{padding:6px 3px;text-align:center;border-radius:5px;font-weight:700;min-width:0}
 .mx td.lbl{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;padding-left:2px;background:transparent}
+.mx th a.cell.head{color:inherit;text-decoration:none;border-bottom:1px dashed rgba(24,130,199,.6)}
+.mx th a.cell.head:hover{color:var(--killianink);border-bottom-style:solid}
 .mx td a.cell{display:block;color:inherit;text-decoration:none}
 .mx td a.cell:hover{text-decoration:underline}
 svg a{cursor:pointer}
@@ -213,7 +222,9 @@ svg a:hover rect,svg a:hover circle,svg a:hover path{filter:brightness(1.12)}
 .tbl th.r{text-align:right}
 .tbl td.ph{color:var(--silver)}
 .note{font-size:12px;color:var(--ink2);margin-top:10px}
-.footer{font-size:11.5px;color:var(--ink2);margin-top:28px;padding-top:14px;border-top:1px solid var(--line)}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin-top:28px;padding-top:14px;border-top:1px solid var(--line)}
+.footer .about-link{font-weight:700;color:var(--killianink);text-decoration:none}
+.footer .about-link:hover{text-decoration:underline}
 
 @media (max-width:560px){
   .app-title{font-size:19px}
@@ -239,14 +250,7 @@ svg a:hover rect,svg a:hover circle,svg a:hover path{filter:brightness(1.12)}
       <div class="app-title">Daily Commercial Performance</div>
       <div class="app-sub">SK Commercial</div>
     </div>
-    <nav class="pills" aria-label="Page sections">
-      <a class="pill" href="#account-executives" data-sec="account-executives">Account Executives</a>
-      <a class="pill" href="#account-managers" data-sec="account-managers">Account Managers</a>
-      <a class="pill" href="#programs" data-sec="programs">Programs</a>
-      <a class="pill" href="#about" data-sec="about">About</a>
-      <a class="pill" href="details.html?sec=ae&amp;key=aspen-clearchoice" id="pill-details" data-sec="details">Details</a>
-      <a class="pill" href="account.html" id="pill-drill" data-sec="drill">Account Drilldown</a>
-    </nav>
+    <nav class="pills" aria-label="Page sections"><a class="pill g1" href="#account-executives" data-sec="account-executives">Account Executives</a><a class="pill g1" href="#account-managers" data-sec="account-managers">Account Managers</a><a class="pill g1" href="#programs" data-sec="programs">Programs</a><a class="pill g2" href="details.html?sec=ae&amp;key=aspen-clearchoice" data-sec="details" id="pill-details">Details</a><a class="pill g2" href="account.html" data-sec="drill" id="pill-drill">Account Drilldown</a><a class="pill g3" href="about.html" data-sec="about">About</a></nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
 </header>
@@ -277,17 +281,12 @@ svg a:hover rect,svg a:hover circle,svg a:hover path{filter:brightness(1.12)}
     <div id="pg-subs"></div>
   </section>
 
-  <section class="block" id="about" data-key="about">
-    <h2 class="sec"><span class="n">04</span>About</h2>
-    <div class="card about" id="about-body"></div>
-  </section>
-
-  <div class="footer"><span class="num" id="build-tag">Build v0.14.0</span></div>
+  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num" id="build-tag">Build v0.15.0</span></div>
 
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="data.js"></script>
-<script src="app.js?v=0.14.0"></script>
+<script src="app.js?v=0.15.0"></script>
 </body>
 </html>

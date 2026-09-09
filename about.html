@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Account Page</title>
+<title>About Daily Commercial Performance</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='50,4 92,27 92,73 50,96 8,73 8,27' fill='%231882C7'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -239,103 +239,7 @@ svg a:hover rect,svg a:hover circle,svg a:hover path{filter:brightness(1.12)}
   .sub-logo{height:34px}
 }
 </style>
-<style>
-.acct{display:flex;flex-direction:column;gap:14px;margin-top:4px}
-.card.alert{border-left:5px solid #B0362F}
-.card.alert.early{border-left-color:var(--gold)}
-.ckick{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#B0362F}
-.card.alert.early .ckick{color:var(--goldink)}
-.serif{font-family:var(--serif);font-size:15px;color:var(--ink);margin:4px 0 6px;line-height:1.55}
-.ahead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.ahead h3{font-size:24px;font-weight:800;line-height:1.15}
-.chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.chip-soft{background:rgba(176,183,195,.22);color:var(--ink2)}
-.chip-action{background:rgba(24,130,199,.1);color:var(--killianink);border:1px solid rgba(24,130,199,.35)}
-.owner{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink2);margin-top:8px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
-.stat{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-.stat .v{font-weight:800;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1}
-.stat.up .v{color:var(--up)}
-.stat.dn .v{color:var(--down)}
-.stat .l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);margin-top:5px}
-.spark-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink2);margin-bottom:8px}
-.m3-varh{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin:10px 0 6px}
-.whylist{margin:0 0 4px 18px;font-size:13.5px;line-height:1.5}
-.whylist li{margin-bottom:6px}
-.pts{font-weight:800;font-size:11px;padding:1px 7px;border-radius:999px;background:rgba(176,183,195,.22);color:var(--ink2);margin-left:6px}
-.pts.up{background:rgba(52,199,89,.18);color:var(--up)}
-.pts.dn{background:rgba(239,68,68,.16);color:var(--down)}
-.stchip{display:inline-block;font-weight:800;font-size:11px;padding:3px 9px;border-radius:999px;white-space:nowrap}
-.stchip.big{font-size:13px;padding:5px 12px}
-.stands-grid{display:grid;grid-template-columns:3fr 2fr;gap:22px}
-@media (max-width:1000px){.stands-grid{grid-template-columns:1fr}}
-.lb{margin:8px 0 12px}
-.lbn{font-weight:800;font-size:12.5px;display:flex;align-items:center;gap:7px;margin-bottom:4px}
-.lbn i{width:10px;height:10px;border-radius:3px;display:inline-block}
-.lbt{position:relative;height:16px;background:var(--card3);border-radius:6px}
-.lbfill{position:absolute;left:0;top:0;bottom:0;border-radius:6px;opacity:.85}
-.lbmark{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed #052030}
-.lbmark b{position:absolute;top:18px;left:-14px;font-size:9.5px;font-weight:800;color:var(--ink2);white-space:nowrap}
-.lbv{font-size:12px;margin-top:20px}
-.mvrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(38px,1fr));gap:4px}
-.mvcell{text-align:center}
-.mvcell i{display:block;height:22px;border-radius:5px}
-.mvcell span{font-size:10px;font-weight:700;color:var(--ink2)}
-.seg-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:4px 0 8px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:#FFFFFF}
-.seg button{font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:4px 11px;color:var(--ink2);line-height:1.3}
-.seg button.on{background:var(--killian);color:#FFFFFF}
-.seg button[disabled]{opacity:.45;cursor:default}
-.legend{display:flex;gap:12px;font-size:11px;font-weight:700;color:var(--ink2);flex-wrap:wrap;margin-left:auto}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-svg.vol{width:100%;height:auto;display:block}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media (max-width:1000px){.grid2{grid-template-columns:1fr}}
-html,body{overflow-x:hidden}
-.dt-wrap{border:1px solid var(--line);border-radius:10px;background:#FFFFFF}
-.dt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
-.dt th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;padding:8px;border-bottom:2px solid var(--line);white-space:normal}
-.dt td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:normal;word-break:break-word;color:var(--ink)}
-.dt td.r{white-space:nowrap}
-.dt .r{text-align:right}
-.dt td.up{color:var(--up);font-weight:800}
-.dt td.dn{color:var(--down);font-weight:800}
-.hold{display:inline-block;font-size:11px;font-weight:700;color:#B0362F;background:rgba(239,68,68,.12);border-radius:999px;padding:2px 8px}
-.dt-note{font-size:12px;color:var(--ink2);line-height:1.5}
-.linkbtn{font:inherit;font-size:12.5px;font-weight:800;color:var(--killianink);text-decoration:none;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:#FFFFFF;display:inline-block}
-.linkbtn:hover{border-color:var(--killian)}
-/* volume over time: the Account Health chart */
-.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:4px 0 6px}
-#dd-controls select,#dd-range input[type=date]{font:inherit;font-size:12px;font-weight:600;padding:6px 9px;border:1px solid var(--line);border-radius:8px;background:#FFFFFF;color:var(--ink)}
-#dd-controls select:disabled{opacity:.45}
-.dd-slider{position:relative;flex:1;min-width:220px;height:24px}
-.dd-slider .track{position:absolute;top:10px;left:8px;right:8px;height:4px;background:var(--card3);border-radius:2px}
-.dd-slider .fill{position:absolute;top:10px;height:4px;background:#1882C7;border-radius:2px}
-.dd-slider input[type=range]{position:absolute;left:0;top:0;width:100%;height:24px;margin:0;-webkit-appearance:none;appearance:none;background:none;pointer-events:none}
-.dd-slider input[type=range]::-webkit-slider-runnable-track{background:none;height:24px}
-.dd-slider input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;pointer-events:auto;width:16px;height:16px;border-radius:50%;background:#1882C7;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(5,32,48,.35);cursor:pointer;margin-top:4px}
-.dd-slider input[type=range]::-moz-range-track{background:none;height:24px}
-.dd-slider input[type=range]::-moz-range-thumb{pointer-events:auto;width:13px;height:13px;border-radius:50%;background:#1882C7;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(5,32,48,.35);cursor:pointer}
-.chartwrap svg{width:100%;height:auto;display:block}
-.legend.vol-legend{margin:6px 0 0;font-size:11.5px}
-.legend .ldot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
-.tip{position:fixed;z-index:50;display:none;pointer-events:none;background:#052030;color:#FFFFFF;border-radius:8px;padding:8px 10px;font-size:11.5px;min-width:160px;box-shadow:0 4px 14px rgba(5,32,48,.3)}
-.tip .th{font-weight:800;margin-bottom:4px}
-.tip .tr{display:flex;justify-content:space-between;gap:14px;padding:1px 0}
-.tip .tr.tt{border-top:1px solid rgba(255,255,255,.25);margin-top:3px;padding-top:3px;font-weight:800}
-.tip .cd{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-.stance{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin:4px 0 2px}
-.stance-item{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
-.stance-item .sn{font-weight:800;font-size:12px;display:flex;align-items:center;gap:6px}
-.stance-item .sn i{width:9px;height:9px;border-radius:3px;display:inline-block}
-.stance-item .sv{font-size:13px;font-weight:600;color:var(--ink2);margin:4px 0 5px;font-variant-numeric:tabular-nums}
-.stance-item .sv b{font-size:22px;font-weight:800;color:var(--ink)}
-.stance-item .sb{font-size:10.5px;color:var(--ink2);font-weight:600;margin-top:6px}
-.xbtn{font:inherit;font-weight:700;font-size:12px;color:var(--killianink);border:1px solid var(--line);border-radius:8px;padding:7px 14px;background:var(--card2);cursor:pointer;margin-top:8px}
-.xbtn:hover{border-color:var(--killian);color:var(--ink)}
-.dt td.wrap{white-space:normal}
-</style>
-
+<style>.about-page{margin-top:4px}</style>
 </head>
 <body>
 
@@ -345,27 +249,23 @@ html,body{overflow-x:hidden}
     <div class="bdiv"></div>
     <div class="titleblock">
       <div class="app-title">Daily Commercial Performance</div>
-      <div class="app-sub">Account page</div>
+      <div class="app-sub">About</div>
     </div>
-    <nav class="pills" aria-label="Page sections"><a class="pill g1" href="index.html#account-executives" data-sec="account-executives">Account Executives</a><a class="pill g1" href="index.html#account-managers" data-sec="account-managers">Account Managers</a><a class="pill g1" href="index.html#programs" data-sec="programs">Programs</a><a class="pill g2" href="details.html" data-sec="details" id="pill-details">Details</a><a class="pill g2 active" href="account.html" data-sec="drill" id="pill-drill">Account Drilldown</a><a class="pill g3" href="about.html" data-sec="about">About</a></nav>
+    <nav class="pills" aria-label="Page sections"><a class="pill g1" href="index.html#account-executives" data-sec="account-executives">Account Executives</a><a class="pill g1" href="index.html#account-managers" data-sec="account-managers">Account Managers</a><a class="pill g1" href="index.html#programs" data-sec="programs">Programs</a><a class="pill g2" href="details.html" data-sec="details" id="pill-details">Details</a><a class="pill g2" href="account.html" data-sec="drill" id="pill-drill">Account Drilldown</a><a class="pill g3 active" href="about.html" data-sec="about">About</a></nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
 </header>
 
 <main>
-  <p style="margin:0 0 10px 0"><a class="linkbtn" id="back-list" href="details.html">&#8592; Back to the list</a></p>
-  <div class="acct" id="acct"><div class="card"><p class="dt-note">Loading the practice&hellip;</p></div></div>
-  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Practice level. State and history from the Daily Commercial Performance engine; predictions, summaries, plays and open cases from the Account Health model when the practice is in its modeled book.</span></div>
+  <section class="block about-page" id="about" data-key="about">
+    <h2 class="sec">About: every definition and counting rule</h2>
+    <div class="card about" id="about-body"></div>
+  </section>
+  <div class="footer"><a class="about-link" href="index.html">&#8592; Back to the one pagers</a><span class="num" id="build-tag">Build v0.15.0</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
-<script src="details.js"></script>
-<script>
-  (function () {
-    var q = new URLSearchParams(location.search), sec = (q.get("sec") || "ae").replace(/[^a-z]/g, ""), key = (q.get("key") || "").replace(/[^a-z0-9-]/g, "");
-    document.write('<script src="health/' + sec + '-' + key + '.js?v=0.15.0"><\/script>');
-  })();
-</script>
-<script src="account-page.js?v=0.15.0"></script>
+<script src="data.js"></script>
+<script src="app.js?v=0.15.0"></script>
 </body>
 </html>

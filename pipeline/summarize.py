@@ -166,12 +166,23 @@ def rich(text):
     return re.sub(r"\*\*(.+?)\*\*", r'<b style="color:' + NAVY + r'">\1</b>', t)
 
 
+def update_day(data_through):
+    """the morning the email goes out: the day after the data-through date"""
+    try:
+        d = dt.date.fromisoformat(data_through) + dt.timedelta(days=1)
+        return f"{d.strftime('%A')}, {d.strftime('%B')} {ordinal(d.day)}, {d.year}"
+    except Exception:
+        return "today"
+
+
 def render_html(note, data_through):
     p = 'style="margin:0 0 12px 0"'
     h = f'style="margin:22px 0 10px 0;font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:{NAVY};border-bottom:2px solid {DENTAL};padding-bottom:5px"'
     story = rich(note["headline"]).replace('<b style="color:' + NAVY + '">', "").replace("</b>", "")
     parts = [f"<p {p}>Good morning team,</p>",
-             f'<p {p}>Data through {html.escape(pretty_date(data_through))}. <b style="color:{NAVY}">{story}</b></p>']
+             f"<p {p}>Here is the commercial update for {html.escape(update_day(data_through))}, with data through {html.escape(pretty_date(data_through))}.</p>",
+             f"<p {h}>Executive Summary</p>",
+             f"<p {p}>{story}</p>"]
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
         parts.append(f"<p {h}>{title}</p>")
         parts.append('<ul style="margin:0 0 6px 22px;padding:0">' + "".join(f'<li style="margin:0 0 7px 0">{rich(ins)}</li>' for ins in (note.get(key) or [])[:3]) + "</ul>")
@@ -182,7 +193,7 @@ def render_html(note, data_through):
 
 
 def render_text(note, data_through):
-    lines = ["Good morning team,", "", f"Data through {pretty_date(data_through)}. {note['headline']}", ""]
+    lines = ["Good morning team,", "", f"Here is the commercial update for {update_day(data_through)}, with data through {pretty_date(data_through)}.", "", "EXECUTIVE SUMMARY", note['headline'], ""]
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
         lines.append(title.upper())
         lines.extend("- " + str(x).replace("**", "") for x in (note.get(key) or [])[:3])

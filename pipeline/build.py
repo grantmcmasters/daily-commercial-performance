@@ -906,7 +906,8 @@ def build_programs(P):
             "key": pg["key"], "title": pg["title"], "partners": pg["partners"], "logo": pg["logo"],
             "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active": n_super + n_core, "super": n_super, "core": n_core,
                       "dabblers": n_dab, "inactive": len(ids) - n_super - n_core - n_dab,
-                      "gone_quiet": submitters_ytd - (n_super + n_core) - n_dab},
+                      "gone_quiet": submitters_ytd - (n_super + n_core) - n_dab,
+                      "penetration_pct": int(round(100.0 * (n_super + n_core) / len(ids))) if ids else None},
             "months": mrows, "plays": list(PROGRAM_PLAYS),
             "states": states, "weekly": {"quarter": quarter_label(RUN_DATE), "weeks": weeks},
         })

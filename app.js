@@ -596,6 +596,7 @@
             tile(fmtN(c.dabblers), "Dabblers", "", "") +
             tile(fmtN(c.gone_quiet), "Inactive", "", "q") +
           "</div>" +
+          tile(fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", "d") +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div></div>' + programFlowSVG(sub.months, 960, 420, 1.35) + "</div>" +
         '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true) +
@@ -635,7 +636,7 @@
       "<li><b>Week over week:</b> for each week of the quarter, practices that crossed the active bar upward (green) or moved from Core to Super Active (dark green) stack above the axis; practices that crossed the active bar downward (red) or went from Dabbler to inactive (dark red) stack below; the net of all four is under each week. * marks the partial week.</li></ul>" +
       "<h3>Programs</h3><ul>" +
       "<li><b>Book:</b> " + esc(pg.book) + ". There is no network cap: the program's universe is the whole marketable universe.</li>" +
-      "<li><b>Submitters YTD, Active, Dabblers:</b> as defined above. <b>Inactive (tile):</b> " + esc(pg.quiet) + ".</li>" +
+      "<li><b>Submitters YTD, Active, Dabblers:</b> as defined above. <b>Inactive (tile):</b> " + esc(pg.quiet) + ". <b>Penetration:</b> currently active practices divided by every practice in the program's book, since there is no network cap.</li>" +
       "<li><b>Chart:</b> new submitters (up) = " + esc(pg.new) + "; inactive (down) = " + esc(pg.gone_quiet_month) + "; the net of the two is under each month; the line is the practices that sent at least one case that month, on the right axis. The state table and the week over week chart follow the same rules as the other sections.</li></ul>" +
       "<h3>Plays</h3><p>The Plays boxes are editable on the page (click into them). Edits go into the slide export but are not saved between visits yet.</p>" +
       "<h3>Counting rules</h3><p>Cases are counted the same way as the Account Health app: one business unit per case from the primary product, manufacturing jigs dropped, TRI rebill cases dropped, corporate sample accounts dropped, lab, university and intercompany accounts dropped. The one difference is that Aspen Beacon non-LFX cases are kept here so the Beacon page shows the whole Beacon book.</p>";
@@ -942,10 +943,11 @@
     var c = sub.cards, self = this;
     this.content(sub.title, "Programs  |  Marketing");
     this.logoCard(0.5, 1.05, 1.9, 1.05, [logo], sub.title);
-    this.kpi(2.55, 1.05, 2.3, 1.05, "" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, DECK.killian);
-    this.text("=", 5.05, 1.6, { size: 24, weight: 700, color: DECK.muted, align: "center", baseline: "middle" });
+    this.kpi(2.55, 1.05, 1.9, 1.05, "" + fmtN(c.submitters_ytd), "Submitters YTD", "", DECK.killian, DECK.killian);
+    this.text("=", 4.65, 1.6, { size: 24, weight: 700, color: DECK.muted, align: "center", baseline: "middle" });
     [["" + fmtN(c.active), "Active", DECK.killian], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy], ["" + fmtN(c.gone_quiet), "Inactive", DECK.red]]
-      .forEach(function (k, i) { self.kpi(5.25 + i * 2.6, 1.05, 2.45, 1.05, k[0], k[1], "", DECK.killian, k[2]); });
+      .forEach(function (k, i) { self.kpi(4.85 + i * 1.97, 1.05, 1.85, 1.05, k[0], k[1], "", DECK.killian, k[2]); });
+    this.kpi(10.83, 1.05, 2.0, 1.05, fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", DECK.gold, DECK.goldInk);
     this.label(0.5, 2.3, 8.2, "New, inactive and total submitters by month", PG.year + " YTD; inactive = 90+ days without a case");
     var t = defaultStates(sub.states);
     return this.svg(programFlowSVG(sub.months, 960, 300, 1.3), 0.5, 2.55, 8.2, 2.6).then(function () {

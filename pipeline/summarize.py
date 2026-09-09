@@ -180,7 +180,7 @@ def render_html(note, data_through):
     h = f'style="margin:22px 0 10px 0;font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:{NAVY};border-bottom:2px solid {DENTAL};padding-bottom:5px"'
     story = rich(note["headline"]).replace('<b style="color:' + NAVY + '">', "").replace("</b>", "")
     parts = [f"<p {p}>Good morning team,</p>",
-             f"<p {p}>Here is the commercial update for {html.escape(update_day(data_through))}, with data through {html.escape(pretty_date(data_through))}.</p>",
+             f"<p {p}>Here is the commercial update for {html.escape(update_day(data_through))}.</p>",
              f"<p {h}>Executive Summary</p>",
              f"<p {p}>{story}</p>"]
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
@@ -193,7 +193,7 @@ def render_html(note, data_through):
 
 
 def render_text(note, data_through):
-    lines = ["Good morning team,", "", f"Here is the commercial update for {update_day(data_through)}, with data through {pretty_date(data_through)}.", "", "EXECUTIVE SUMMARY", note['headline'], ""]
+    lines = ["Good morning team,", "", f"Here is the commercial update for {update_day(data_through)}.", "", "EXECUTIVE SUMMARY", note['headline'], ""]
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
         lines.append(title.upper())
         lines.extend("- " + str(x).replace("**", "") for x in (note.get(key) or [])[:3])

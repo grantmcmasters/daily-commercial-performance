@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -87,7 +88,12 @@ def digest(d):
     return out
 
 
-SYSTEM = """You write the morning email that goes out with Spectrum Killian's Daily Commercial Performance deck. Readers are the CEO and the commercial team. You sound like a sharp commercial analyst who knows the business, not like a report.
+SYSTEM = """You write the morning email that goes out with Spectrum Killian's Daily Commercial Performance deck. Readers are the CEO and the commercial team. You sound like a sharp commercial analyst who knows the business and is not afraid to say who is winning and who is behind.
+
+This is not a weather report. Every insight must rank, compare and explain:
+- Name who had a good day, week or month and who is lagging, and say why using the drivers in the digest (pace against last month, practices that became active or lost active status, book maintenance, revenue stability and its run rate, new submitters against practices gone inactive, penetration and month over month state changes).
+- Each section should cover the standout, the laggard, and one risk or opportunity worth a call today. Where two people or partners are close, say so and pick the one to watch.
+- Give the reader the "so what": what the number means for the quarter and what to do about it.
 
 Rules:
 - Use only the numbers in the digest. Never invent, estimate or extrapolate beyond what is there. Whole-number percents.
@@ -95,7 +101,7 @@ Rules:
 - No em dashes or en dashes anywhere; use commas or periods. No bullet symbols; each insight is one or two plain sentences.
 - In every insight wrap the single most important number or name in **double asterisks** so it can be bolded. One bold per insight, at most two.
 - When yesterday's digest is present, lead with what changed since yesterday and say so plainly.
-- Insights must be specific and useful: a number, a comparison, and why it matters or what to do. No filler like "continues to perform".
+- No filler ("continues to perform", "remains steady", "solid"). If nothing moved, say what that means instead.
 
 Definitions you may lean on: Active = Core or Super Active (a practice past the half or full case bar in the last 90 days). Dabbler = a case in the last 90 days but below the bar. Inactive = nothing in 90 days. Cases per business day MTD is compared with last month's average per business day. Active book maintenance = practices active at the start of the quarter that are still active. Revenue stability = the same practices' invoiced revenue this quarter at run rate over the prior quarter (green at 100% or better, gold from 90%, red below 90%). Penetration = currently active over the network.
 
@@ -108,15 +114,21 @@ Return ONLY a JSON object, no code fences, with exactly these keys:
 Two or three insights per section."""
 
 
+MODEL_CHAIN = ["claude-fable-5-1", "claude-opus-5", "claude-sonnet-5", "claude-sonnet-4-6"]
+
+
 def call_claude(today, yesterday, model, key):
     body = {
-        "model": model, "max_tokens": 1800, "system": SYSTEM,
+        "model": model, "max_tokens": 2000, "system": SYSTEM,
         "messages": [{"role": "user", "content": "Today's digest:\n" + json.dumps(today, indent=1) + ("\n\nYesterday's digest:\n" + json.dumps(yesterday, indent=1) if yesterday else "\n\n(No digest from yesterday.)")}],
     }
     req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=json.dumps(body).encode("utf8"), method="POST",
                                  headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
-    with urllib.request.urlopen(req, timeout=180) as r:
-        res = json.loads(r.read().decode("utf8"))
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            res = json.loads(r.read().decode("utf8"))
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"HTTP {e.code} from the API for {model}: {e.read().decode('utf8', 'replace')[:300]}") from None
     text = "".join(part.get("text", "") for part in res.get("content", []) if part.get("type") == "text").strip()
     text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text.strip())
     note = json.loads(text[text.index("{"):text.rindex("}") + 1])
@@ -136,7 +148,7 @@ def fallback(today):
     weak = [a for a in today["account_managers"] if (a["active_book_maintenance"]["pct"] or 100) < 80 or (a["revenue_stability"]["pct_at_run_rate"] or 100) < 90]
     aes = sorted(today["account_executives"], key=lambda p: -(p["mtd_net_new_submitters"] or 0))
     note = {
-        "headline": "The AI note was unavailable this morning, so this is the headline numbers only.",
+        "headline": "The AI note was unavailable this morning, so this is the headline numbers only; the reason is at the bottom of the email.",
         "account_executives": [f"**{p['partner']}** has {p['active']} active practices of {p['network']} ({pct(p['penetration_pct_active_over_network'])} penetration) and {p['mtd_net_new_submitters']} net new submitters this month." for p in aes[:3]],
         "account_managers": [
             f"**{top['name']}** has the strongest pace at {round(top['cases_per_business_day_mtd'] or 0)} cases per business day, {'+' if (top['pace_pct_vs_last_month'] or 0) > 0 else ''}{round(top['pace_pct_vs_last_month'] or 0)}% against last month; {low['name']} is the softest at {round(low['pace_pct_vs_last_month'] or 0)}%.",
@@ -148,22 +160,28 @@ def fallback(today):
     return note
 
 
+NAVY, DENTAL, GRAY = "#052030", "#4ABEEE", "#5A6B79"
+
+
 def rich(text):
-    """escape, then **bold** markers to <b>"""
+    """escape, then **bold** markers to navy bold"""
     t = html.escape(str(text))
-    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)
+    return re.sub(r"\*\*(.+?)\*\*", r'<b style="color:' + NAVY + r'">\1</b>', t)
 
 
 def render_html(note, data_through):
     p = 'style="margin:0 0 12px 0"'
-    h = 'style="margin:18px 0 6px 0;font-size:15px"'
+    h = f'style="margin:22px 0 10px 0;font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:{NAVY};border-bottom:2px solid {DENTAL};padding-bottom:5px"'
+    story = rich(note["headline"]).replace('<b style="color:' + NAVY + '">', "").replace("</b>", "")
     parts = [f"<p {p}>Good morning team,</p>",
-             f"<p {p}>Here is where the commercial book stands with data through {html.escape(pretty_date(data_through))}. <b>{rich(note['headline']).replace('<b>', '').replace('</b>', '')}</b></p>"]
+             f'<p {p}>Here is where the commercial book stands with data through {html.escape(pretty_date(data_through))}. <b style="color:{NAVY}">{story}</b></p>']
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
-        parts.append(f"<p {h}><b>{title}</b></p>")
+        parts.append(f"<p {h}>{title}</p>")
         for ins in (note.get(key) or [])[:3]:
             parts.append(f"<p {p}>{rich(ins)}</p>")
-    parts.append(f"<p style=\"margin:18px 0 12px 0\"><b>Today:</b> {rich(note.get('action', ''))}</p>")
+    parts.append(f'<p style="margin:20px 0 12px 0;padding:10px 14px;background:#F3F9FD;border-left:4px solid {NAVY}"><b style="color:{NAVY}">Today:</b> {rich(note.get("action", ""))}</p>')
+    if note.get("error"):
+        parts.append(f'<p style="margin:0 0 12px 0;color:#B0362F;font-size:12px">AI draft unavailable this morning: {html.escape(str(note["error"]))}</p>')
     return "\n".join(parts)
 
 
@@ -200,19 +218,27 @@ def main():
     today = digest(today_raw)
     yest_raw = load(args.yesterday)
     yesterday = digest(yest_raw) if yest_raw and yest_raw.get("meta", {}).get("data_through") != today["data_through"] else None
-    note = None
+    note, error = None, None
     key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not args.dry_run and key:
-        model = os.environ.get("ANTHROPIC_MODEL", "claude-fable-5-1")
-        for attempt in range(2):
+        chain = [os.environ.get("ANTHROPIC_MODEL") or MODEL_CHAIN[0]] + [m for m in MODEL_CHAIN if m != os.environ.get("ANTHROPIC_MODEL")]
+        for model in chain:
             try:
                 note = call_claude(today, yesterday, model, key)
+                print("note written by", model, file=sys.stderr)
                 break
             except Exception as e:  # noqa: BLE001
-                print(f"summary API attempt {attempt + 1} failed:", e, file=sys.stderr)
+                error = f"{model}: {e}"
+                print("summary API failed for", error, file=sys.stderr)
+    elif not args.dry_run:
+        error = "ANTHROPIC_API_KEY secret is missing"
     if not note:
         note = fallback(today)
+        note["error"] = error or "dry run"
+    err = note.get("error")
     note = clean(note)
+    if err and not args.dry_run:
+        note["error"] = str(err)[:240]
     base = re.sub(r"\.md$", "", args.out)
     open(base + ".json", "w", encoding="utf8").write(json.dumps(note, indent=1))
     open(base + ".html", "w", encoding="utf8").write(render_html(note, today["data_through"]))

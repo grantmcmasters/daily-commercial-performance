@@ -265,6 +265,16 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .rung .st{font-weight:800;font-size:12px;padding:5px 10px;border-radius:999px;text-align:center;color:#FFFFFF;white-space:nowrap}
 .rung .d{font-size:12px;color:var(--ink);line-height:1.45}
 .rung .d b{color:var(--ink)}
+.win-pill{display:inline-block;font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#052030;background:var(--gold);border-radius:999px;padding:5px 12px;margin-left:10px;vertical-align:middle}
+.win-lead{font-size:13px;font-weight:700;color:var(--ink);margin:6px 0 10px}
+.win-lead b{color:var(--goldink)}
+.window{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 4px;font-size:11.5px}
+.win-box{border-radius:8px;padding:8px 10px;border:1px solid var(--line);background:#FFFFFF}
+.win-box.now{border-color:var(--gold);background:#FBF8EF}
+.win-box .wt{font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.win-box.now .wt{color:var(--goldink)}
+.win-box .wd{margin-top:3px;color:var(--ink);line-height:1.4}
+.win-axis{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:var(--ink2);margin:2px 2px 0}
 </style>
 
 </head>
@@ -289,13 +299,19 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
     <div class="qual">
       <div class="qual-grid">
         <div>
-          <div class="panel-title">How a practice qualifies: cases received in a 90 day window, by business unit</div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown and Bridge</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#1882C7;opacity:.45">Core Active at 30+</span><span class="sa-seg" style="left:50%;width:50%;background:#1882C7">Super Active at 60+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#8A93A3;opacity:.45">Core Active at 15+</span><span class="sa-seg" style="left:50%;width:50%;background:#8A93A3">Super Active at 30+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#052030;opacity:.45">Core Active at 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#052030">Super Active at 12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#B3A369;opacity:.45">Core Active at 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#B3A369">Super Active at 12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#4ABEEE;opacity:.45">Core Active at 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#4ABEEE">Super Active at 12+</span></div></div>
-          <p class="qual-note">Clearing half the bar in any one business unit over the last 90 days makes the whole practice <b>Core Active</b>. Clearing the full bar in two 90 day periods running makes it <b>Super Active</b>. One business unit is enough; volume in the other categories does not need to qualify. Cases count on the day they were received, one business unit per case from its primary product.</p>
+          <div class="panel-title">How a practice qualifies <span class="win-pill">90 day window</span></div>
+          <p class="win-lead">Every bar below counts cases <b>received in the last 90 days</b>, by business unit. Not per month, not year to date: the trailing 90 days, recounted every night.</p>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown and Bridge</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#1882C7;opacity:.45">Core Active: 30+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#1882C7">Super Active: 60+ in 90 days</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#8A93A3;opacity:.45">Core Active: 15+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#8A93A3">Super Active: 30+ in 90 days</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#052030;opacity:.45">Core Active: 6+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#052030">Super Active: 12+ in 90 days</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#B3A369;opacity:.45">Core Active: 6+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#B3A369">Super Active: 12+ in 90 days</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#4ABEEE;opacity:.45">Core Active: 6+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#4ABEEE">Super Active: 12+ in 90 days</span></div></div>
+          <div class="window">
+            <div class="win-box"><div class="wt">Days 91 to 180 ago</div><div class="wd"><b>Super Active</b> needs the full bar here too, so it is the full bar in both windows back to back.</div></div>
+            <div class="win-box now"><div class="wt">Last 90 days (today back 90 days)</div><div class="wd"><b>Core Active</b> is half the bar here. <b>Super Active</b> is the full bar here. <b>Dabbler</b> is any case here below the bar.</div></div>
+          </div>
+          <div class="win-axis"><span>180 days ago</span><span>90 days ago</span><span>today</span></div>
+          <p class="qual-note">One business unit is enough; volume in the other categories does not need to qualify. Cases count on the day they were received, one business unit per case from its primary product.</p>
         </div>
         <div>
           <div class="panel-title">The four states</div>
@@ -322,6 +338,6 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 </main>
 
 <script src="details.js"></script>
-<script src="details-page.js?v=0.10.2"></script>
+<script src="details-page.js?v=0.10.3"></script>
 </body>
 </html>

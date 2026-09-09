@@ -28,6 +28,24 @@
   var monthLabel = function (i) { return (months[i] || "that month").replace(" MTD", ""); };
   var weekLabel = function (list, i) { var w = list[i]; return w ? "the week of " + w.label : "that week"; };
 
+  /* the hover card on the definition rulers: business unit, state, and the case range behind it */
+  (function () {
+    var qual = document.querySelector(".qual");
+    if (!qual) return;
+    var tip = document.createElement("div"); tip.className = "sc-tip"; document.body.appendChild(tip);
+    var TONE = { "Dabbler": ["#4ABEEE", "#052030"], "Core Active": ["#1882C7", "#FFFFFF"], "Super Active": ["#052030", "#FFFFFF"] };
+    function show(seg) {
+      var st = seg.getAttribute("data-state") || "", t = TONE[st] || TONE["Dabbler"], r = seg.getBoundingClientRect();
+      tip.innerHTML = '<div class="bu"><i style="background:' + t[0] + '"></i>' + esc(seg.getAttribute("data-bu")) + ' <span class="st" style="background:' + t[0] + ';color:' + t[1] + ';border:1px solid rgba(255,255,255,.35)">' + esc(st) + "</span></div>" +
+        '<div class="rg">' + esc(seg.getAttribute("data-range")) + "</div>";
+      tip.style.left = (r.left + r.width / 2) + "px"; tip.style.top = r.top + "px";
+      tip.classList.add("show");
+    }
+    qual.addEventListener("mouseover", function (ev) { var seg = ev.target.closest ? ev.target.closest(".sc-seg[data-state]") : null; if (seg) show(seg); });
+    qual.addEventListener("mouseout", function (ev) { var seg = ev.target.closest ? ev.target.closest(".sc-seg[data-state]") : null; if (seg) tip.classList.remove("show"); });
+    window.addEventListener("scroll", function () { tip.classList.remove("show"); }, { passive: true });
+  })();
+
   /* the navigator: every partner, account manager and program, one click away */
   (function () {
     var el = byId("dt-nav");

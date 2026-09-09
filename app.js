@@ -469,6 +469,7 @@
   function blueShade(v, lo, hi) { return 0.08 + 0.32 * (hi > lo ? (v - lo) / (hi - lo) : 0.5); }
   /* wide tables (a year of weeks) are split into stacked blocks of at most 13 columns; nothing scrolls sideways */
   var STATE_CODE = { super: "3", core: "2", dabbler: "1", inactive: "0" };
+  var STATE_SWATCH = { super: ["#052030", "#052030"], core: ["#1882C7", "#0F6BA8"], dabbler: ["#4ABEEE", "#0F6BA8"], "new": ["#B3A369", "#7A6B33"], inactive: ["#EF4444", "#B0362F"] };
   function cellMetric(t, col, rowKey) {
     var i = t.columns.indexOf(col);
     if (rowKey === "new") return (t.kind === "month" ? "new:" : (t.range === "year" ? "newwy:" : "neww:")) + (t.kind === "month" ? (+col.start.slice(5, 7) - 1) : i);
@@ -490,10 +491,11 @@
         return "<th>" + (link ? '<a class="cell head" href="' + esc(link(headMetric(t, c))) + '" title="Every practice around ' + esc(c.label) + ': before, then and after">' + lab + "</a>" : lab) + "</th>";
       }).join("") + "</tr></thead><tbody>";
       t.rows.forEach(function (r) {
-        h += '<tr><td class="lbl">' + esc(r.label) + "</td>";
+        var sw = STATE_SWATCH[r.key];
+        h += '<tr><td class="lbl">' + (sw ? '<i class="sw" style="background:' + sw[0] + '"></i><span style="color:' + sw[1] + '">' + esc(r.label) + "</span>" : esc(r.label)) + "</td>";
         var lo = Math.min.apply(null, r.values), hi = Math.max.apply(null, r.values);
         r.values.slice(start, end).forEach(function (v, j) {
-          var d = r.deltas[start + j], style = r.tone === "neutral" ? "background:rgba(24,130,199," + blueShade(v, lo, hi).toFixed(2) + ");color:#0C2C4D" : deltaStyle(r.tone, d);
+          var d = r.deltas[start + j], style = r.tone === "neutral" ? "background:rgba(74,190,238," + (blueShade(v, lo, hi) + 0.1).toFixed(2) + ");color:#052030" : deltaStyle(r.tone, d);
           var inner = fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + signed(d) + "</small>");
           var href = link ? link(cellMetric(t, t.columns[start + j], r.key)) : null;
           h += '<td style="' + style + '">' + (href ? '<a class="cell" href="' + esc(href) + '">' + inner + "</a>" : inner) + "</td>";
@@ -558,7 +560,7 @@
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
         '<div class="head-right">' + detailsButton("ae", sub.key) + '<span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
         '<div class="b5row">' +
-          tile(fmtN(c.total), "Total practices", fmtN(c.in_system) + " in our system", "", lk("total")) +
+          tile(fmtN(c.total), "Total practices", c.in_system && c.in_system !== c.total ? fmtN(c.in_system) + " in our system" : "", "", lk("total")) +
           tile(fmtN(c.active), "Active", "", "g", lk("active")) +
           tile(fmtN(c.dabblers), "Dabblers", "", "", lk("dabblers")) +
           tile(fmtPct(c.penetration_pct), "Penetration", fmtN(c.active) + " / " + fmtN(c.total) + " offices currently active", "d", lk("penetration")) +
@@ -946,7 +948,7 @@
       self.text(r.label, x + 0.06, yy + rowH / 2, { size: 7.5, weight: 700, color: DECK.navy, baseline: "middle" });
       r.values.forEach(function (v, i) {
         var d = r.deltas[i], fill = "#F7F9FB", col = DECK.gray;
-        if (r.tone === "neutral") { fill = blendHex([24, 130, 199], blueShade(v, lo, hi)); col = DECK.ink; }
+        if (r.tone === "neutral") { fill = blendHex([74, 190, 238], blueShade(v, lo, hi) + 0.1); col = DECK.ink; }
         else if (d != null && d !== 0) {
           var good = r.tone === "good_up" ? d > 0 : d < 0, mag = Math.min(1, Math.abs(d) / 6);
           fill = good ? blendHex([52, 199, 89], 0.16 + 0.5 * mag) : blendHex([239, 68, 68], 0.12 + 0.46 * mag);

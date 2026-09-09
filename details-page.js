@@ -231,7 +231,7 @@
   }
   function renderTable() {
     var rows = selected(), shown = showAll ? rows : rows.slice(0, 300), cols = columns();
-    byId("dt-lead").innerHTML = '<div class="lead-n">' + fmtN(rows.length) + '</div><div class="lead-t">' + esc(current.title) + (SEC === "ae" && current.key === "total" ? ' <span class="dt-note">(the network is ' + fmtN(S.network) + (S.excluded ? "; the " + fmtN(S.excluded) + " faded rows are not offices" : "") + ")</span>" : "") + "</div>";
+    byId("dt-lead").innerHTML = '<div class="lead-n">' + fmtN(rows.length) + '</div><div class="lead-t">' + esc(current.title) + (SEC === "ae" && current.key === "total" && S.network !== S.rows.length ? ' <span class="dt-note">(the network is ' + fmtN(S.network) + ")</span>" : "") + "</div>";
     byId("dt-count").innerHTML = rows.length > shown.length ? 'Showing the first ' + fmtN(shown.length) + '. <button type="button" class="linkbtn" id="dt-more">Show all ' + fmtN(rows.length) + "</button>" : "";
     var head = "<tr>" + cols.map(function (c) { return '<th class="' + (c.num ? "r" : "") + (c.cls === "opt" ? " opt" : "") + (c.nosort ? "" : " sortable") + (sortKey === c.key ? " sorted" : "") + '" data-col="' + c.key + '">' + esc(c.label) + (sortKey === c.key ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>"; }).join("") + "</tr>";
     var body = shown.map(function (r) {
@@ -257,13 +257,13 @@
     var rows = selected(), ctx = current.cols || [];
     var head = ["Practice ID", "Practice"].concat(S.am_col ? ["Account manager"] : []).concat(["Accounts", "State today", "Business units at the bar"]).concat(ctx.map(function (c) { return c[0]; }))
       .concat(["State 30 days ago", "State at start of " + quarter]).concat(months.map(function (m) { return "State end of " + m; })).concat(months.map(function (m) { return "Cases " + m; }))
-      .concat(["Cases YTD", "Cases last 90 days", "First case", "Last case", "Office"]);
+      .concat(["Cases YTD", "Cases last 90 days", "First case", "Last case"]);
     function cell(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
     var lines = [head.map(cell).join(",")];
     rows.forEach(function (r) {
       var vals = [r.pid, r.name].concat(S.am_col ? [r.am || ""] : []).concat([(r.acc || []).join("; "), code(r.st), Object.keys(r.bu || {}).map(function (k) { return (BU[k] || k) + " " + (r.bu[k] === 3 ? "Super" : "Core"); }).join("; ")])
         .concat(ctx.map(function (c) { var v = c[1](r); return c[2] === "path" ? v.map(function (x) { return x == null ? "" : code(x); }).join(" > ") : c[2] ? v : code(v); }))
-        .concat([code(r.l30), code(r.q0)]).concat((r.hist || "").split("").map(code)).concat(r.cm || []).concat([r.ytd, r.c90, r.first || "", r.last || "", r.x ? "No (corporate or test account)" : "Yes"]);
+        .concat([code(r.l30), code(r.q0)]).concat((r.hist || "").split("").map(code)).concat(r.cm || []).concat([r.ytd, r.c90, r.first || "", r.last || ""]);
       lines.push(vals.map(cell).join(","));
     });
     var blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });

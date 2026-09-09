@@ -193,6 +193,7 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .mx th:first-child{text-align:left}
 .mx td{padding:6px 3px;text-align:center;border-radius:5px;font-weight:700;min-width:0}
 .mx td.lbl{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;padding-left:2px;background:transparent}
+.mx td.lbl .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:-1px}
 .mx th a.cell.head{color:inherit;text-decoration:none;border-bottom:1px dashed rgba(24,130,199,.6)}
 .mx th a.cell.head:hover{color:var(--killianink);border-bottom-style:solid}
 .mx td a.cell{display:block;color:inherit;text-decoration:none}
@@ -364,9 +365,9 @@ html,body{overflow-x:hidden}
 <script>
   (function () {
     var q = new URLSearchParams(location.search), sec = (q.get("sec") || "ae").replace(/[^a-z]/g, ""), key = (q.get("key") || "").replace(/[^a-z0-9-]/g, "");
-    document.write('<script src="health/' + sec + '-' + key + '.js?v=0.16.11"><\/script>');
+    document.write('<script src="health/' + sec + '-' + key + '.js?v=0.16.12"><\/script>');
   })();
 </script>
-<script src="account-page.js?v=0.16.11"></script>
+<script src="account-page.js?v=0.16.12"></script>
 </body>
 </html>

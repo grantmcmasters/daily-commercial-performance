@@ -31,8 +31,8 @@ differences, per Grant 2026-09-08:
   * Aspen Beacon = Beacon cases with LFX Unit Flag <> Yes.
   * Network denominators: ClearChoice = every practice in our system except the corporate
     and test accounts (NOT_OFFICES; 108 in Sep 2026), MB2 845, Aspen Dental and Aspen Beacon
-    share the higher of their two practice counts. Practices that are not offices are flagged
-    (x) in the details rows, fade out of the list and leave the office counts.
+    share the higher of their two practice counts. Practices that are not offices are left out
+    of the lists and the counts entirely.
 
 Activity definition (matches active-customer-logic.md and the nightly scorer):
   snapshot s evaluates cases received in [s-90, s) (q1), one business unit per case.
@@ -635,10 +635,10 @@ def build_ae(P):
         ytd_sub = sum(1 for pid in ids if pid in E and E[pid].cases_between(JAN1, RUN_DATE) > 0)
         mtd_new = sum(1 for pid in ids if pid in E and E[pid].first is not None and cur_m0 <= E[pid].first < RUN_DATE)
         network = aspen_network if pdef["network"] == "aspen" else len(ids) if pdef["network"] == "offices" else pdef["network"]
-        note = (f"{network} {pdef['network_note']} (every practice in our system except {len(excl)} corporate and test accounts)" if pdef["network"] == "offices" else pdef["network_note"])
+        note = (f"{network} {pdef['network_note']} (a corporate account and a test account are left out)" if pdef["network"] == "offices" else pdef["network_note"] + f"; {len(ids_all):,} in our system")
         cards = {
-            "total": network, "total_note": note + f"; {len(ids_all):,} in our system",
-            "in_system": len(ids_all),
+            "total": network, "total_note": note,
+            "in_system": len(ids),
             "active": n_super + n_core, "super": n_super, "core": n_core,
             "dabblers": n_dab, "ytd_submitters": ytd_sub,
             "penetration_pct": int(round(100.0 * (n_super + n_core) / network)) if network else None,
@@ -700,19 +700,17 @@ def build_ae(P):
             ("quiet", "Went quiet", "No case in 90 days", "quiet"),
         ]
         states = states_bundle(ids, E, RUN_DATE)
-        drows = practice_rows(ids_all, E, months, names, accts)
+        drows = practice_rows(ids, E, months, names, accts)             # the offices only: corporate and test accounts are not listed
         ams = defaultdict(set)                                      # who manages the practice's accounts (Beacon has no column)
         if pdef["key"] != "aspen-beacon":
             for s in scope.values():
                 if s["sp"] == sp and s["amc"] and not s["amc"].startswith("(x)"):
                     ams[s["pid"]].add(s["amc"])
         for r in drows:
-            if r["pid"] in excl:
-                r["x"] = 1                                          # not an office: faded in the list, outside the counts
             if pdef["key"] != "aspen-beacon":
                 r["am"] = ", ".join(sorted(ams.get(r["pid"], ())))
-        DETAILS["ae"][pdef["key"]] = {"title": pdef["title"], "owner": pdef["ae"], "logo": pdef["logo"], "network": network, "in_system": len(ids_all),
-                                      "excluded": len(excl), "am_col": pdef["key"] != "aspen-beacon", "rows": drows}
+        DETAILS["ae"][pdef["key"]] = {"title": pdef["title"], "owner": pdef["ae"], "logo": pdef["logo"], "network": network, "in_system": len(ids),
+                                      "am_col": pdef["key"] != "aspen-beacon", "rows": drows}
         subsections.append({
             "key": pdef["key"], "title": pdef["title"], "partner": sp, "ae": pdef["ae"], "logo": pdef["logo"],
             "network": network, "plays": list(PLAYS_PLACEHOLDER),
@@ -723,7 +721,7 @@ def build_ae(P):
                             "net": net},
         })
         validation[sp] = {"super": n_super, "core": n_core, "dabbler": n_dab, "quiet": len(ids) - n_super - n_core - n_dab,
-                          "in_system": len(ids_all), "not_offices": len(excl), "network": network, "excluded_accounts": P["excluded"].get(sp, 0)}
+                          "in_system": len(ids), "not_offices": len(excl), "network": network, "excluded_accounts": P["excluded"].get(sp, 0)}
     print("AE practice state at run date (compare with cs_activity_state):", json.dumps(validation), flush=True)
     return {
         "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,

@@ -33,8 +33,8 @@ differences, per Grant 2026-09-08:
     the higher of their two practice counts.
 
 Activity definition (matches active-customer-logic.md and the nightly scorer):
-  snapshot s evaluates cases received in [s-90, s) (q1) and [s-180, s-90) (q2), one
-  business unit per case.  SUPER_ACTIVE = any unit at the full bar in both windows.
+  snapshot s evaluates cases received in [s-90, s) (q1), one business unit per case.
+  SUPER_ACTIVE = any unit at the full bar in q1 (the prior window stopped counting on 2026-09-09).
   CORE ACTIVE = any unit at half the bar in q1.  DABBLER = any counted case in q1 but no
   bar cleared.  QUIET = no counted case in q1.  NEW = first ever counted case falls in the
   month (New wins over the other three in the monthly chart).
@@ -174,7 +174,7 @@ AMS = [
     {"key": "ed", "name": "Ed Loonam", "amc": ["Ed Loonam"], "label": "Advantage Dental+, Affordable, PDS, etc",
      "logos": ["logos/advantage-dental.png", "logos/affordable-dentures.png", "logos/pds.svg"], "lines": "all"},
 ]
-SA_T = {"CB": 60, "IMP": 12, "REM": 30, "FA": 12, "HE": 12}          # full bar, both windows
+SA_T = {"CB": 60, "IMP": 12, "REM": 30, "FA": 12, "HE": 12}          # full bar, last 90 days (single window since 2026-09-09)
 CORE_T = {k: math.ceil(v / 2) for k, v in SA_T.items()}               # half bar, last 90 days
 CORP_EXCLUDE = {"OC7540", "OCASP7484", "OCASP00", "OC1380", "OC6077", "OC9053", "OC7630"}
 SEG_EXCLUDE = {"Lab", "University", "Intercompany"}
@@ -264,7 +264,7 @@ def range_label(rng, periods):
 
 
 STATE_ROWS = [
-    ("super", "Super Active", "full bar in both 90 day windows", "good_up"),
+    ("super", "Super Active", "full bar in the last 90 days", "good_up"),
     ("core", "Core Active", "half bar in the last 90 days", "good_up"),
     ("dabbler", "Dabbler", "a case in the last 90 days, below the bar", "neutral"),
     ("new", "New this {period}", "first ever case in that {period}", "good_up"),
@@ -350,8 +350,8 @@ def practice_rows(ids, E, months, names, accts):
             continue
         bu = {}
         for ln, lst in e.by_line.items():
-            q1, q2 = e._count(lst, s90, RUN_DATE), e._count(lst, s180, s90)
-            if q1 >= SA_T[ln] and q2 >= SA_T[ln]:
+            q1 = e._count(lst, s90, RUN_DATE)
+            if q1 >= SA_T[ln]:
                 bu[ln] = 3
             elif q1 >= CORE_T[ln]:
                 bu[ln] = 2
@@ -438,8 +438,7 @@ class Entity:
         sa = core = False
         for ln, lst in self.by_line.items():
             q1 = self._count(lst, s - dt.timedelta(days=90), s)
-            q2 = self._count(lst, s - dt.timedelta(days=180), s - dt.timedelta(days=90))
-            if q1 >= SA_T[ln] and q2 >= SA_T[ln]:
+            if q1 >= SA_T[ln]:                       # full bar in the last 90 days (the prior window no longer counts: Grant 2026-09-09)
                 sa = True
             if q1 >= CORE_T[ln]:
                 core = True
@@ -691,7 +690,7 @@ def build_ae(P):
     return {
         "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,
         "definition": {
-            "super_active": "full bar in one business unit in each of the last two 90 day windows (CB 60, REM 30, IMP 12, FA 12, HE 12)",
+            "super_active": "full bar in one business unit in the last 90 days (CB 60, REM 30, IMP 12, FA 12, HE 12)",
             "core_active": "half bar in one business unit in the last 90 days (CB 30, REM 15, IMP 6, FA 6, HE 6)",
             "dabbler": "at least one case in the last 90 days, below every bar",
             "new": "first ever case received in that month",
@@ -1035,7 +1034,7 @@ def load_health():
     data = _fetch_js(AH_URL + "/data.js")
     if not data:
         return None, {}, {}
-    cases = _fetch_js(AH_URL + "/cases.js") or {}
+    cases = _no_nan(_fetch_js(AH_URL + "/cases.js") or {})
     by_id = {}
     for a in data.get("accounts", []):
         rec = {k: _no_nan(a.get(k)) for k in AH_KEEP if a.get(k) is not None}

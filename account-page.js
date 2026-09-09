@@ -82,7 +82,7 @@
     if (!keys.length) return '<p class="dt-note">No business unit detail for this practice in the Account Health model' + (H ? "" : " (it is outside the modeled book)") + ".</p>";
     return keys.map(function (k) {
       var L = ls[k] || {}, full = BAR[k], half = Math.ceil(full / 2), q1 = L.q1 || 0, q2 = L.q2 || 0, w = Math.min(100, 100 * q1 / (full * 1.15)), col = LINE_COLOR[k];
-      var lvl = q1 >= full && q2 >= full ? "Super Active" : q1 >= half ? "Core Active" : q1 > 0 ? "Dabbler" : "Inactive";
+      var lvl = q1 >= full ? "Super Active" : q1 >= half ? "Core Active" : q1 > 0 ? "Dabbler" : "Inactive";
       return '<div class="lb"><div class="lbn"><i style="background:' + col + '"></i>' + esc(LINES[k]) + '</div>' +
         '<div class="lbt"><span class="lbfill" style="width:' + w.toFixed(1) + '%;background:' + col + '"></span>' +
         '<span class="lbmark" style="left:' + (100 * half / (full * 1.15)).toFixed(1) + '%"><b>Core ' + half + '</b></span><span class="lbmark" style="left:' + (100 / 1.15).toFixed(1) + '%"><b>Super ' + full + '</b></span></div>' +
@@ -93,7 +93,7 @@
     '<div class="stands-grid"><div><div class="m3-varh">Cases received in the last 90 days, by business unit, against the bar</div>' + lineBars() + "</div>" +
     '<div><div class="m3-varh">State at the end of each month, ' + esc(String(D.meta.run_date || "").slice(0, 4)) + "</div>" + movement() +
     '<p class="dt-note" style="margin-top:8px">Today: ' + stateChip(row.st) + ' &middot; 30 days ago: ' + stateChip(row.l30) + ' &middot; start of ' + esc(S.quarter || D.meta.quarter || "the quarter") + ": " + stateChip(row.q0) + "</p>" +
-    '<p class="dt-note">Half the bar in any one business unit in the last 90 days = Core Active. The full bar in two 90 day windows running = Super Active. Any case below the bar = Dabbler. Nothing in 90 days = Inactive.</p></div></div></div>';
+    '<p class="dt-note">Half the bar in any one business unit in the last 90 days = Core Active. The full bar in the last 90 days = Super Active. Any case below the bar = Dabbler. Nothing in 90 days = Inactive.</p></div></div></div>';
 
   /* AI summary and plays */
   var brief = "";

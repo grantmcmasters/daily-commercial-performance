@@ -73,7 +73,7 @@
     return;
   }
   METRICS = metricsFor(SEC, S);
-  document.title = S.title + " details";
+  document.title = S.title + " Account Details";
   byId("asof").textContent = "Data through " + longDate(D.meta.data_through || D.meta.run_date);
 
   function logoHTML() {

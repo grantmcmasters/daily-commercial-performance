@@ -28,7 +28,7 @@ SIGNATURE = {
     "address": "2850 Red Hill Ave, Suite 200, Santa Ana, CA 92705", "site": "www.SKDLA.com", "site_url": "https://www.skdla.com",
     "logo": os.path.join(ROOT, "logos", "signature-logo.png"),          # inline, cid sig-logo
     "photo": os.path.join(ROOT, "logos", "signature-photo.jpg"),          # optional, inline when the file exists, cid sig-photo
-    "image": os.path.join(ROOT, "logos", "signature.png"),                # the whole signature as one picture; wins when present, cid sig-full
+    "image": os.path.join(ROOT, "logos", "signature.jpg"),                # the whole signature as one picture; wins when present, cid sig-full
 }
 
 

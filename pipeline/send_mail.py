@@ -28,6 +28,7 @@ SIGNATURE = {
     "address": "2850 Red Hill Ave, Suite 200, Santa Ana, CA 92705", "site": "www.SKDLA.com", "site_url": "https://www.skdla.com",
     "logo": os.path.join(ROOT, "logos", "signature-logo.png"),          # inline, cid sig-logo
     "photo": os.path.join(ROOT, "logos", "signature-photo.jpg"),          # optional, inline when the file exists, cid sig-photo
+    "image": os.path.join(ROOT, "logos", "signature.png"),                # the whole signature as one picture; wins when present, cid sig-full
 }
 
 
@@ -57,6 +58,8 @@ def deck_name():
 def inline_images():
     """[(cid, path, mime)] for the signature images that exist on disk"""
     out = []
+    if os.path.exists(SIGNATURE["image"]):
+        return [("sig-full", SIGNATURE["image"], "image/png" if SIGNATURE["image"].lower().endswith(".png") else "image/jpeg")]
     if os.path.exists(SIGNATURE["logo"]):
         out.append(("sig-logo", SIGNATURE["logo"], "image/png"))
     if os.path.exists(SIGNATURE["photo"]):
@@ -66,6 +69,8 @@ def inline_images():
 
 def signature_html(has_photo):
     S, blue, navy = SIGNATURE, "#1882C7", "#052030"
+    if os.path.exists(S["image"]):
+        return f'<div style="margin:4px 0 18px 0"><img src="cid:sig-full" width="600" alt="{S["name"]}, {S["title"]}, Spectrum Killian" style="display:block;width:600px;max-width:100%;height:auto"></div>'
     contact = (f'<div style="font-size:12.5px;line-height:1.9;color:{blue}">{S["phone"]}<br>'
                f'<a href="mailto:{S["email"]}" style="color:{blue};text-decoration:none">{S["email"]}</a><br>'
                f'{S["address"]}<br><a href="{S["site_url"]}" style="color:{blue};text-decoration:none">{S["site"]}</a></div>')

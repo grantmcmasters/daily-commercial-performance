@@ -29,8 +29,10 @@ differences, per Grant 2026-09-08:
     practice id: the 4-digit office code at the start of the practice name). For the
     account managers the same LFX cases go to whoever manages the store's Aspen Dental account.
   * Aspen Beacon = Beacon cases with LFX Unit Flag <> Yes.
-  * Network denominators: ClearChoice 106, MB2 845, Aspen Dental and Aspen Beacon share
-    the higher of their two practice counts.
+  * Network denominators: ClearChoice = every practice in our system except the corporate
+    and test accounts (NOT_OFFICES; 108 in Sep 2026), MB2 845, Aspen Dental and Aspen Beacon
+    share the higher of their two practice counts. Practices that are not offices are flagged
+    (x) in the details rows, fade out of the list and leave the office counts.
 
 Activity definition (matches active-customer-logic.md and the nightly scorer):
   snapshot s evaluates cases received in [s-90, s) (q1), one business unit per case.
@@ -49,6 +51,7 @@ import datetime as dt
 import json
 import math
 import os
+import re
 import sys
 import time
 from collections import defaultdict
@@ -153,9 +156,18 @@ DAY = dt.timedelta(days=1)
 # ---------------------------------------------------------------------------
 # Definitions
 # ---------------------------------------------------------------------------
+# practices in our system that are not offices: a corporate account and a test account (Grant, 2026-09-09)
+NOT_OFFICES = {"Aspen ClearChoice": {"P03897", "P04157"}}
+NOT_OFFICE_NAME = re.compile(r"\(TEST\)|Management Services", re.I)
+
+
+def not_office(sp, pid, name):
+    return pid in NOT_OFFICES.get(sp, ()) or bool(NOT_OFFICE_NAME.search(name or ""))
+
+
 PARTNERS = [
     {"key": "aspen-clearchoice", "title": "Aspen ClearChoice", "partner": "Aspen ClearChoice", "ae": "Jillian Doss",
-     "logo": "logos/clearchoice.svg", "network": 106, "network_note": "106 ClearChoice centers in the network"},
+     "logo": "logos/clearchoice.svg", "network": "offices", "network_note": "ClearChoice offices in the network"},
     {"key": "aspen-dental", "title": "Aspen Dental", "partner": "Aspen Dental", "ae": "Jillian Doss",
      "logo": "logos/aspen-dental.svg", "network": "aspen", "network_note": "Aspen stores (higher of the Aspen Dental and Beacon counts)"},
     {"key": "aspen-beacon", "title": "Aspen Beacon", "partner": "Aspen Beacon", "ae": "Jillian Doss",
@@ -610,8 +622,11 @@ def build_ae(P):
     subsections, validation = [], {}
     for pdef in PARTNERS:
         sp = pdef["partner"]
-        ids = sorted(universe[sp])
-        E = {pid: ents[(sp, pid)] for pid in ids if (sp, pid) in ents}
+        ids_all = sorted(universe[sp])
+        names, accts = names_and_accounts(scope, lambda s, sp=sp: True if s["sp"] == sp else ("(Beacon, LFX cases)" if sp == "Aspen Dental" and s["sp"] == "Aspen Beacon" else None))
+        excl = {pid for pid in ids_all if not_office(sp, pid, names.get(pid, ""))} if pdef["network"] == "offices" else set()
+        ids = [pid for pid in ids_all if pid not in excl]          # the offices: every count below is over these
+        E = {pid: ents[(sp, pid)] for pid in ids_all if (sp, pid) in ents}
         lv = {pid: [E[pid].level(s) if pid in E else QUIET for s in snaps] for pid in ids}
         cur = [lv[pid][-1] for pid in ids]
         n_super = sum(1 for x in cur if x == SUPER)
@@ -619,10 +634,11 @@ def build_ae(P):
         n_dab = sum(1 for x in cur if x == DABBLER)
         ytd_sub = sum(1 for pid in ids if pid in E and E[pid].cases_between(JAN1, RUN_DATE) > 0)
         mtd_new = sum(1 for pid in ids if pid in E and E[pid].first is not None and cur_m0 <= E[pid].first < RUN_DATE)
-        network = aspen_network if pdef["network"] == "aspen" else pdef["network"]
+        network = aspen_network if pdef["network"] == "aspen" else len(ids) if pdef["network"] == "offices" else pdef["network"]
+        note = (f"{network} {pdef['network_note']} (every practice in our system except {len(excl)} corporate and test accounts)" if pdef["network"] == "offices" else pdef["network_note"])
         cards = {
-            "total": network, "total_note": pdef["network_note"] + f"; {len(ids):,} in our system",
-            "in_system": len(ids),
+            "total": network, "total_note": note + f"; {len(ids_all):,} in our system",
+            "in_system": len(ids_all),
             "active": n_super + n_core, "super": n_super, "core": n_core,
             "dabblers": n_dab, "ytd_submitters": ytd_sub,
             "penetration_pct": int(round(100.0 * (n_super + n_core) / network)) if network else None,
@@ -684,9 +700,19 @@ def build_ae(P):
             ("quiet", "Went quiet", "No case in 90 days", "quiet"),
         ]
         states = states_bundle(ids, E, RUN_DATE)
-        names, accts = names_and_accounts(scope, lambda s, sp=sp: True if s["sp"] == sp else ("(Beacon, LFX cases)" if sp == "Aspen Dental" and s["sp"] == "Aspen Beacon" else None))
-        DETAILS["ae"][pdef["key"]] = {"title": pdef["title"], "owner": pdef["ae"], "logo": pdef["logo"], "network": network, "in_system": len(ids),
-                                      "rows": practice_rows(ids, E, months, names, accts)}
+        drows = practice_rows(ids_all, E, months, names, accts)
+        ams = defaultdict(set)                                      # who manages the practice's accounts (Beacon has no column)
+        if pdef["key"] != "aspen-beacon":
+            for s in scope.values():
+                if s["sp"] == sp and s["amc"] and not s["amc"].startswith("(x)"):
+                    ams[s["pid"]].add(s["amc"])
+        for r in drows:
+            if r["pid"] in excl:
+                r["x"] = 1                                          # not an office: faded in the list, outside the counts
+            if pdef["key"] != "aspen-beacon":
+                r["am"] = ", ".join(sorted(ams.get(r["pid"], ())))
+        DETAILS["ae"][pdef["key"]] = {"title": pdef["title"], "owner": pdef["ae"], "logo": pdef["logo"], "network": network, "in_system": len(ids_all),
+                                      "excluded": len(excl), "am_col": pdef["key"] != "aspen-beacon", "rows": drows}
         subsections.append({
             "key": pdef["key"], "title": pdef["title"], "partner": sp, "ae": pdef["ae"], "logo": pdef["logo"],
             "network": network, "plays": list(PLAYS_PLACEHOLDER),
@@ -697,7 +723,7 @@ def build_ae(P):
                             "net": net},
         })
         validation[sp] = {"super": n_super, "core": n_core, "dabbler": n_dab, "quiet": len(ids) - n_super - n_core - n_dab,
-                          "in_system": len(ids), "network": network, "excluded_accounts": P["excluded"].get(sp, 0)}
+                          "in_system": len(ids_all), "not_offices": len(excl), "network": network, "excluded_accounts": P["excluded"].get(sp, 0)}
     print("AE practice state at run date (compare with cs_activity_state):", json.dumps(validation), flush=True)
     return {
         "as_of": RUN_DATE.isoformat(), "year": RUN_DATE.year,

@@ -68,6 +68,7 @@
       case "": case "total": case "book":
         V.title = SEC === "ae" ? "All " + fmtN(S.rows.length) + " practices in our system" : "All practices in the " + (SEC === "am" ? "book" : "program");
         V.filter = function () { return true; }; break;
+      case "offices": V.title = "The offices in the network"; V.filter = function (r) { return !r.x; }; break;
       case "active": case "penetration": case "active_now":
         V.title = "Active today (Core or Super Active)"; V.filter = function (r) { return st(r) >= 2; }; break;
       case "super": V.title = "Super Active today"; V.filter = function (r) { return st(r) === 3; }; break;
@@ -75,7 +76,7 @@
       case "dabblers": V.title = "Dabblers today"; V.filter = function (r) { return st(r) === 1; }; break;
       case "inactive":
         if (SEC === "programs") { V.title = "Sent a case this year, nothing in the last 90 days"; V.filter = function (r) { return r.ytd > 0 && st(r) === 0; }; }
-        else { V.title = "Inactive today"; V.filter = function (r) { return st(r) === 0; }; }
+        else { V.title = "Inactive today"; V.filter = function (r) { return st(r) === 0 && !r.x; }; }
         break;
       case "submitters_ytd": V.title = "Submitted at least one case this year"; V.filter = function (r) { return r.ytd > 0; }; break;
       case "cases_mtd": V.title = "Submitted a case in " + monthLabel(last); V.filter = function (r) { return lastMonth(r) > 0; }; V.sort = function (a, b) { return lastMonth(b) - lastMonth(a); }; break;
@@ -140,7 +141,7 @@
     var rows = S.rows, active = rows.filter(function (r) { return st(r) >= 2; }).length, last = monthLabel(lastIdx());
     if (SEC === "ae") {
       return [
-        { key: "total", label: "Total practices", value: fmtN(S.network), sub: fmtN(rows.length) + " in our system" },
+        { key: "total", label: "Total practices", value: fmtN(S.network), sub: fmtN(rows.length) + " in our system" + (S.excluded ? ", " + fmtN(S.excluded) + " not offices" : "") },
         { key: "active", label: "Active", tone: "g" }, { key: "super", label: "Super Active", tone: "g" }, { key: "core", label: "Core Active", tone: "g" },
         { key: "dabblers", label: "Dabblers" }, { key: "inactive", label: "Inactive", tone: "q" },
         { key: "penetration", label: "Penetration", value: fmtPct(S.network ? 100 * active / S.network : null), sub: fmtN(active) + " / " + fmtN(S.network) + " active", tone: "d" },
@@ -204,7 +205,8 @@
   }
   function accountURL(r) { return "account.html?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&pid=" + encodeURIComponent(r.pid) + "&metric=" + encodeURIComponent(current.key); }
   function columns() {
-    var cols = [{ key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { return '<a href="' + esc(accountURL(r)) + '">' + esc(r.name) + "</a>"; }, cls: "pname" }];
+    var cols = [{ key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { return '<a href="' + esc(accountURL(r)) + '">' + esc(r.name) + "</a>" + (r.x ? '<span class="xtag" title="A corporate or test account, not counted in the network">not an office</span>' : ""); }, cls: "pname" }];
+    if (S.am_col) cols.push({ key: "am", label: "Account manager", get: function (r) { return r.am || ""; }, html: function (r) { return r.am ? esc(r.am) : '<span class="dt-note">Unassigned</span>'; }, cls: "wrap" });
     (current.cols || []).forEach(function (c, i) {
       if (c[2] === "path") cols.push({ key: "ctx" + i, label: c[0], get: function (r) { return pathKey(c[1](r)); }, html: function (r) { return pathHTML(c[1](r)); }, cls: "wrap" });
       else cols.push(c[2] ? { key: "ctx" + i, label: c[0], get: c[1], num: true } : { key: "ctx" + i, label: c[0], get: function (r) { return +c[1](r); }, html: function (r) { return stateChip(c[1](r)); } });
@@ -216,7 +218,7 @@
     cols.push({ key: "ytd", label: "Cases YTD", get: function (r) { return r.ytd; }, num: true });
     return cols;
   }
-  function matches(r) { if (!query) return true; return (r.pid + " " + r.name + " " + (r.acc || []).join(" ")).toLowerCase().indexOf(query) >= 0; }
+  function matches(r) { if (!query) return true; return (r.pid + " " + r.name + " " + (r.am || "") + " " + (r.acc || []).join(" ")).toLowerCase().indexOf(query) >= 0; }
   function selected() {
     var rows = S.rows.filter(current.filter).filter(matches), cols = columns(), col = cols.filter(function (c) { return c.key === sortKey; })[0];
     if (current.sort && sortKey === "ytd" && sortDir === -1 && !query) rows.sort(current.sort);
@@ -225,11 +227,11 @@
   }
   function renderTable() {
     var rows = selected(), shown = showAll ? rows : rows.slice(0, 300), cols = columns();
-    byId("dt-lead").innerHTML = '<div class="lead-n">' + fmtN(rows.length) + '</div><div class="lead-t">' + esc(current.title) + (SEC === "ae" && current.key === "total" ? ' <span class="dt-note">(the network is ' + fmtN(S.network) + ")</span>" : "") + "</div>";
+    byId("dt-lead").innerHTML = '<div class="lead-n">' + fmtN(rows.length) + '</div><div class="lead-t">' + esc(current.title) + (SEC === "ae" && current.key === "total" ? ' <span class="dt-note">(the network is ' + fmtN(S.network) + (S.excluded ? "; the " + fmtN(S.excluded) + " faded rows are not offices" : "") + ")</span>" : "") + "</div>";
     byId("dt-count").innerHTML = rows.length > shown.length ? 'Showing the first ' + fmtN(shown.length) + '. <button type="button" class="linkbtn" id="dt-more">Show all ' + fmtN(rows.length) + "</button>" : "";
     var head = "<tr>" + cols.map(function (c) { return '<th class="' + (c.num ? "r" : "") + (c.cls === "opt" ? " opt" : "") + (c.nosort ? "" : " sortable") + (sortKey === c.key ? " sorted" : "") + '" data-col="' + c.key + '">' + esc(c.label) + (sortKey === c.key ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>"; }).join("") + "</tr>";
     var body = shown.map(function (r) {
-      return '<tr class="rowlink" data-href="' + esc(accountURL(r)) + '" title="Open this practice">' + cols.map(function (c) { return '<td class="' + (c.num ? "r" : "") + (c.cls ? " " + c.cls : "") + '">' + (c.html ? c.html(r) : esc(c.get(r))) + "</td>"; }).join("") + "</tr>";
+      return '<tr class="rowlink' + (r.x ? " excl" : "") + '" data-href="' + esc(accountURL(r)) + '" title="Open this practice">' + cols.map(function (c) { return '<td class="' + (c.num ? "r" : "") + (c.cls ? " " + c.cls : "") + '">' + (c.html ? c.html(r) : esc(c.get(r))) + "</td>"; }).join("") + "</tr>";
     }).join("") || '<tr><td colspan="' + cols.length + '" class="ph">No practices on this list.</td></tr>';
     byId("dt-table").innerHTML = "<thead>" + head + "</thead><tbody>" + body + "</tbody>";
     var more = byId("dt-more");
@@ -249,15 +251,15 @@
   /* ---------- export: a csv that opens straight in Excel ---------- */
   byId("dt-export").addEventListener("click", function () {
     var rows = selected(), ctx = current.cols || [];
-    var head = ["Practice ID", "Practice", "Accounts", "State today", "Business units at the bar"].concat(ctx.map(function (c) { return c[0]; }))
+    var head = ["Practice ID", "Practice"].concat(S.am_col ? ["Account manager"] : []).concat(["Accounts", "State today", "Business units at the bar"]).concat(ctx.map(function (c) { return c[0]; }))
       .concat(["State 30 days ago", "State at start of " + quarter]).concat(months.map(function (m) { return "State end of " + m; })).concat(months.map(function (m) { return "Cases " + m; }))
-      .concat(["Cases YTD", "Cases last 90 days", "First case", "Last case"]);
+      .concat(["Cases YTD", "Cases last 90 days", "First case", "Last case", "Office"]);
     function cell(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
     var lines = [head.map(cell).join(",")];
     rows.forEach(function (r) {
-      var vals = [r.pid, r.name, (r.acc || []).join("; "), code(r.st), Object.keys(r.bu || {}).map(function (k) { return (BU[k] || k) + " " + (r.bu[k] === 3 ? "Super" : "Core"); }).join("; ")]
+      var vals = [r.pid, r.name].concat(S.am_col ? [r.am || ""] : []).concat([(r.acc || []).join("; "), code(r.st), Object.keys(r.bu || {}).map(function (k) { return (BU[k] || k) + " " + (r.bu[k] === 3 ? "Super" : "Core"); }).join("; ")])
         .concat(ctx.map(function (c) { var v = c[1](r); return c[2] === "path" ? v.map(function (x) { return x == null ? "" : code(x); }).join(" > ") : c[2] ? v : code(v); }))
-        .concat([code(r.l30), code(r.q0)]).concat((r.hist || "").split("").map(code)).concat(r.cm || []).concat([r.ytd, r.c90, r.first || "", r.last || ""]);
+        .concat([code(r.l30), code(r.q0)]).concat((r.hist || "").split("").map(code)).concat(r.cm || []).concat([r.ytd, r.c90, r.first || "", r.last || "", r.x ? "No (corporate or test account)" : "Yes"]);
       lines.push(vals.map(cell).join(","));
     });
     var blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });

@@ -262,23 +262,31 @@ html,body{overflow-x:hidden}
 .linkbtn.back:hover{border-color:var(--killian)}
 /* how an account qualifies, condensed */
 .qual{margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 14px 8px}
-.qual-grid{display:grid;grid-template-columns:3fr 2fr;gap:16px}
-@media (max-width:1000px){.qual-grid{grid-template-columns:1fr}}
 .qual .panel-title{margin-bottom:4px}
 .win-pill{display:inline-block;font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#052030;background:var(--gold);border-radius:999px;padding:3px 10px;margin-left:8px;vertical-align:middle}
 .win-lead{font-size:12px;font-weight:600;color:var(--ink);margin:2px 0 6px}
 .win-lead b{color:var(--goldink)}
-.sa-row{display:grid;grid-template-columns:124px 1fr;gap:10px;align-items:center;margin:4px 0}
+.sa-row{display:grid;grid-template-columns:132px 1fr;gap:12px;align-items:center;margin:5px 0}
 @media (max-width:700px){.sa-row{grid-template-columns:1fr;gap:3px}}
-.sa-name{font-weight:700;font-size:12px;display:flex;align-items:center;gap:7px}
+.sa-name{font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:7px;white-space:nowrap}
 .sa-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
-.sa-track{position:relative;height:22px;background:var(--card3);border-radius:6px;overflow:hidden}
-.sa-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(5,32,48,.4);white-space:nowrap}
-.ladder{display:flex;flex-direction:column;gap:5px;margin-top:2px}
-.rung{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:center;border-radius:8px;padding:5px 10px;background:#FFFFFF;border:1px solid var(--line)}
-.rung .st{font-weight:800;font-size:11px;padding:4px 8px;border-radius:999px;text-align:center;color:#FFFFFF;white-space:nowrap}
-.rung .d{font-size:11.5px;color:var(--ink);line-height:1.4}
-.rung .d b{color:var(--ink)}
+.sa-head{margin:8px 0 0}
+.sa-scale{display:flex}
+.sa-scale span{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding-left:8px}
+.sa-scale .s0{color:#B0362F;padding-left:0;text-align:center}
+.sa-scale .s1{color:#0F6BA8}
+.sa-scale .s2{color:#1882C7}
+.sa-scale .s3{color:#052030}
+.sa-track{display:flex;height:26px;border-radius:7px;overflow:hidden}
+.sa-seg{display:flex;align-items:center;font-size:11px;font-weight:800;color:#FFFFFF;padding-left:8px;border-left:3px solid #FFFFFF;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sa-seg.s0,.sa-scale .s0{flex:0 0 11%;justify-content:center;padding-left:0;border-left:0}
+.sa-seg.s1,.sa-scale .s1{flex:0 0 29%}
+.sa-seg.s2,.sa-scale .s2{flex:0 0 30%}
+.sa-seg.s3,.sa-scale .s3{flex:1 1 auto}
+.sa-seg.s0{background:#EF4444}
+.sa-seg.s1{background:#4ABEEE;color:#052030}
+.sa-seg.s2{background:#1882C7}
+.sa-seg.s3{background:#052030}
 /* the lead and the tiles */
 .lead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 6px}
 .lead-n{font-size:30px;font-weight:800;color:var(--killianink);line-height:1;font-variant-numeric:tabular-nums}
@@ -348,26 +356,14 @@ html,body{overflow-x:hidden}
     <nav class="dt-nav" id="dt-nav" aria-label="Every list"></nav>
     <div class="sub-head" id="dt-head"></div>
     <div class="qual">
-      <div class="qual-grid">
-        <div>
-          <div class="panel-title">How an account qualifies <span class="win-pill">last 90 days</span></div>
-          <p class="win-lead">Cases <b>submitted in the last 90 days</b>, by business unit. Half the bar is Core Active, the full bar is Super Active.</p>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown and Bridge</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#1882C7;opacity:.45">Core 30+</span><span class="sa-seg" style="left:50%;width:50%;background:#1882C7">Super 60+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#8A93A3;opacity:.45">Core 15+</span><span class="sa-seg" style="left:50%;width:50%;background:#8A93A3">Super 30+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#052030;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#052030">Super 12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#B3A369;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#B3A369">Super 12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#4ABEEE;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#4ABEEE">Super 12+</span></div></div>
-        </div>
-        <div>
-          <div class="panel-title">The four states</div>
-          <div class="ladder">
-            <div class="rung"><span class="st" style="background:#052030">Super Active</span><span class="d">Full bar in one business unit in the <b>last 90 days</b>.</span></div>
-            <div class="rung"><span class="st" style="background:#1882C7">Core Active</span><span class="d">Half the bar in the <b>last 90 days</b>. Active = Core or Super.</span></div>
-            <div class="rung"><span class="st" style="background:#4ABEEE;color:#052030">Dabbler</span><span class="d">A case in the last 90 days, <b>below every bar</b>.</span></div>
-            <div class="rung"><span class="st" style="background:#EF4444">Inactive</span><span class="d"><b>No case in 90 days</b>, whether it used to send work or never has.</span></div>
-          </div>
-        </div>
-      </div>
+      <div class="panel-title">How an account qualifies <span class="win-pill">last 90 days</span></div>
+      <p class="win-lead">Cases <b>submitted in the last 90 days</b>, by business unit. Each bar is one scale: cross a tick mark and the office moves up a state, drop below it and the office moves down. The best business unit sets the state.</p>
+      <div class="sa-row sa-head"><span></span><div class="sa-scale"><span class="s0">Inactive</span><span class="s1">Dabbler</span><span class="s2">Core Active</span><span class="s3">Super Active</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown &amp; Bridge</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 29</span><span class="sa-seg s2">30 to 59</span><span class="sa-seg s3">60+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 14</span><span class="sa-seg s2">15 to 29</span><span class="sa-seg s3">30+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 5</span><span class="sa-seg s2">6 to 11</span><span class="sa-seg s3">12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 5</span><span class="sa-seg s2">6 to 11</span><span class="sa-seg s3">12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 5</span><span class="sa-seg s2">6 to 11</span><span class="sa-seg s3">12+</span></div></div>
     </div>
     <div class="lead" id="dt-lead"></div>
     <div class="dt-tiles" id="dt-quick"></div>
@@ -380,11 +376,11 @@ html,body{overflow-x:hidden}
     <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
     <p class="dt-note" style="margin-top:8px">Click a practice for its own page. Click a column heading to sort.</p>
   </div>
-  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.15.2</span></div>
+  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.15.3</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
-<script src="details-page.js?v=0.15.2"></script>
+<script src="details-page.js?v=0.15.3"></script>
 </body>
 </html>

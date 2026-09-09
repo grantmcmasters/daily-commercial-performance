@@ -523,7 +523,7 @@
           tile(fmtN(c.total), "Total practices", "", "") +
           tile(fmtN(c.active), "Active", "", "g") +
           tile(fmtN(c.dabblers), "Dabblers", "", "") +
-          tile(fmtPct(c.penetration_pct), "Network penetration", fmtN(c.active) + " / " + fmtN(c.total) + " network practices currently active", "d") +
+          tile(fmtPct(c.penetration_pct), "Network penetration", fmtN(c.active) + " / " + fmtN(c.total) + " offices currently active", "d") +
           tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g") +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
@@ -906,7 +906,7 @@
     this.content(sub.title, "Account Executives  |  " + sub.ae);
     this.logoCard(0.5, 1.05, 1.9, 1.05, [logo], sub.title);
     [["" + fmtN(c.total), "Total practices", DECK.navy, ""], ["" + fmtN(c.active), "Active", DECK.killian, ""], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy, ""],
-     [fmtPct(c.penetration_pct), "Network penetration", DECK.goldInk, fmtN(c.active) + " / " + fmtN(c.total) + " currently active"], ["" + fmtN(c.mtd_net_new), "MTD net new submitters", DECK.killian, ""]
+     [fmtPct(c.penetration_pct), "Network penetration", DECK.goldInk, fmtN(c.active) + " / " + fmtN(c.total) + " offices currently active"], ["" + fmtN(c.mtd_net_new), "MTD net new submitters", DECK.killian, ""]
     ].forEach(function (k, i) { self.kpi(2.55 + i * 2.06, 1.05, 1.96, 1.05, k[0], k[1], k[3], DECK.strips[i], k[2]); });
     this.label(0.5, 2.3, 8.2, "Submitting practices by month", AE.year + " YTD, dashed top level = rest of the network (" + fmtN(sub.network) + ")");
     var t = defaultStates(sub.states);

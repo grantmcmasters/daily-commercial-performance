@@ -553,7 +553,8 @@ def build_ae(P):
             "in_system": len(ids),
             "active": n_super + n_core, "super": n_super, "core": n_core,
             "dabblers": n_dab, "ytd_submitters": ytd_sub,
-            "penetration_pct": int(round(100.0 * ytd_sub / network)) if network else None,
+            "penetration_pct": int(round(100.0 * (n_super + n_core) / network)) if network else None,
+            "ytd_penetration_pct": int(round(100.0 * ytd_sub / network)) if network else None,
             "mtd_net_new": mtd_new,
         }
         mrows = []

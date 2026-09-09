@@ -523,7 +523,7 @@
           tile(fmtN(c.total), "Total practices", "", "") +
           tile(fmtN(c.active), "Active", "", "g") +
           tile(fmtN(c.dabblers), "Dabblers", "", "") +
-          tile(fmtPct(c.penetration_pct), "YTD penetration", fmtN(c.ytd_submitters) + " / " + fmtN(c.total) + " practices submitted a case YTD", "d") +
+          tile(fmtPct(c.penetration_pct), "Network penetration", fmtN(c.active) + " / " + fmtN(c.total) + " network practices currently active", "d") +
           tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g") +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
@@ -622,7 +622,7 @@
       "<li>Weeks are seven day blocks from the first day of the year or quarter, so the two weekly views use different week boundaries. * marks the partial period through yesterday. The small number and the color show the change from the period before: green is good, red is bad, gray is no change. The Dabbler row is shaded blue instead, darker where that row has relatively more dabblers.</li></ul>" +
       "<h3>Account Executives</h3><ul>" +
       "<li><b>Total practices:</b> the partner network.<ul>" + networks + "</ul></li>" +
-      "<li><b>Active, Dabblers:</b> where the practices sit today. <b>YTD penetration:</b> practices that sent a case this year divided by the network, rounded to the nearest percent. <b>MTD net new submitters:</b> practices whose first ever case landed this month.</li>" +
+      "<li><b>Active, Dabblers:</b> where the practices sit today. <b>Network penetration:</b> practices currently active (Core or Super Active) divided by the network, rounded to the nearest percent. <b>MTD net new submitters:</b> practices whose first ever case landed this month.</li>" +
       "<li><b>Chart:</b> submitting practices each month split Active / Dabbler / New (New wins when a practice is both); the dashed top level is the rest of the network, so every bar reaches the network total.</li>" +
       "<li><b>LFX rule:</b> " + esc(ae.lfx) + ". Beacon and Aspen Dental accounts share the store practice id (the four digit office code at the start of the practice name).</li></ul>" +
       "<h3>Account Managers</h3><ul>" +
@@ -906,7 +906,7 @@
     this.content(sub.title, "Account Executives  |  " + sub.ae);
     this.logoCard(0.5, 1.05, 1.9, 1.05, [logo], sub.title);
     [["" + fmtN(c.total), "Total practices", DECK.navy, ""], ["" + fmtN(c.active), "Active", DECK.killian, ""], ["" + fmtN(c.dabblers), "Dabblers", DECK.navy, ""],
-     [fmtPct(c.penetration_pct), "YTD penetration", DECK.goldInk, fmtN(c.ytd_submitters) + " / " + fmtN(c.total) + " practices submitted a case YTD"], ["" + fmtN(c.mtd_net_new), "MTD net new submitters", DECK.killian, ""]
+     [fmtPct(c.penetration_pct), "Network penetration", DECK.goldInk, fmtN(c.active) + " / " + fmtN(c.total) + " currently active"], ["" + fmtN(c.mtd_net_new), "MTD net new submitters", DECK.killian, ""]
     ].forEach(function (k, i) { self.kpi(2.55 + i * 2.06, 1.05, 1.96, 1.05, k[0], k[1], k[3], DECK.strips[i], k[2]); });
     this.label(0.5, 2.3, 8.2, "Submitting practices by month", AE.year + " YTD, dashed top level = rest of the network (" + fmtN(sub.network) + ")");
     var t = defaultStates(sub.states);

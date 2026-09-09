@@ -67,7 +67,7 @@
   }
 
   /* ---------- rendering ---------- */
-  var S = (D.sections[SEC] || {})[KEY], METRICS = [], current = null, sortKey = "name", sortDir = 1, query = "", showAll = false;
+  var S = (D.sections[SEC] || {})[KEY], METRICS = [], current = null, sortKey = "ytd", sortDir = -1, query = "", showAll = false;
   if (!S) {
     byId("dt-head").innerHTML = '<div class="sub-title">No details for this section yet</div><p class="dt-note">Open this page from a "Click for details" button on the one pager.</p>';
     return;
@@ -138,7 +138,7 @@
   function selected() {
     var rows = S.rows.filter(current.filter).filter(matches);
     var col = COLS.filter(function (c) { return c.key === sortKey; })[0];
-    if (current.sort && sortKey === "name" && !query) rows.sort(current.sort);
+    if (current.sort && sortKey === "ytd" && sortDir === -1 && !query) rows.sort(current.sort);
     else if (col) rows.sort(function (a, b) { var x = col.get(a), y = col.get(b); if (x == null) x = ""; if (y == null) y = ""; return (x < y ? -1 : x > y ? 1 : 0) * sortDir; });
     return rows;
   }

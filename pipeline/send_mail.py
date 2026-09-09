@@ -26,7 +26,7 @@ LIVE = os.environ.get("DCP_URL", "https://daily-commercial-performance.vercel.ap
 SIGNATURE = {
     "name": "Grant McMasters", "title": "Senior Data Analyst", "phone": "980-253-9440", "email": "grant.mcmasters@skdla.com",
     "address": "2850 Red Hill Ave, Suite 200, Santa Ana, CA 92705", "site": "www.SKDLA.com", "site_url": "https://www.skdla.com",
-    "logo": os.path.join(ROOT, "logos", "spectrum-killian.png"),          # inline, cid sig-logo
+    "logo": os.path.join(ROOT, "logos", "signature-logo.png"),          # inline, cid sig-logo
     "photo": os.path.join(ROOT, "logos", "signature-photo.jpg"),          # optional, inline when the file exists, cid sig-photo
 }
 
@@ -107,7 +107,7 @@ def build(summary_html, pdf_path, sender, recipients, subject):
     html_part = msg.get_payload()[-1]
     for cid, path, mime in images:
         with open(path, "rb") as f:
-            html_part.add_related(f.read(), maintype=mime.split("/")[0], subtype=mime.split("/")[1], cid=f"<{cid}>", filename=os.path.basename(path))
+            html_part.add_related(f.read(), maintype=mime.split("/")[0], subtype=mime.split("/")[1], cid=f"<{cid}>", disposition="inline")
     if pdf_path and os.path.exists(pdf_path):
         with open(pdf_path, "rb") as f:
             msg.add_attachment(f.read(), maintype="application", subtype="pdf", filename=deck_name())

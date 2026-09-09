@@ -5,6 +5,7 @@ Spectrum Killian daily commercial one-pager. One long scrollable page with three
 Static site on Vercel, no build step, no framework. Same deployment pattern as `skdla-account-health`.
 
 ## Files
+- `details.html` + `details-page.js`: the account details tab (every practice behind a tile, state by month, cases by month, Excel export) reading `details.js`, which the engine writes next to `data.js`.
 - `index.html`: markup and CSS. `app.js`: the page script (renders every section from `data.js`, the state table picker, and the Export slides button, which draws a PDF deck with jsPDF and svg2pdf using the brand fonts in `fonts/`).
 - `data.js`: `window.DCP_DATA` written by `pipeline/build.py`. Served no-cache so a refresh shows new numbers.
 - `pipeline/build.py`: pulls from Supabase (SK Public) through the REST API and writes `data.js`. The three section builders are stubs until the metrics are decided.

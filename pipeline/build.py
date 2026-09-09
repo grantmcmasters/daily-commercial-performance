@@ -331,6 +331,47 @@ def moves(ids, E, periods):
     return out
 
 
+DETAILS = {"ae": {}, "am": {}, "programs": {}}
+STATE_CH = {QUIET: "0", DABBLER: "1", CORE: "2", SUPER: "3"}
+
+
+def practice_rows(ids, E, months, names, accts):
+    """One row per practice for the details page: identity, state today and at each month end this year,
+    cases by month, trailing 90 day counts, first and last case, and the flags behind each tile."""
+    snaps = [s for _, _, s in months]
+    cur_m0 = months[-1][1]
+    s30, s90, s180 = RUN_DATE - dt.timedelta(days=30), RUN_DATE - dt.timedelta(days=90), RUN_DATE - dt.timedelta(days=180)
+    rows = []
+    for pid in ids:
+        e = E.get(pid)
+        if e is None or not e.dates:
+            rows.append({"pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "st": "0", "q0": "0", "l30": "0",
+                         "hist": "0" * len(months), "cm": [0] * len(months), "ytd": 0, "c90": 0, "p90": 0, "first": None, "last": None, "new": 0})
+            continue
+        rows.append({
+            "pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []),
+            "st": STATE_CH[e.level(RUN_DATE)], "q0": STATE_CH[e.level(RQ0)], "l30": STATE_CH[e.level(s30)],
+            "hist": "".join(STATE_CH[e.level(s)] for s in snaps),
+            "cm": [e.cases_between(m0, s) for _, m0, s in months],
+            "ytd": e.cases_between(JAN1, RUN_DATE), "c90": e.cases_between(s90, RUN_DATE), "p90": e.cases_between(s180, s90),
+            "first": e.first.isoformat() if e.first else None, "last": e.dates[-1].isoformat(),
+            "new": 1 if (e.first and cur_m0 <= e.first < RUN_DATE) else 0,
+        })
+    return rows
+
+
+def names_and_accounts(scope, pick):
+    """practice name and the account numbers behind each practice, for the accounts `pick(s)` accepts"""
+    names, accts = {}, defaultdict(list)
+    for an, s in scope.items():
+        tag = pick(s)
+        if not tag:
+            continue
+        names.setdefault(s["pid"], s["name"])
+        accts[s["pid"]].append(an if tag is True else f"{an} {tag}")
+    return names, accts
+
+
 def quiet_dates(e, run_date):
     """Days on which the practice went quiet: 91 days after a case that no case followed within 90 days."""
     out, ds = [], e.dates
@@ -480,7 +521,7 @@ def prepare(inputs):
         if not pid:                      # same rule as the pipeline: no practice id, not counted
             excluded[sp or "(none)"] += 1
             continue
-        scope[an] = {"sp": sp, "pid": pid, "amc": (a.get("Account Manager Combined") or "").strip()}
+        scope[an] = {"sp": sp, "pid": pid, "amc": (a.get("Account Manager Combined") or "").strip(), "name": (a.get("Practice Name") or "").strip()}
     # who manages each Aspen store's Aspen Dental account (for the LFX routing)
     dental_owner = {}
     for an, s in scope.items():
@@ -625,6 +666,9 @@ def build_ae(P):
             ("quiet", "Went quiet", "No case in 90 days", "quiet"),
         ]
         states = states_bundle(ids, E, RUN_DATE)
+        names, accts = names_and_accounts(scope, lambda s, sp=sp: True if s["sp"] == sp else ("(Beacon, LFX cases)" if sp == "Aspen Dental" and s["sp"] == "Aspen Beacon" else None))
+        DETAILS["ae"][pdef["key"]] = {"title": pdef["title"], "owner": pdef["ae"], "logo": pdef["logo"], "network": network, "in_system": len(ids),
+                                      "rows": practice_rows(ids, E, months, names, accts)}
         subsections.append({
             "key": pdef["key"], "title": pdef["title"], "partner": sp, "ae": pdef["ae"], "logo": pdef["logo"],
             "network": network, "plays": list(PLAYS_PLACEHOLDER),
@@ -838,6 +882,9 @@ def build_am(P):
         book_denom = max(book_offices[-2] if len(book_offices) > 1 else 0, book_offices[-1])
         cases_projected_last = round(book_cases[-1] * mtd_factor / book_denom, 1) if (mtd_factor and book_denom) else None
         weeks = moves(ids, E, period_bounds("week", "quarter", RUN_DATE))
+        names, accts = names_and_accounts(scope, lambda s, k=k: True if book_of.get(s["amc"]) == k else None)
+        DETAILS["am"][k] = {"title": am["name"], "owner": am["label"], "logos": am["logos"], "quarter": quarter_label(RQ0), "prev_quarter": quarter_label(PQ0),
+                            "rows": practice_rows(ids, E, months, names, accts)}
         subsections.append({
             "key": k, "name": am["name"], "label": am["label"], "logos": am["logos"], "logo_tag": am.get("logo_tag"),
             "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active_now": active_now,
@@ -915,6 +962,8 @@ def build_programs(P):
         E = {pid: ents[pid] for pid in ids if pid in ents}
         states = states_bundle(ids, E, RUN_DATE)
         weeks = moves(ids, E, period_bounds("week", "quarter", RUN_DATE))
+        names, accts = names_and_accounts(scope, lambda s, pset=pset: True if s["sp"] in pset else None)
+        DETAILS["programs"][pg["key"]] = {"title": pg["title"], "owner": "Marketing", "logo": pg["logo"], "rows": practice_rows(ids, E, months, names, accts)}
         subsections.append({
             "key": pg["key"], "title": pg["title"], "partners": pg["partners"], "logo": pg["logo"],
             "cards": {"practices": len(ids), "submitters_ytd": submitters_ytd, "active": n_super + n_core, "super": n_super, "core": n_core,
@@ -966,6 +1015,12 @@ def main():
             "programs": build_programs(P),
         },
     }
+    details = {"meta": dict(data["meta"], months=[m[0] for m in ytd_months(RUN_DATE)], quarter=quarter_label(RQ0), quarter_start=RQ0.isoformat()), "sections": DETAILS}
+    dpath = os.path.join(os.path.dirname(os.path.abspath(out)), "details.js")
+    dbody = "window.DCP_DETAILS = " + sanitize(json.dumps(details, ensure_ascii=True, separators=(",", ":"))) + ";\n"
+    with open(dpath, "w", encoding="utf8", newline="\n") as f:
+        f.write(dbody)
+    print(f"wrote {dpath} ({len(dbody):,} bytes; {sum(len(v['rows']) for sec in DETAILS.values() for v in sec.values()):,} practice rows)", flush=True)
     body = "window.DCP_DATA = " + sanitize(json.dumps(data, ensure_ascii=True, separators=(",", ":"))) + ";\n"
     with open(os.path.abspath(out), "w", encoding="utf8", newline="\n") as f:
         f.write(body)

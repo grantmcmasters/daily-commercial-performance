@@ -70,12 +70,16 @@
       s.push('<text x="' + (padL - 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="' + (fs || 10.5) + '" font-weight="700" fill="#5A6B79">' + (fmt ? fmt(t) : fmtN(t)) + '</text>');
     });
   }
-  function tile(value, label, sub, tone) {
-    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div>' + (sub ? '<div class="rv">' + esc(sub) + "</div>" : "") + "</div>";
+  function detailsURL(sec, key, metric) { return "details.html?sec=" + sec + "&key=" + encodeURIComponent(key) + (metric ? "&metric=" + metric : ""); }
+  function tile(value, label, sub, tone, href) {
+    var open = href ? '<a class="b3t link ' + (tone || "") + '" href="' + esc(href) + '" target="_blank" rel="noopener" title="Open the practices behind this number">' : '<div class="b3t ' + (tone || "") + '">';
+    return open + '<div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div>' + (sub ? '<div class="rv">' + esc(sub) + "</div>" : "") + (href ? "</a>" : "</div>");
   }
-  function tileHTML(value, label, subHTML, tone) {
-    return '<div class="b3t ' + (tone || "") + '"><div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + subHTML + "</div></div>";
+  function tileHTML(value, label, subHTML, tone, href) {
+    var open = href ? '<a class="b3t link ' + (tone || "") + '" href="' + esc(href) + '" target="_blank" rel="noopener" title="Open the practices behind this number">' : '<div class="b3t ' + (tone || "") + '">';
+    return open + '<div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + subHTML + "</div>" + (href ? "</a>" : "</div>");
   }
+  function detailsButton(sec, key) { return '<a class="btn-details" href="' + esc(detailsURL(sec, key)) + '" target="_blank" rel="noopener">Click for details</a>'; }
   function logoImg(path, title, small) {
     var cls = "sub-logo" + (small ? " sm" : "") + (/aspen-beacon/.test(path) ? " tall" : "");
     return '<img class="' + cls + '" src="' + esc(path) + '" alt="' + esc(title) + ' logo" onerror="this.style.display=\'none\'">';
@@ -518,13 +522,13 @@
       return '<div class="sub card" id="ae-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
-        '<div><span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
+        '<div class="head-right">' + detailsButton("ae", sub.key) + '<span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
         '<div class="b5row">' +
-          tile(fmtN(c.total), "Total practices", "", "") +
-          tile(fmtN(c.active), "Active", "", "g") +
-          tile(fmtN(c.dabblers), "Dabblers", "", "") +
-          tile(fmtPct(c.penetration_pct), "Penetration", fmtN(c.active) + " / " + fmtN(c.total) + " offices currently active", "d") +
-          tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g") +
+          tile(fmtN(c.total), "Total practices", "", "", detailsURL("ae", sub.key, "total")) +
+          tile(fmtN(c.active), "Active", "", "g", detailsURL("ae", sub.key, "active")) +
+          tile(fmtN(c.dabblers), "Dabblers", "", "", detailsURL("ae", sub.key, "dabblers")) +
+          tile(fmtPct(c.penetration_pct), "Penetration", fmtN(c.active) + " / " + fmtN(c.total) + " offices currently active", "d", detailsURL("ae", sub.key, "penetration")) +
+          tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g", detailsURL("ae", sub.key, "mtd_net_new")) +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
           legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network) + "</div>" +
@@ -558,12 +562,12 @@
         '<div class="sub-head"><div class="sub-brand"><div class="sub-logos"><div class="logo-cell">' + (sub.logos || []).map(function (p) { return logoImg(p, sub.label, sub.logos.length > 1); }).join("") +
           (sub.logo_tag ? '<span class="logo-tag">' + esc(sub.logo_tag) + "</span>" : "") + "</div></div>" +
           '<div class="sub-title">' + esc(sub.name) + "</div></div>" +
-        '<div><span class="chip chip-b">' + esc(sub.label) + "</span></div></div>" +
+        '<div class="head-right">' + detailsButton("am", sub.key) + '<span class="chip chip-b">' + esc(sub.label) + "</span></div></div>" +
         '<div class="b4row">' +
-          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
-          tileHTML(fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerHTML(c), "") +
-          tile("+" + fmtN(c.promoted_30), "Became active L30D", "", "up") +
-          tile("-" + fmtN(c.demoted_30), "Lost active status L30D", "", "dn") +
+          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g", detailsURL("am", sub.key, "submitters_ytd")) +
+          tileHTML(fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerHTML(c), "", detailsURL("am", sub.key, "cases_mtd")) +
+          tile("+" + fmtN(c.promoted_30), "Became active L30D", "", "up", detailsURL("am", sub.key, "up30")) +
+          tile("-" + fmtN(c.demoted_30), "Lost active status L30D", "", "dn", detailsURL("am", sub.key, "down30")) +
         "</div>" +
         '<div class="chart-wrap hero"><div class="chart-head"><div class="panel-title big">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received per day</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
         '<div class="am-grid3">' +
@@ -587,16 +591,16 @@
       return '<div class="sub card" id="pg-' + esc(sub.key) + '" data-sub="pg-' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
-        '<div><span class="chip chip-b">Marketing</span></div></div>' +
+        '<div class="head-right">' + detailsButton("programs", sub.key) + '<span class="chip chip-b">Marketing</span></div></div>' +
         '<div class="pg-tiles">' +
-          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g") +
+          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g", detailsURL("programs", sub.key, "submitters_ytd")) +
           '<div class="eq">=</div>' +
           '<div class="tile-group">' +
-            tile(fmtN(c.active), "Active", "", "g") +
-            tile(fmtN(c.dabblers), "Dabblers", "", "") +
-            tile(fmtN(c.gone_quiet), "Inactive", "", "q") +
+            tile(fmtN(c.active), "Active", "", "g", detailsURL("programs", sub.key, "active")) +
+            tile(fmtN(c.dabblers), "Dabblers", "", "", detailsURL("programs", sub.key, "dabblers")) +
+            tile(fmtN(c.gone_quiet), "Inactive", "", "q", detailsURL("programs", sub.key, "inactive")) +
           "</div>" +
-          tile(fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", "d") +
+          tile(fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", "d", detailsURL("programs", sub.key, "penetration")) +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div></div>' + programFlowSVG(sub.months, 960, 420, 1.35) + "</div>" +
         '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true) +
@@ -638,6 +642,7 @@
       "<li><b>Book:</b> " + esc(pg.book) + ". There is no network cap: the program's universe is the whole marketable universe.</li>" +
       "<li><b>Submitters YTD, Active, Dabblers:</b> as defined above. <b>Inactive (tile):</b> " + esc(pg.quiet) + ". <b>Penetration:</b> currently active practices divided by every practice in the program's book, since there is no network cap.</li>" +
       "<li><b>Chart:</b> new submitters (up) = " + esc(pg.new) + "; inactive (down) = " + esc(pg.gone_quiet_month) + "; the net of the two is under each month; the line is the practices that sent at least one case that month, on the right axis. The state table and the week over week chart follow the same rules as the other sections.</li></ul>" +
+      "<h3>Account details</h3><p>Every one pager has a Click for details button, and every tile is a link. Both open a separate tab that lists the practices behind the number: state today, state at the end of each month this year, cases by month, trailing 90 day counts, first and last case, and the account numbers that roll up to the practice. The list can be exported to Excel.</p>" +
       "<h3>Plays</h3><p>The Plays boxes are editable on the page (click into them). Edits go into the slide export but are not saved between visits yet.</p>" +
       "<h3>Counting rules</h3><p>Cases are counted the same way as the Account Health app: one business unit per case from the primary product, manufacturing jigs dropped, TRI rebill cases dropped, corporate sample accounts dropped, lab, university and intercompany accounts dropped. The one difference is that Aspen Beacon non-LFX cases are kept here so the Beacon page shows the whole Beacon book.</p>";
   }

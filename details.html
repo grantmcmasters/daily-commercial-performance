@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SK Daily Commercial Performance</title>
+<title>Account details</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpolygon points='50,4 92,27 92,73 50,96 8,73 8,27' fill='%231882C7'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -111,11 +111,6 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 /* ---------- subsections (one pagers) ---------- */
 .sub{margin-top:16px;padding:22px 24px 20px}
 .sub-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.head-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.btn-details{display:inline-block;text-decoration:none;font-weight:800;font-size:12.5px;letter-spacing:.03em;color:#FFFFFF;background:var(--killian);padding:8px 16px;border-radius:999px;transition:background .15s,color .15s}
-.btn-details:hover{background:var(--gold);color:var(--ink)}
-a.b3t.link{text-decoration:none;color:inherit;display:block;transition:box-shadow .12s,border-color .12s}
-a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,199,.25)}
 .sub-brand{display:flex;align-items:center;gap:16px;min-width:0;flex-wrap:wrap}
 .sub-logos{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .sub-logo{width:190px;height:58px;object-fit:contain;object-position:left center;display:block}
@@ -215,6 +210,40 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
   .sub-logo{height:34px}
 }
 </style>
+<style>
+.dt-card{margin-top:4px}
+.dt-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-bottom:2px}
+.dt-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-top:14px}
+.tile-btn{cursor:pointer;font:inherit;color:inherit;width:100%;transition:box-shadow .12s,border-color .12s;padding:12px 10px 10px}
+.tile-btn .n{font-size:26px}
+.tile-btn:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,199,.25)}
+.tile-btn.on{border-color:var(--killian);box-shadow:0 0 0 3px rgba(24,130,199,.35);background:#FFFFFF}
+.b3t.up .n{color:var(--up)}
+.b3t.dn .n{color:var(--down)}
+.b3t.q .n{color:var(--down)}
+.dt-toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:18px 0 10px}
+.dt-toolbar input{font:inherit;font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;min-width:260px;background:#FFFFFF}
+.dt-count{font-size:13.5px;color:var(--ink)}
+.dt-note{font-size:12px;color:var(--ink2)}
+.linkbtn{font:inherit;font-size:12px;font-weight:700;color:var(--killianink);text-decoration:underline;padding:0 4px}
+.btn.small{margin-left:auto;padding:8px 14px;font-size:12.5px}
+.dt-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px;background:#FFFFFF}
+.dt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.dt th{position:sticky;top:0;background:var(--card2);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;padding:9px 8px;border-bottom:2px solid var(--line);white-space:nowrap;z-index:1}
+.dt th.sortable{cursor:pointer}
+.dt th.sortable:hover{color:var(--killianink)}
+.dt th.sorted{color:var(--killianink)}
+.dt td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap;color:var(--ink)}
+.dt td.ph{color:var(--silver);text-align:center;padding:24px}
+.dt .r{text-align:right}
+.dt tr:hover td{background:#F7FBFE}
+.stchip{display:inline-block;font-weight:800;font-size:11px;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.mv{display:inline-flex;gap:3px;vertical-align:middle}
+.mv i{display:inline-block;width:14px;height:14px;border-radius:3px}
+.spark{display:block}
+.legend.dt-legend{margin-top:10px;font-size:11.5px}
+</style>
+
 </head>
 <body>
 
@@ -224,54 +253,29 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
     <div class="bdiv"></div>
     <div class="titleblock">
       <div class="app-title">Daily Commercial Performance</div>
-      <div class="app-sub">SK Commercial</div>
+      <div class="app-sub">Account details</div>
     </div>
-    <nav class="pills" aria-label="Page sections">
-      <a class="pill" href="#account-executives" data-sec="account-executives">Account Executives</a>
-      <a class="pill" href="#account-managers" data-sec="account-managers">Account Managers</a>
-      <a class="pill" href="#programs" data-sec="programs">Programs</a>
-      <a class="pill" href="#about" data-sec="about">About</a>
-    </nav>
+    <nav class="pills" aria-label="Back"><a class="pill" href="index.html">Back to the one pager</a></nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
 </header>
 
 <main>
-
-  <div class="card export" id="export-strip">
-    <div>
-      <div class="exp-t">Export slides</div>
-      <div class="exp-s">Builds a PDF deck with one slide per one pager below (Account Executives, Account Managers, Programs) plus the About page, in the board deck format.</div>
+  <div class="card sub dt-card">
+    <div class="sub-head" id="dt-head"></div>
+    <div class="dt-tiles" id="dt-tiles"></div>
+    <div class="legend dt-legend"><span><i style="background:#052030"></i>Super Active</span><span><i style="background:#1882C7"></i>Core Active</span><span><i style="background:#4ABEEE"></i>Dabbler</span><span><i style="background:#EF4444"></i>Inactive</span><span class="dt-note">Click a tile to list the practices behind it. Movement shows the state at the end of each month this year; the bars are cases received by month.</span></div>
+    <div class="dt-toolbar">
+      <div class="dt-count" id="dt-count"></div>
+      <input type="search" id="dt-search" placeholder="Search practice, ID or account number" aria-label="Search practices">
+      <button class="btn small" id="dt-export" type="button">Export to Excel</button>
     </div>
-    <button class="btn" id="btn-pptx" type="button">Export slides</button>
-    <span class="exp-status" id="pptx-status" aria-live="polite"></span>
+    <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
   </div>
-
-  <section class="block" id="account-executives" data-key="ae">
-    <h2 class="sec"><span class="n">01</span>Account Executives</h2>
-    <div id="ae-subs"></div>
-  </section>
-
-  <section class="block" id="account-managers" data-key="am">
-    <h2 class="sec"><span class="n">02</span>Account Managers</h2>
-    <div id="am-subs"></div>
-  </section>
-
-  <section class="block" id="programs" data-key="programs">
-    <h2 class="sec"><span class="n">03</span>Programs</h2>
-    <div id="pg-subs"></div>
-  </section>
-
-  <section class="block" id="about" data-key="about">
-    <h2 class="sec"><span class="n">04</span>About</h2>
-    <div class="card about" id="about-body"></div>
-  </section>
-
-  <div class="footer"><span class="num" id="build-tag">Build v0.10.0</span></div>
-
+  <div class="footer"><span class="num">Practice level. A practice is Active when it is Core or Super Active; state is measured on cases received, one business unit per case. Definitions are on the About section of the one pager.</span></div>
 </main>
 
-<script src="data.js"></script>
-<script src="app.js?v=0.10.0"></script>
+<script src="details.js"></script>
+<script src="details-page.js?v=0.10.0"></script>
 </body>
 </html>

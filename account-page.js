@@ -31,10 +31,14 @@
   var backHref = "details.html?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + (METRIC ? "&metric=" + METRIC : "");
   byId("asof").textContent = "Data through " + longDate(D.meta.data_through || D.meta.run_date);
   byId("back-list").href = backHref;
+  var pd = byId("pill-details"); if (pd && S) pd.href = backHref;
   if (!row) {
-    byId("acct").innerHTML = '<div class="card"><div class="sub-title">Practice not found</div><p class="dt-note">Open this page from a row on the account details list.</p></div>';
+    var lastList = "details.html";
+    try { lastList = "details.html" + (localStorage.getItem("dcp.lastDetails") || ""); } catch (e) { /* ignore */ }
+    byId("acct").innerHTML = '<div class="card"><div class="sub-title">Pick a practice to drill into</div><p class="dt-note" style="font-size:13.5px;margin-top:6px">The Account Drilldown shows one practice at a time. Open the <a href="' + esc(lastList) + '" style="color:#0F6BA8;font-weight:800">Details</a> list, then click any practice.</p></div>';
     return;
   }
+  try { localStorage.setItem("dcp.lastAccount", location.search); localStorage.setItem("dcp.lastDetails", "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + (METRIC ? "&metric=" + METRIC : "")); } catch (e) { /* ignore */ }
   document.title = row.name + " Account Page";
 
   /* ---------- pieces ---------- */

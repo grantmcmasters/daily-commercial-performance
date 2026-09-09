@@ -99,7 +99,7 @@
   function select(key) {
     current = METRICS.filter(function (m) { return m.key === key; })[0] || METRICS[0];
     showAll = false;
-    try { history.replaceState(null, "", location.pathname + "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&metric=" + current.key); } catch (e) { /* ignore */ }
+    try { history.replaceState(null, "", location.pathname + "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&metric=" + current.key); localStorage.setItem("dcp.lastDetails", location.search); } catch (e) { /* ignore */ }
     renderTiles();
     renderTable();
   }

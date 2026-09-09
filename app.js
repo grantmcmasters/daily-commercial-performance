@@ -72,14 +72,14 @@
   }
   function detailsURL(sec, key, metric) { return "details.html?sec=" + sec + "&key=" + encodeURIComponent(key) + (metric ? "&metric=" + metric : ""); }
   function tile(value, label, sub, tone, href) {
-    var open = href ? '<a class="b3t link ' + (tone || "") + '" href="' + esc(href) + '" target="_blank" rel="noopener" title="Open the practices behind this number">' : '<div class="b3t ' + (tone || "") + '">';
+    var open = href ? '<a class="b3t link ' + (tone || "") + '" href="' + esc(href) + '" title="Open the practices behind this number">' : '<div class="b3t ' + (tone || "") + '">';
     return open + '<div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div>' + (sub ? '<div class="rv">' + esc(sub) + "</div>" : "") + (href ? "</a>" : "</div>");
   }
   function tileHTML(value, label, subHTML, tone, href) {
-    var open = href ? '<a class="b3t link ' + (tone || "") + '" href="' + esc(href) + '" target="_blank" rel="noopener" title="Open the practices behind this number">' : '<div class="b3t ' + (tone || "") + '">';
+    var open = href ? '<a class="b3t link ' + (tone || "") + '" href="' + esc(href) + '" title="Open the practices behind this number">' : '<div class="b3t ' + (tone || "") + '">';
     return open + '<div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + subHTML + "</div>" + (href ? "</a>" : "</div>");
   }
-  function detailsButton(sec, key) { return '<a class="btn-details" href="' + esc(detailsURL(sec, key)) + '" target="_blank" rel="noopener">Click for details</a>'; }
+  function detailsButton(sec, key) { return '<a class="btn-details" href="' + esc(detailsURL(sec, key)) + '">Click for details</a>'; }
   function logoImg(path, title, small) {
     var cls = "sub-logo" + (small ? " sm" : "") + (/aspen-beacon/.test(path) ? " tall" : "");
     return '<img class="' + cls + '" src="' + esc(path) + '" alt="' + esc(title) + ' logo" onerror="this.style.display=\'none\'">';

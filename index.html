@@ -233,6 +233,8 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
       <a class="pill" href="#account-managers" data-sec="account-managers">Account Managers</a>
       <a class="pill" href="#programs" data-sec="programs">Programs</a>
       <a class="pill" href="#about" data-sec="about">About</a>
+      <a class="pill" href="details.html?sec=ae&amp;key=aspen-clearchoice" id="pill-details" data-sec="details">Details</a>
+      <a class="pill" href="account.html" id="pill-drill" data-sec="drill">Account Drilldown</a>
     </nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
@@ -269,11 +271,12 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.12.0</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.12.1</span></div>
 
 </main>
 
+<script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="data.js"></script>
-<script src="app.js?v=0.12.0"></script>
+<script src="app.js?v=0.12.1"></script>
 </body>
 </html>

@@ -280,6 +280,8 @@ html,body{overflow-x:hidden}
 .dt td.dn{color:var(--down);font-weight:800}
 .hold{display:inline-block;font-size:11px;font-weight:700;color:#B0362F;background:rgba(239,68,68,.12);border-radius:999px;padding:2px 8px}
 .dt-note{font-size:12px;color:var(--ink2);line-height:1.5}
+.linkbtn{font:inherit;font-size:12.5px;font-weight:800;color:var(--killianink);text-decoration:none;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:#FFFFFF;display:inline-block}
+.linkbtn:hover{border-color:var(--killian)}
 </style>
 
 </head>
@@ -293,23 +295,25 @@ html,body{overflow-x:hidden}
       <div class="app-title">Daily Commercial Performance</div>
       <div class="app-sub">Account page</div>
     </div>
-    <nav class="pills" aria-label="Back"><a class="pill" id="back-list" href="details.html">Back to the list</a><a class="pill" href="index.html">Back to main screen</a></nav>
+    <nav class="pills" aria-label="Page sections"><a class="pill" href="index.html#account-executives">Account Executives</a><a class="pill" href="index.html#account-managers">Account Managers</a><a class="pill" href="index.html#programs">Programs</a><a class="pill" href="index.html#about">About</a><a class="pill" href="details.html" id="pill-details">Details</a><a class="pill active" href="account.html" id="pill-drill">Account Drilldown</a></nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
 </header>
 
 <main>
+  <p style="margin:0 0 10px 0"><a class="linkbtn" id="back-list" href="details.html">&#8592; Back to the list</a></p>
   <div class="acct" id="acct"><div class="card"><p class="dt-note">Loading the practice&hellip;</p></div></div>
   <div class="footer"><span class="num">Practice level. State and history from the Daily Commercial Performance engine; predictions, summaries, plays and open cases from the Account Health model when the practice is in its modeled book.</span></div>
 </main>
 
+<script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
 <script>
   (function () {
     var q = new URLSearchParams(location.search), sec = (q.get("sec") || "ae").replace(/[^a-z]/g, ""), key = (q.get("key") || "").replace(/[^a-z0-9-]/g, "");
-    document.write('<script src="health/' + sec + '-' + key + '.js?v=0.12.0"><\/script>');
+    document.write('<script src="health/' + sec + '-' + key + '.js?v=0.12.1"><\/script>');
   })();
 </script>
-<script src="account-page.js?v=0.12.0"></script>
+<script src="account-page.js?v=0.12.1"></script>
 </body>
 </html>

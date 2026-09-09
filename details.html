@@ -300,7 +300,7 @@ html,body{overflow-x:hidden}
       <div class="app-title">Daily Commercial Performance</div>
       <div class="app-sub">Account details</div>
     </div>
-    <nav class="pills" aria-label="Back"><a class="pill" href="index.html">Back to main screen</a></nav>
+    <nav class="pills" aria-label="Page sections"><a class="pill" href="index.html#account-executives">Account Executives</a><a class="pill" href="index.html#account-managers">Account Managers</a><a class="pill" href="index.html#programs">Programs</a><a class="pill" href="index.html#about">About</a><a class="pill active" href="details.html" id="pill-details">Details</a><a class="pill" href="account.html" id="pill-drill">Account Drilldown</a></nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
 </header>
@@ -343,7 +343,8 @@ html,body{overflow-x:hidden}
   <div class="footer"><span class="num">Practice level. A practice is Active when it is Core or Super Active; state is measured on cases received, one business unit per case. Definitions are on the About section of the one pager.</span></div>
 </main>
 
+<script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
-<script src="details-page.js?v=0.12.0"></script>
+<script src="details-page.js?v=0.12.1"></script>
 </body>
 </html>

@@ -272,16 +272,16 @@ html,body{overflow-x:hidden}
 .sa-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
 .sa-head{margin:8px 0 0}
 .sa-scale{display:flex}
-.sa-scale span{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding-left:8px}
-.sa-scale .s0{color:#B0362F;padding-left:0;text-align:center}
+.sa-scale span{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center}
+.sa-scale .s0{color:#B0362F}
 .sa-scale .s1{color:#0F6BA8}
 .sa-scale .s2{color:#1882C7}
 .sa-scale .s3{color:#052030}
 .sa-track{display:flex;height:26px;border-radius:7px;overflow:hidden}
-.sa-seg{display:flex;align-items:center;font-size:11px;font-weight:800;color:#FFFFFF;padding-left:8px;border-left:3px solid #FFFFFF;white-space:nowrap;font-variant-numeric:tabular-nums}
-.sa-seg.s0,.sa-scale .s0{flex:0 0 11%;justify-content:center;padding-left:0;border-left:0}
-.sa-seg.s1,.sa-scale .s1{flex:0 0 29%}
-.sa-seg.s2,.sa-scale .s2{flex:0 0 30%}
+.sa-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#FFFFFF;border-left:3px solid #FFFFFF;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sa-seg.s0,.sa-scale .s0{flex:0 0 72px;border-left:0}
+.sa-seg.s1,.sa-scale .s1{flex:0 0 31%}
+.sa-seg.s2,.sa-scale .s2{flex:0 0 31%}
 .sa-seg.s3,.sa-scale .s3{flex:1 1 auto}
 .sa-seg.s0{background:#EF4444}
 .sa-seg.s1{background:#4ABEEE;color:#052030}
@@ -360,13 +360,12 @@ html,body{overflow-x:hidden}
     <div class="sub-head" id="dt-head"></div>
     <div class="qual">
       <div class="panel-title">How an account qualifies <span class="win-pill">last 90 days</span></div>
-      <p class="win-lead">Cases <b>submitted in the last 90 days</b>, by business unit. Each bar is one scale: cross a tick mark and the office moves up a state, drop below it and the office moves down. The best business unit sets the state.</p>
       <div class="sa-row sa-head"><span></span><div class="sa-scale"><span class="s0">Inactive</span><span class="s1">Dabbler</span><span class="s2">Core Active</span><span class="s3">Super Active</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown &amp; Bridge</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 29</span><span class="sa-seg s2">30 to 59</span><span class="sa-seg s3">60+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 14</span><span class="sa-seg s2">15 to 29</span><span class="sa-seg s3">30+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 5</span><span class="sa-seg s2">6 to 11</span><span class="sa-seg s3">12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 5</span><span class="sa-seg s2">6 to 11</span><span class="sa-seg s3">12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1 to 5</span><span class="sa-seg s2">6 to 11</span><span class="sa-seg s3">12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown &amp; Bridge</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-29</span><span class="sa-seg s2">30-59</span><span class="sa-seg s3">60+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-14</span><span class="sa-seg s2">15-29</span><span class="sa-seg s3">30+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-5</span><span class="sa-seg s2">6-11</span><span class="sa-seg s3">12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-5</span><span class="sa-seg s2">6-11</span><span class="sa-seg s3">12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-5</span><span class="sa-seg s2">6-11</span><span class="sa-seg s3">12+</span></div></div>
     </div>
     <div class="lead" id="dt-lead"></div>
     <div class="dt-tiles" id="dt-quick"></div>
@@ -379,11 +378,11 @@ html,body{overflow-x:hidden}
     <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
     <p class="dt-note" style="margin-top:8px">Click a practice for its own page. Click a column heading to sort.</p>
   </div>
-  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.15.4</span></div>
+  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.15.5</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
-<script src="details-page.js?v=0.15.4"></script>
+<script src="details-page.js?v=0.15.5"></script>
 </body>
 </html>

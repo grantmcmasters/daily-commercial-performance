@@ -117,7 +117,7 @@
   }
   var COLS = [
     { key: "pid", label: "Practice ID", get: function (r) { return r.pid; } },
-    { key: "name", label: "Practice", get: function (r) { return r.name; } },
+    { key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { return '<a href="' + esc(accountURL(r)) + '">' + esc(r.name) + "</a>"; }, cls: "pname" },
     { key: "acc", label: "Accounts", get: function (r) { return (r.acc || []).join(", "); } },
     { key: "st", label: "State today", get: function (r) { return st(r); }, html: function (r) { return stateChip(r.st); } },
     { key: "hist", label: "Movement " + (months.length ? months[0] + " to " + months[months.length - 1] : "this year"), get: function (r) { return r.hist; }, html: movement, nosort: true },
@@ -129,6 +129,7 @@
     { key: "first", label: "First case", get: function (r) { return r.first || ""; }, html: function (r) { return esc(longDate(r.first)); } },
     { key: "last", label: "Last case", get: function (r) { return r.last || ""; }, html: function (r) { return esc(longDate(r.last)); } }
   ];
+  function accountURL(r) { return "account.html?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&pid=" + encodeURIComponent(r.pid) + (current ? "&metric=" + current.key : ""); }
   function matches(r) {
     if (!query) return true;
     var s = (r.pid + " " + r.name + " " + (r.acc || []).join(" ")).toLowerCase();
@@ -146,13 +147,15 @@
     byId("dt-count").innerHTML = "<b>" + fmtN(rows.length) + "</b> practices in <b>" + esc(current.label) + "</b>" + (current.note ? ' <span class="dt-note">' + esc(current.note) + "</span>" : "") + (rows.length > shown.length ? ' <button type="button" class="linkbtn" id="dt-more">Show all ' + fmtN(rows.length) + "</button>" : "");
     var head = "<tr>" + COLS.map(function (c) { return '<th class="' + (c.num ? "r" : "") + (c.nosort ? "" : " sortable") + (sortKey === c.key ? " sorted" : "") + '" data-col="' + c.key + '">' + esc(c.label) + (sortKey === c.key ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>"; }).join("") + "</tr>";
     var body = shown.map(function (r) {
-      return "<tr>" + COLS.map(function (c) { return '<td class="' + (c.num ? "r" : "") + '">' + (c.html ? c.html(r) : esc(c.get(r))) + "</td>"; }).join("") + "</tr>";
+      return '<tr class="rowlink" data-href="' + esc(accountURL(r)) + '" title="Open this practice">' + COLS.map(function (c) { return '<td class="' + (c.num ? "r" : "") + (c.cls ? " " + c.cls : "") + '">' + (c.html ? c.html(r) : esc(c.get(r))) + "</td>"; }).join("") + "</tr>";
     }).join("") || '<tr><td colspan="' + COLS.length + '" class="ph">No practices match.</td></tr>';
     byId("dt-table").innerHTML = "<thead>" + head + "</thead><tbody>" + body + "</tbody>";
     var more = byId("dt-more");
     if (more) more.addEventListener("click", function () { showAll = true; renderTable(); });
   }
   byId("dt-table").addEventListener("click", function (ev) {
+    var tr = ev.target.closest ? ev.target.closest("tr.rowlink") : null;
+    if (tr && !(ev.target.closest && ev.target.closest("a"))) { location.href = tr.getAttribute("data-href"); return; }
     var th = ev.target.closest ? ev.target.closest("th.sortable") : null;
     if (!th) return;
     var k = th.getAttribute("data-col");

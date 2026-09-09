@@ -242,6 +242,9 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .dt td.ph{color:var(--silver);text-align:center;padding:24px}
 .dt .r{text-align:right}
 .dt tr:hover td{background:#F7FBFE}
+.dt tr.rowlink{cursor:pointer}
+.dt td.pname a{color:var(--killianink);font-weight:800;text-decoration:none}
+.dt td.pname a:hover{text-decoration:underline}
 .stchip{display:inline-block;font-weight:800;font-size:11px;padding:3px 9px;border-radius:999px;white-space:nowrap}
 .mv{display:inline-flex;gap:3px;vertical-align:middle}
 .mv i{display:inline-block;width:14px;height:14px;border-radius:3px}
@@ -252,11 +255,11 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .qual-grid{display:grid;grid-template-columns:3fr 2fr;gap:18px}
 @media (max-width:1000px){.qual-grid{grid-template-columns:1fr}}
 .qual .panel-title{margin-bottom:6px}
-.sa-row{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;margin:9px 0}
+.sa-row{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;margin:7px 0}
 @media (max-width:700px){.sa-row{grid-template-columns:1fr;gap:4px}}
 .sa-name{font-weight:800;font-size:12.5px;display:flex;align-items:center;gap:7px}
 .sa-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.sa-track{position:relative;height:30px;background:var(--card3);border-radius:8px;overflow:hidden}
+.sa-track{position:relative;height:26px;background:var(--card3);border-radius:8px;overflow:hidden}
 .sa-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(5,32,48,.45);white-space:nowrap}
 .qual-note{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.5}
 .qual-note b{color:var(--ink)}
@@ -266,7 +269,7 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .rung .d{font-size:12px;color:var(--ink);line-height:1.45}
 .rung .d b{color:var(--ink)}
 .win-pill{display:inline-block;font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#052030;background:var(--gold);border-radius:999px;padding:5px 12px;margin-left:10px;vertical-align:middle}
-.win-lead{font-size:13px;font-weight:700;color:var(--ink);margin:6px 0 10px}
+.win-lead{font-size:12.5px;font-weight:600;color:var(--ink);margin:6px 0 8px}
 .win-lead b{color:var(--goldink)}
 .window{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 4px;font-size:11.5px}
 .win-box{border-radius:8px;padding:8px 10px;border:1px solid var(--line);background:#FFFFFF}
@@ -299,29 +302,24 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
     <div class="qual">
       <div class="qual-grid">
         <div>
-          <div class="panel-title">How a practice qualifies <span class="win-pill">90 day window</span></div>
-          <p class="win-lead">Every bar below counts cases <b>received in the last 90 days</b>, by business unit. Not per month, not year to date: the trailing 90 days, recounted every night.</p>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown and Bridge</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#1882C7;opacity:.45">Core Active: 30+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#1882C7">Super Active: 60+ in 90 days</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#8A93A3;opacity:.45">Core Active: 15+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#8A93A3">Super Active: 30+ in 90 days</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#052030;opacity:.45">Core Active: 6+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#052030">Super Active: 12+ in 90 days</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#B3A369;opacity:.45">Core Active: 6+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#B3A369">Super Active: 12+ in 90 days</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#4ABEEE;opacity:.45">Core Active: 6+ in 90 days</span><span class="sa-seg" style="left:50%;width:50%;background:#4ABEEE">Super Active: 12+ in 90 days</span></div></div>
-          <div class="window">
-            <div class="win-box"><div class="wt">Days 91 to 180 ago</div><div class="wd"><b>Super Active</b> needs the full bar here too, so it is the full bar in both windows back to back.</div></div>
-            <div class="win-box now"><div class="wt">Last 90 days (today back 90 days)</div><div class="wd"><b>Core Active</b> is half the bar here. <b>Super Active</b> is the full bar here. <b>Dabbler</b> is any case here below the bar.</div></div>
-          </div>
-          <div class="win-axis"><span>180 days ago</span><span>90 days ago</span><span>today</span></div>
-          <p class="qual-note">One business unit is enough; volume in the other categories does not need to qualify. Cases count on the day they were received, one business unit per case from its primary product.</p>
+          <div class="panel-title">How a practice qualifies <span class="win-pill">last 90 days</span></div>
+          <p class="win-lead">Cases <b>received in the last 90 days</b>, by business unit. Half a bar = Core Active. The full bar, two windows running = Super Active.</p>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown and Bridge</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#1882C7;opacity:.45">Core 30+</span><span class="sa-seg" style="left:50%;width:50%;background:#1882C7">Super 60+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#8A93A3;opacity:.45">Core 15+</span><span class="sa-seg" style="left:50%;width:50%;background:#8A93A3">Super 30+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#052030;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#052030">Super 12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#B3A369;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#B3A369">Super 12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#4ABEEE;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#4ABEEE">Super 12+</span></div></div>
+          <p class="qual-note">One business unit is enough. Cases count on the day received, one business unit per case.</p>
         </div>
         <div>
           <div class="panel-title">The four states</div>
           <div class="ladder">
-            <div class="rung"><span class="st" style="background:#052030">Super Active</span><span class="d">Full bar in one business unit in <b>each of the last two 90 day windows</b>. The practice is a steady, high volume customer.</span></div>
-            <div class="rung"><span class="st" style="background:#1882C7">Core Active</span><span class="d">Half the bar in one business unit in the <b>last 90 days</b>. Active means Core or Super Active.</span></div>
-            <div class="rung"><span class="st" style="background:#4ABEEE;color:#052030">Dabbler</span><span class="d">At least <b>one case in the last 90 days</b> but below every bar. Sending work, not yet at volume.</span></div>
-            <div class="rung"><span class="st" style="background:#EF4444">Inactive</span><span class="d"><b>No case in the last 90 days</b>, whether it used to send work or never has. A dabbler becomes inactive 91 days after its last case.</span></div>
+            <div class="rung"><span class="st" style="background:#052030">Super Active</span><span class="d">Full bar in <b>both of the last two 90 day windows</b>.</span></div>
+            <div class="rung"><span class="st" style="background:#1882C7">Core Active</span><span class="d">Half the bar in the <b>last 90 days</b>. Active = Core or Super.</span></div>
+            <div class="rung"><span class="st" style="background:#4ABEEE;color:#052030">Dabbler</span><span class="d">A case in the last 90 days, <b>below every bar</b>.</span></div>
+            <div class="rung"><span class="st" style="background:#EF4444">Inactive</span><span class="d"><b>No case in 90 days</b>, whether it used to send work or never has.</span></div>
           </div>
-          <p class="qual-note">States are recomputed every night. Movement in the table below shows the state at the end of each month this year; a practice can move up or down several times in a year.</p>
+          <p class="qual-note">Recomputed nightly. Click any practice below for its own page.</p>
         </div>
       </div>
     </div>
@@ -338,6 +336,6 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 </main>
 
 <script src="details.js"></script>
-<script src="details-page.js?v=0.10.4"></script>
+<script src="details-page.js?v=0.11.0"></script>
 </body>
 </html>

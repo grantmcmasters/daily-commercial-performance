@@ -986,6 +986,77 @@ def build_programs(P):
     }
 
 
+# ---------------------------------------------------------------------------
+# Account Health (the modeled book): predictions, briefs, plays and open cases per practice,
+# read from the live Account Health site so the drilldown shows the same numbers the reps
+# already see there.  Missing or unreachable = the drilldown shows our own history only.
+# ---------------------------------------------------------------------------
+AH_URL = os.environ.get("DCP_AH_URL", "https://skdla-account-health.vercel.app")
+AH_KEEP = ["state", "pred_state", "pred_band", "bucket3", "bucket30", "tier", "p_churn", "p_severe", "rev_at_risk", "rev_90", "rev_month",
+           "cases_month", "cases_30", "cases_90", "days_since_last", "pred_cases30", "exp_ratio30", "act_ratio30", "impact_month",
+           "pred_cats", "sa_categories", "super_active_lines", "at_risk_lines", "quiet_lines", "line_states", "reasons", "why",
+           "driver_short", "brief", "plays", "triage", "call_prep", "action", "action_code", "monthly", "weekly", "active_book",
+           "am", "sae", "bdm", "segment", "partner", "market_segment", "location"]
+
+
+def _fetch_js(url):
+    for attempt in range(3):
+        try:
+            r = requests.get(url, timeout=120)
+            if r.status_code >= 400:
+                raise RuntimeError(f"{r.status_code}")
+            s = r.text
+            return json.loads(s[s.index("{"):s.rindex("}") + 1])
+        except Exception as e:  # noqa: BLE001
+            print(f"  account health fetch {url}: {e}; attempt {attempt + 1}", flush=True)
+            time.sleep(5)
+    return None
+
+
+def _no_nan(v):
+    """the Account Health export carries NaN literals; JSON and the page want null"""
+    if isinstance(v, float) and math.isnan(v):
+        return None
+    if isinstance(v, dict):
+        return {k: _no_nan(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [_no_nan(x) for x in v]
+    return v
+
+
+def load_health():
+    data = _fetch_js(AH_URL + "/data.js")
+    if not data:
+        return None, {}, {}
+    cases = _fetch_js(AH_URL + "/cases.js") or {}
+    by_id = {}
+    for a in data.get("accounts", []):
+        rec = {k: _no_nan(a.get(k)) for k in AH_KEEP if a.get(k) is not None}
+        rec = {k: v for k, v in rec.items() if v is not None}
+        by_id[a["id"]] = rec
+    meta = {"run_date": data.get("meta", {}).get("run_date"), "model": (data.get("meta", {}).get("model") or {}).get("name")}
+    print(f"account health: {len(by_id):,} modeled practices, {len(cases):,} with open cases, run date {meta['run_date']}", flush=True)
+    return meta, by_id, cases
+
+
+def write_health_files(out_dir, meta, by_id, cases):
+    hdir = os.path.join(out_dir, "health")
+    os.makedirs(hdir, exist_ok=True)
+    total = 0
+    for sec, subs in DETAILS.items():
+        for key, v in subs.items():
+            recs = {}
+            for r in v["rows"]:
+                h = by_id.get(r["pid"])
+                if h:
+                    recs[r["pid"]] = dict(h, open_cases=cases.get(r["pid"], []))
+            body = "window.DCP_HEALTH = " + sanitize(json.dumps({"meta": meta, "section": sec, "key": key, "practices": recs}, ensure_ascii=True, separators=(",", ":"))) + ";\n"
+            with open(os.path.join(hdir, f"{sec}-{key}.js"), "w", encoding="utf8", newline="\n") as f:
+                f.write(body)
+            total += len(recs)
+    print(f"wrote {sum(len(s) for s in DETAILS.values())} health files under {hdir} ({total:,} practice records)", flush=True)
+
+
 def latest_invoice_date():
     rows = get("Line Items", {"select": '"Invoice Date"', "order": '"Invoice Date".desc.nullslast', "limit": 1}, page=1)
     return rows[0]["Invoice Date"] if rows else None
@@ -1015,7 +1086,9 @@ def main():
             "programs": build_programs(P),
         },
     }
-    details = {"meta": dict(data["meta"], months=[m[0] for m in ytd_months(RUN_DATE)], quarter=quarter_label(RQ0), quarter_start=RQ0.isoformat()), "sections": DETAILS}
+    ah_meta, ah_by_id, ah_cases = load_health()
+    write_health_files(os.path.dirname(os.path.abspath(out)), ah_meta or {}, ah_by_id, ah_cases)
+    details = {"meta": dict(data["meta"], months=[m[0] for m in ytd_months(RUN_DATE)], quarter=quarter_label(RQ0), quarter_start=RQ0.isoformat(), health=ah_meta), "sections": DETAILS}
     dpath = os.path.join(os.path.dirname(os.path.abspath(out)), "details.js")
     dbody = "window.DCP_DETAILS = " + sanitize(json.dumps(details, ensure_ascii=True, separators=(",", ":"))) + ";\n"
     with open(dpath, "w", encoding="utf8", newline="\n") as f:

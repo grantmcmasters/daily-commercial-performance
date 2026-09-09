@@ -266,27 +266,24 @@ html,body{overflow-x:hidden}
 .win-pill{display:inline-block;font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#052030;background:var(--gold);border-radius:999px;padding:3px 10px;margin-left:8px;vertical-align:middle}
 .win-lead{font-size:12px;font-weight:600;color:var(--ink);margin:2px 0 6px}
 .win-lead b{color:var(--goldink)}
-.sa-row{display:grid;grid-template-columns:132px 1fr;gap:12px;align-items:center;margin:5px 0}
-@media (max-width:700px){.sa-row{grid-template-columns:1fr;gap:3px}}
+.sc-row{display:grid;grid-template-columns:132px 1fr;gap:12px;align-items:center;margin:0 0 14px}
+.sc-row.sc-axis{margin:10px 0 4px}
+@media (max-width:700px){.sc-row{grid-template-columns:1fr;gap:3px}}
 .sa-name{font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:7px;white-space:nowrap}
 .sa-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
-.sa-head{margin:8px 0 0}
-.sa-scale{display:flex}
-.sa-scale span{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;text-align:center}
-.sa-scale .s0{color:#B0362F}
-.sa-scale .s1{color:#0F6BA8}
-.sa-scale .s2{color:#1882C7}
-.sa-scale .s3{color:#052030}
-.sa-track{display:flex;height:26px;border-radius:7px;overflow:hidden}
-.sa-seg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#FFFFFF;border-left:3px solid #FFFFFF;white-space:nowrap;font-variant-numeric:tabular-nums}
-.sa-seg.s0,.sa-scale .s0{flex:0 0 72px;border-left:0}
-.sa-seg.s1,.sa-scale .s1{flex:0 0 31%}
-.sa-seg.s2,.sa-scale .s2{flex:0 0 31%}
-.sa-seg.s3,.sa-scale .s3{flex:1 1 auto}
-.sa-seg.s0{background:#EF4444}
-.sa-seg.s1{background:#4ABEEE;color:#052030}
-.sa-seg.s2{background:#1882C7}
-.sa-seg.s3{background:#052030}
+.axis{position:relative;height:14px;font-size:10px;font-weight:700;color:var(--ink2)}
+.axis span{position:absolute;transform:translateX(-50%)}
+.axis .unit{transform:none;right:0;left:auto;text-transform:uppercase;letter-spacing:.06em;font-size:9.5px}
+.sc-track{position:relative;height:18px;background:var(--card3);border-radius:5px}
+.sc-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;color:#FFFFFF;white-space:nowrap;overflow:hidden}
+.sc-seg.d{background:#4ABEEE;color:#052030;border-radius:5px 0 0 5px}
+.sc-seg.c{background:#1882C7}
+.sc-seg.s{background:#052030;border-radius:0 5px 5px 0}
+.sc-mark{position:absolute;top:-5px;bottom:-5px;width:2px;background:#052030;border-radius:1px}
+.sc-mark b{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:2px;font-size:10px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+@media (max-width:1100px){.sc-row.tight .sc-seg.d,.sc-row.tight .sc-seg.c{font-size:0}}
+.sc-foot{margin:14px 0 0;font-size:12px;font-weight:700;color:#B0362F;display:flex;align-items:center;gap:7px}
+.sc-foot i{width:10px;height:10px;border-radius:3px;background:#EF4444;display:inline-block}
 /* the replica of the one pager */
 .dt-replica{zoom:.85;margin-top:14px}
 .dt-replica .sub{margin-top:0}
@@ -370,12 +367,13 @@ html,body{overflow-x:hidden}
     <div class="sub-head" id="dt-head"></div>
     <div class="qual">
       <div class="panel-title">How an account qualifies <span class="win-pill">last 90 days</span></div>
-      <div class="sa-row sa-head"><span></span><div class="sa-scale"><span class="s0">Inactive</span><span class="s1">Dabbler</span><span class="s2">Core Active</span><span class="s3">Super Active</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown &amp; Bridge</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-29</span><span class="sa-seg s2">30-59</span><span class="sa-seg s3">60+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-14</span><span class="sa-seg s2">15-29</span><span class="sa-seg s3">30+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-5</span><span class="sa-seg s2">6-11</span><span class="sa-seg s3">12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-5</span><span class="sa-seg s2">6-11</span><span class="sa-seg s3">12+</span></div></div>
-          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg s0">0</span><span class="sa-seg s1">1-5</span><span class="sa-seg s2">6-11</span><span class="sa-seg s3">12+</span></div></div>
+      <div class="sc-row sc-axis"><span></span><div class="axis"><span style="left:0.00%">0</span><span style="left:20.00%">15</span><span style="left:40.00%">30</span><span style="left:60.00%">45</span><span style="left:80.00%">60</span><span style="left:100.00%"></span><span class="unit">cases in 90 days</span></div></div>
+          <div class="sc-row"><span class="sa-name">Crown &amp; Bridge</span><div class="sc-track"><span class="sc-seg d" style="left:0;width:40.00%">Dabbler</span><span class="sc-seg c" style="left:40.00%;width:40.00%">Core Active</span><span class="sc-seg s" style="left:80.00%;width:20.00%">Super Active</span><i class="sc-mark" style="left:40.00%"><b>30</b></i><i class="sc-mark" style="left:80.00%"><b>60</b></i></div></div>
+          <div class="sc-row"><span class="sa-name">Removables</span><div class="sc-track"><span class="sc-seg d" style="left:0;width:20.00%">Dabbler</span><span class="sc-seg c" style="left:20.00%;width:20.00%">Core Active</span><span class="sc-seg s" style="left:40.00%;width:60.00%">Super Active</span><i class="sc-mark" style="left:20.00%"><b>15</b></i><i class="sc-mark" style="left:40.00%"><b>30</b></i></div></div>
+          <div class="sc-row tight"><span class="sa-name">Implants</span><div class="sc-track"><span class="sc-seg d" style="left:0;width:8.00%">Dabbler</span><span class="sc-seg c" style="left:8.00%;width:8.00%">Core Active</span><span class="sc-seg s" style="left:16.00%;width:84.00%">Super Active</span><i class="sc-mark" style="left:8.00%"><b>6</b></i><i class="sc-mark" style="left:16.00%"><b>12</b></i></div></div>
+          <div class="sc-row tight"><span class="sa-name">Full Arch</span><div class="sc-track"><span class="sc-seg d" style="left:0;width:8.00%">Dabbler</span><span class="sc-seg c" style="left:8.00%;width:8.00%">Core Active</span><span class="sc-seg s" style="left:16.00%;width:84.00%">Super Active</span><i class="sc-mark" style="left:8.00%"><b>6</b></i><i class="sc-mark" style="left:16.00%"><b>12</b></i></div></div>
+          <div class="sc-row tight"><span class="sa-name">High Esthetics</span><div class="sc-track"><span class="sc-seg d" style="left:0;width:8.00%">Dabbler</span><span class="sc-seg c" style="left:8.00%;width:8.00%">Core Active</span><span class="sc-seg s" style="left:16.00%;width:84.00%">Super Active</span><i class="sc-mark" style="left:8.00%"><b>6</b></i><i class="sc-mark" style="left:16.00%"><b>12</b></i></div></div>
+      <p class="sc-foot"><i></i>Inactive: no case submitted in the last 90 days.</p>
     </div>
     <div class="lead" id="dt-lead"></div>
     <div class="dt-replica" id="dt-replica"></div>
@@ -388,13 +386,13 @@ html,body{overflow-x:hidden}
     <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
     <p class="dt-note" style="margin-top:8px">Click a practice for its own page. Click a column heading to sort.</p>
   </div>
-  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.16.1</span></div>
+  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.16.2</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
 <script src="data.js"></script>
-<script src="app.js?v=0.16.1"></script>
-<script src="details-page.js?v=0.16.1"></script>
+<script src="app.js?v=0.16.2"></script>
+<script src="details-page.js?v=0.16.2"></script>
 </body>
 </html>

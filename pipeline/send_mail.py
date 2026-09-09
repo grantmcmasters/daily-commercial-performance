@@ -1,4 +1,4 @@
-"""Send the morning email: the note in the body, the deck attached, a link to the live page.
+"""Send the morning email: the note in the body, the deck attached, a link to the live page, Grant's signature.
 
 Two ways to send, picked from the environment:
   * Microsoft Graph (preferred for a Microsoft 365 mailbox): set MS_TENANT_ID, MS_CLIENT_ID, MS_CLIENT_SECRET for an app
@@ -23,6 +23,12 @@ from email.utils import formataddr
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LIVE = os.environ.get("DCP_URL", "https://daily-commercial-performance.vercel.app")
+SIGNATURE = {
+    "name": "Grant McMasters", "title": "Senior Data Analyst", "phone": "980-253-9440", "email": "grant.mcmasters@skdla.com",
+    "address": "2850 Red Hill Ave, Suite 200, Santa Ana, CA 92705", "site": "www.SKDLA.com", "site_url": "https://www.skdla.com",
+    "logo": os.path.join(ROOT, "logos", "spectrum-killian.png"),          # inline, cid sig-logo
+    "photo": os.path.join(ROOT, "logos", "signature-photo.jpg"),          # optional, inline when the file exists, cid sig-photo
+}
 
 
 def through_date():
@@ -48,26 +54,60 @@ def deck_name():
     return f"Daily Commercial Performance {d.month}.{d.day}.{d.strftime('%y')}.pdf"
 
 
-def body_html(summary_html):
+def inline_images():
+    """[(cid, path, mime)] for the signature images that exist on disk"""
+    out = []
+    if os.path.exists(SIGNATURE["logo"]):
+        out.append(("sig-logo", SIGNATURE["logo"], "image/png"))
+    if os.path.exists(SIGNATURE["photo"]):
+        out.append(("sig-photo", SIGNATURE["photo"], "image/jpeg"))
+    return out
+
+
+def signature_html(has_photo):
+    S, blue, navy = SIGNATURE, "#1882C7", "#052030"
+    contact = (f'<div style="font-size:12.5px;line-height:1.9;color:{blue}">{S["phone"]}<br>'
+               f'<a href="mailto:{S["email"]}" style="color:{blue};text-decoration:none">{S["email"]}</a><br>'
+               f'{S["address"]}<br><a href="{S["site_url"]}" style="color:{blue};text-decoration:none">{S["site"]}</a></div>')
+    logo = '<img src="cid:sig-logo" width="210" alt="Spectrum Killian" style="display:block;width:210px;height:auto;margin:0 0 6px 0">'
+    rule = f'<div style="border-top:1px solid {blue};width:230px;margin:2px 0 8px 0"></div>'
+    name = f'<div style="font-size:15px;font-weight:700;color:{navy}">{S["name"]}</div><div style="font-size:12px;color:#5A6B79;margin-bottom:6px">{S["title"]}</div>'
+    if has_photo:
+        left = (f'<td style="vertical-align:top;padding:0 18px 0 0;border-right:1px solid #DDE2E9;text-align:center">'
+                f'<img src="cid:sig-photo" width="130" alt="{S["name"]}" style="display:block;width:130px;height:auto;margin:0 auto 6px auto">{name}</td>')
+        right = f'<td style="vertical-align:top;padding:0 0 0 18px">{logo}{rule}{contact}</td>'
+    else:
+        left = ""
+        right = f'<td style="vertical-align:top;padding:0">{name}{logo}{rule}{contact}</td>'
+    return f'<table cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:4px 0 18px 0"><tr>{left}{right}</tr></table>'
+
+
+def body_html(summary_html, has_photo):
     return (
         '<div style="font-family:Calibri,Segoe UI,Arial,sans-serif;color:#1F2933;font-size:15px;line-height:1.55;max-width:760px">'
         + summary_html +
         '<p style="margin:0 0 12px 0">The full deck is attached, and the live page is always at <a href="' + LIVE + '" style="color:#1882C7">' + LIVE.replace("https://", "") + "</a>.</p>"
-        '<p style="margin:0 0 4px 0">Have a good day,</p>'
-        '<p style="margin:0 0 18px 0"><b>Commercial Analytics</b><br><span style="color:#5A6B79">Spectrum Killian</span></p>'
+        '<p style="margin:0 0 10px 0">Best,</p>'
+        + signature_html(has_photo) +
         '<p style="color:#8A98A4;font-size:11px;margin:0">Sent automatically every morning at 4 AM Pacific from the Daily Commercial Performance dashboard. Drafted by an AI assistant from the dashboard numbers; check the deck before quoting a figure.</p>'
         "</div>"
     )
 
 
 def build(summary_html, pdf_path, sender, recipients, subject):
+    images = inline_images()
+    has_photo = any(cid == "sig-photo" for cid, _, _ in images)
     msg = EmailMessage()
     msg["Subject"] = subject
-    msg["From"] = formataddr(("Spectrum Killian Commercial", sender))
+    msg["From"] = formataddr((SIGNATURE["name"], sender))
     msg["To"] = ", ".join(recipients)
     text = "Daily Commercial Performance, data through " + data_through() + ". Open the live page: " + LIVE + "\n\n(The note is in the HTML version of this email; the deck is attached.)"
     msg.set_content(text)
-    msg.add_alternative(body_html(summary_html), subtype="html")
+    msg.add_alternative(body_html(summary_html, has_photo), subtype="html")
+    html_part = msg.get_payload()[-1]
+    for cid, path, mime in images:
+        with open(path, "rb") as f:
+            html_part.add_related(f.read(), maintype=mime.split("/")[0], subtype=mime.split("/")[1], cid=f"<{cid}>", filename=os.path.basename(path))
     if pdf_path and os.path.exists(pdf_path):
         with open(pdf_path, "rb") as f:
             msg.add_attachment(f.read(), maintype="application", subtype="pdf", filename=deck_name())
@@ -82,19 +122,26 @@ def send_graph(summary_html, pdf_path, sender, recipients, subject, tenant, clie
         method="POST")
     with urllib.request.urlopen(token_req, timeout=60) as r:
         token = json.loads(r.read().decode("utf8"))["access_token"]
+    images = inline_images()
+    has_photo = any(cid == "sig-photo" for cid, _, _ in images)
+    attachments = []
+    for cid, path, mime in images:
+        with open(path, "rb") as f:
+            attachments.append({"@odata.type": "#microsoft.graph.fileAttachment", "name": os.path.basename(path), "contentType": mime,
+                                "isInline": True, "contentId": cid, "contentBytes": base64.b64encode(f.read()).decode("ascii")})
+    if pdf_path and os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as f:
+            attachments.append({"@odata.type": "#microsoft.graph.fileAttachment", "name": deck_name(), "contentType": "application/pdf",
+                                "contentBytes": base64.b64encode(f.read()).decode("ascii")})
     body = {
         "message": {
             "subject": subject,
-            "body": {"contentType": "HTML", "content": body_html(summary_html)},
+            "body": {"contentType": "HTML", "content": body_html(summary_html, has_photo)},
             "toRecipients": [{"emailAddress": {"address": a}} for a in recipients],
-            "attachments": [],
+            "attachments": attachments,
         },
         "saveToSentItems": True,
     }
-    if pdf_path and os.path.exists(pdf_path):
-        with open(pdf_path, "rb") as f:
-            body["message"]["attachments"].append({"@odata.type": "#microsoft.graph.fileAttachment", "name": deck_name(),
-                                                   "contentType": "application/pdf", "contentBytes": base64.b64encode(f.read()).decode("ascii")})
     req = urllib.request.Request(f"https://graph.microsoft.com/v1.0/users/{urllib.parse.quote(sender)}/sendMail",
                                  data=json.dumps(body).encode("utf8"), method="POST",
                                  headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
@@ -125,7 +172,8 @@ def main():
     if args.dry_run:
         out = os.path.join(ROOT, "email.eml")
         open(out, "wb").write(bytes(msg))
-        print("dry run: wrote", out, "size", os.path.getsize(out), "subject:", subject, "attachment:", deck_name() if os.path.exists(args.pdf) else "none")
+        print("dry run: wrote", out, "size", os.path.getsize(out), "subject:", subject, "attachment:", deck_name() if os.path.exists(args.pdf) else "none",
+              "inline images:", [c for c, _, _ in inline_images()])
         return
     if graph:
         status = send_graph(summary_html, args.pdf, sender, recipients, subject, tenant, client_id, client_secret)

@@ -88,30 +88,26 @@ def digest(d):
     return out
 
 
-SYSTEM = """You write the morning email that goes out with Spectrum Killian's Daily Commercial Performance deck. Readers are the CEO and the commercial team. You sound like a sharp commercial analyst who knows the business and is not afraid to say who is winning and who is behind.
+SYSTEM = """You write the short morning note that goes out with Spectrum Killian's Daily Commercial Performance deck. Readers are the CEO and the commercial team. Think sharp analyst, not storyteller.
 
-This is not a weather report. Every insight must rank, compare and explain:
-- Name who had a good day, week or month and who is lagging, and say why using the drivers in the digest (pace against last month, practices that became active or lost active status, book maintenance, revenue stability and its run rate, new submitters against practices gone inactive, penetration and month over month state changes).
-- Each section should cover the standout, the laggard, and one risk or opportunity worth a call today. Where two people or partners are close, say so and pick the one to watch.
-- Give the reader the "so what": what the number means for the quarter and what to do about it.
+Voice and tone:
+- Constructive and positive. Celebrate what is working with the number that proves it. When a book is behind, describe the book and the numbers, never the person: "Collin's book: 64% active book maintenance, 18 practices lost vs 7 gained in 30 days" is right; "Collin is the laggard" is wrong.
+- Never criticize, rank or label a person. No words like laggard, worst, weak, erosion, masking, unhealthy, flat tire, deserves attention. No metaphors, no narrative, no drama.
+- Every bullet ties to objective numbers from the digest and, where useful, the opportunity they point to.
 
-Rules:
-- Use only the numbers in the digest. Never invent, estimate or extrapolate beyond what is there. Whole-number percents.
-- Never name individual practices or patients. Refer to people by full name once, then first name.
-- No em dashes or en dashes anywhere; use commas or periods. No bullet symbols; each insight is one or two plain sentences.
-- In every insight wrap the single most important number or name in **double asterisks** so it can be bolded. One bold per insight, at most two.
-- When yesterday's digest is present, lead with what changed since yesterday and say so plainly.
-- No filler ("continues to perform", "remains steady", "solid"). If nothing moved, say what that means instead.
+Format:
+- Each insight is ONE sentence of 10 to 22 words that leads with the number or the name. No second sentence.
+- Two or three insights per section: what is working, what the numbers say to watch, one opportunity.
+- The headline is one sentence under 20 words: the single most important number of the day and what it means.
+- Wrap the one key number or name in each insight in **double asterisks**. One per insight.
+- Whole-number percents. Full name once, then first name. Never name individual practices or patients.
+- No em dashes or en dashes; use commas or periods. No bullet symbols in the text itself.
+- Use only the numbers in the digest; never invent or extrapolate. When yesterday's digest is present, lead with what changed since yesterday.
 
-Definitions you may lean on: Active = Core or Super Active (a practice past the half or full case bar in the last 90 days). Dabbler = a case in the last 90 days but below the bar. Inactive = nothing in 90 days. Cases per business day MTD is compared with last month's average per business day. Active book maintenance = practices active at the start of the quarter that are still active. Revenue stability = the same practices' invoiced revenue this quarter at run rate over the prior quarter (green at 100% or better, gold from 90%, red below 90%). Penetration = currently active over the network.
+Definitions: Active = Core or Super Active (past the half or full case bar in the last 90 days). Dabbler = a case in the last 90 days, below the bar. Inactive = nothing in 90 days. Cases per business day MTD compares with last month's average. Active book maintenance = practices active at quarter start that are still active. Revenue stability = the same practices' invoiced revenue this quarter at run rate over the prior quarter (100% or better is green, 90% gold, below 90% red). Penetration = currently active over the network.
 
 Return ONLY a JSON object, no code fences, with exactly these keys:
-{"headline": "one sentence that tells the story of the day",
- "account_executives": ["insight", "insight", "insight (optional)"],
- "account_managers": ["insight", "insight", "insight (optional)"],
- "programs": ["insight", "insight", "insight (optional)"],
- "action": "one sentence naming the single most useful thing to do today"}
-Two or three insights per section."""
+{"headline": "one sentence", "account_executives": ["insight", "insight", "insight (optional)"], "account_managers": ["insight", "insight", "insight (optional)"], "programs": ["insight", "insight", "insight (optional)"], "action": "one sentence naming the single most useful thing to do today, framed as an opportunity"}"""
 
 
 MODEL_CHAIN = ["claude-fable-5-1", "claude-opus-5", "claude-sonnet-5", "claude-sonnet-4-6"]
@@ -151,8 +147,8 @@ def fallback(today):
         "headline": "The AI note was unavailable this morning, so this is the headline numbers only; the reason is at the bottom of the email.",
         "account_executives": [f"**{p['partner']}** has {p['active']} active practices of {p['network']} ({pct(p['penetration_pct_active_over_network'])} penetration) and {p['mtd_net_new_submitters']} net new submitters this month." for p in aes[:3]],
         "account_managers": [
-            f"**{top['name']}** has the strongest pace at {round(top['cases_per_business_day_mtd'] or 0)} cases per business day, {'+' if (top['pace_pct_vs_last_month'] or 0) > 0 else ''}{round(top['pace_pct_vs_last_month'] or 0)}% against last month; {low['name']} is the softest at {round(low['pace_pct_vs_last_month'] or 0)}%.",
-            (f"Below threshold: " + ", ".join(f"**{a['name']}** ({pct(a['active_book_maintenance']['pct'])} book maintenance, {pct(a['revenue_stability']['pct_at_run_rate'])} revenue stability)" for a in weak[:3]) + ".") if weak else "Every book is at or above the maintenance and revenue stability thresholds.",
+            f"**{top['name']}** has the strongest pace at {round(top['cases_per_business_day_mtd'] or 0)} cases per business day, {'+' if (top['pace_pct_vs_last_month'] or 0) > 0 else ''}{round(top['pace_pct_vs_last_month'] or 0)}% against last month; {low['name']}'s book is at {round(low['pace_pct_vs_last_month'] or 0)}% and has the most room to add.",
+            (f"Books below the maintenance or revenue thresholds, where the upside is: " + ", ".join(f"**{a['name']}** ({pct(a['active_book_maintenance']['pct'])} book maintenance, {pct(a['revenue_stability']['pct_at_run_rate'])} revenue stability)" for a in weak[:3]) + ".") if weak else "Every book is at or above the maintenance and revenue stability thresholds.",
         ],
         "programs": [f"**{g['program']}**: {g['active']} active, {g['dabblers']} dabblers, {g['inactive_submitted_this_year_but_quiet_90_days']} inactive this year; this month {g['by_month'][-1]['new_submitters']} new against {g['by_month'][-1]['became_inactive']} gone inactive." for g in today["programs"]],
         "action": "Open the deck for the detail behind these numbers.",
@@ -177,8 +173,7 @@ def render_html(note, data_through):
              f'<p {p}>Here is where the commercial book stands with data through {html.escape(pretty_date(data_through))}. <b style="color:{NAVY}">{story}</b></p>']
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
         parts.append(f"<p {h}>{title}</p>")
-        for ins in (note.get(key) or [])[:3]:
-            parts.append(f"<p {p}>{rich(ins)}</p>")
+        parts.append('<ul style="margin:0 0 6px 22px;padding:0">' + "".join(f'<li style="margin:0 0 7px 0">{rich(ins)}</li>' for ins in (note.get(key) or [])[:3]) + "</ul>")
     parts.append(f'<p style="margin:20px 0 12px 0;padding:10px 14px;background:#F3F9FD;border-left:4px solid {NAVY}"><b style="color:{NAVY}">Today:</b> {rich(note.get("action", ""))}</p>')
     if note.get("error"):
         parts.append(f'<p style="margin:0 0 12px 0;color:#B0362F;font-size:12px">AI draft unavailable this morning: {html.escape(str(note["error"]))}</p>')
@@ -189,7 +184,7 @@ def render_text(note, data_through):
     lines = ["Good morning team,", "", f"Here is where the commercial book stands with data through {pretty_date(data_through)}. {note['headline']}", ""]
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
         lines.append(title.upper())
-        lines.extend(str(x).replace("**", "") for x in (note.get(key) or [])[:3])
+        lines.extend("- " + str(x).replace("**", "") for x in (note.get(key) or [])[:3])
         lines.append("")
     lines.append("Today: " + str(note.get("action", "")).replace("**", ""))
     return "\n".join(lines)

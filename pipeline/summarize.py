@@ -95,10 +95,11 @@ Voice and tone:
 - Never criticize, rank or label a person. No words like laggard, worst, weak, erosion, masking, unhealthy, flat tire, deserves attention. No metaphors, no narrative, no drama.
 - Every bullet ties to objective numbers from the digest and, where useful, the opportunity they point to.
 
-Format, keep it insanely simple:
-- Exactly two insights per section. Each is ONE plain sentence of 8 to 14 words: a fact with its number. No adjectives, no interpretation, no second clause.
-- The headline is one sentence under 14 words: the single most important number of the day.
-- The action is one sentence under 14 words.
+Format:
+- The headline is the executive summary: two or three sentences, at most 60 words, that tell the story of the day in plain confident language. Interpretation is welcome here, framed positively (momentum, opportunity, what the numbers set up for the quarter).
+- Two or three insights per section. Each is ONE sentence of up to 22 words that pairs a number with something the owner can do: the account executive by first name (Jillian for the Aspen partners, Erin for MB2), the account manager by first name, or Marketing for the programs. Example: "Aspen Dental has 320 dabblers; moving 12 of them to active would lift penetration to 8%, a clear target for Jillian."
+- Actions are concrete and objective (convert X dabblers, re-engage the N practices that became inactive, protect the M practices active at quarter start), never a judgment of the person.
+- The action line is one sentence under 18 words: the single best move today and who owns it.
 - Wrap the one key number or name in each insight in **double asterisks**. One per insight.
 - Whole-number percents. Full name once, then first name. Never name individual practices or patients.
 - No em dashes or en dashes; use commas or periods. No bullet symbols in the text itself.
@@ -195,7 +196,7 @@ def clean(note):
         return str(s).replace("—", ", ").replace("–", "-")
     out = {"headline": fix(note["headline"]), "action": fix(note.get("action", ""))}
     for k in ("account_executives", "account_managers", "programs"):
-        out[k] = [fix(x) for x in (note.get(k) or []) if str(x).strip()][:2]
+        out[k] = [fix(x) for x in (note.get(k) or []) if str(x).strip()][:3]
     return out
 
 

@@ -111,6 +111,11 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 /* ---------- subsections (one pagers) ---------- */
 .sub{margin-top:16px;padding:22px 24px 20px}
 .sub-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.btn-details{display:inline-block;text-decoration:none;font-weight:800;font-size:12.5px;letter-spacing:.03em;color:#FFFFFF;background:var(--killian);padding:8px 16px;border-radius:999px;transition:background .15s,color .15s}
+.btn-details:hover{background:var(--gold);color:var(--ink)}
+a.b3t.link{text-decoration:none;color:inherit;display:block;transition:box-shadow .12s,border-color .12s}
+a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,199,.25)}
 .sub-brand{display:flex;align-items:center;gap:16px;min-width:0;flex-wrap:wrap}
 .sub-logos{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .sub-logo{width:190px;height:58px;object-fit:contain;object-position:left center;display:block}
@@ -242,6 +247,24 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 .mv i{display:inline-block;width:14px;height:14px;border-radius:3px}
 .spark{display:block}
 .legend.dt-legend{margin-top:10px;font-size:11.5px}
+/* how a practice qualifies */
+.qual{margin-top:14px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px 10px}
+.qual-grid{display:grid;grid-template-columns:3fr 2fr;gap:18px}
+@media (max-width:1000px){.qual-grid{grid-template-columns:1fr}}
+.qual .panel-title{margin-bottom:6px}
+.sa-row{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;margin:9px 0}
+@media (max-width:700px){.sa-row{grid-template-columns:1fr;gap:4px}}
+.sa-name{font-weight:800;font-size:12.5px;display:flex;align-items:center;gap:7px}
+.sa-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.sa-track{position:relative;height:30px;background:var(--card3);border-radius:8px;overflow:hidden}
+.sa-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(5,32,48,.45);white-space:nowrap}
+.qual-note{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.5}
+.qual-note b{color:var(--ink)}
+.ladder{display:flex;flex-direction:column;gap:7px}
+.rung{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:center;border-radius:9px;padding:8px 12px;background:#FFFFFF;border:1px solid var(--line)}
+.rung .st{font-weight:800;font-size:12px;padding:5px 10px;border-radius:999px;text-align:center;color:#FFFFFF;white-space:nowrap}
+.rung .d{font-size:12px;color:var(--ink);line-height:1.45}
+.rung .d b{color:var(--ink)}
 </style>
 
 </head>
@@ -263,6 +286,29 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 <main>
   <div class="card sub dt-card">
     <div class="sub-head" id="dt-head"></div>
+    <div class="qual">
+      <div class="qual-grid">
+        <div>
+          <div class="panel-title">How a practice qualifies: cases received in a 90 day window, by business unit</div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown and Bridge</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#1882C7;opacity:.45">Core Active at 30+</span><span class="sa-seg" style="left:50%;width:50%;background:#1882C7">Super Active at 60+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#8A93A3;opacity:.45">Core Active at 15+</span><span class="sa-seg" style="left:50%;width:50%;background:#8A93A3">Super Active at 30+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#052030;opacity:.45">Core Active at 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#052030">Super Active at 12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#B3A369"></span>Full Arch</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#B3A369;opacity:.45">Core Active at 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#B3A369">Super Active at 12+</span></div></div>
+          <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#4ABEEE;opacity:.45">Core Active at 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#4ABEEE">Super Active at 12+</span></div></div>
+          <p class="qual-note">Clearing half the bar in any one business unit over the last 90 days makes the whole practice <b>Core Active</b>. Clearing the full bar in two 90 day periods running makes it <b>Super Active</b>. One business unit is enough; volume in the other categories does not need to qualify. Cases count on the day they were received, one business unit per case from its primary product.</p>
+        </div>
+        <div>
+          <div class="panel-title">The four states</div>
+          <div class="ladder">
+            <div class="rung"><span class="st" style="background:#052030">Super Active</span><span class="d">Full bar in one business unit in <b>each of the last two 90 day windows</b>. The practice is a steady, high volume customer.</span></div>
+            <div class="rung"><span class="st" style="background:#1882C7">Core Active</span><span class="d">Half the bar in one business unit in the <b>last 90 days</b>. Active means Core or Super Active.</span></div>
+            <div class="rung"><span class="st" style="background:#4ABEEE;color:#052030">Dabbler</span><span class="d">At least <b>one case in the last 90 days</b> but below every bar. Sending work, not yet at volume.</span></div>
+            <div class="rung"><span class="st" style="background:#EF4444">Inactive</span><span class="d"><b>No case in the last 90 days</b>, whether it used to send work or never has. A dabbler becomes inactive 91 days after its last case.</span></div>
+          </div>
+          <p class="qual-note">States are recomputed every night. Movement in the table below shows the state at the end of each month this year; a practice can move up or down several times in a year.</p>
+        </div>
+      </div>
+    </div>
     <div class="dt-tiles" id="dt-tiles"></div>
     <div class="legend dt-legend"><span><i style="background:#052030"></i>Super Active</span><span><i style="background:#1882C7"></i>Core Active</span><span><i style="background:#4ABEEE"></i>Dabbler</span><span><i style="background:#EF4444"></i>Inactive</span><span class="dt-note">Click a tile to list the practices behind it. Movement shows the state at the end of each month this year; the bars are cases received by month.</span></div>
     <div class="dt-toolbar">
@@ -276,6 +322,6 @@ section.block + section.block{margin-top:16px;border-top:1px solid var(--line);p
 </main>
 
 <script src="details.js"></script>
-<script src="details-page.js?v=0.10.1"></script>
+<script src="details-page.js?v=0.10.2"></script>
 </body>
 </html>

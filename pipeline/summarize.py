@@ -95,10 +95,10 @@ Voice and tone:
 - Never criticize, rank or label a person. No words like laggard, worst, weak, erosion, masking, unhealthy, flat tire, deserves attention. No metaphors, no narrative, no drama.
 - Every bullet ties to objective numbers from the digest and, where useful, the opportunity they point to.
 
-Format:
-- Each insight is ONE sentence of 10 to 22 words that leads with the number or the name. No second sentence.
-- Two or three insights per section: what is working, what the numbers say to watch, one opportunity.
-- The headline is one sentence under 20 words: the single most important number of the day and what it means.
+Format, keep it insanely simple:
+- Exactly two insights per section. Each is ONE plain sentence of 8 to 14 words: a fact with its number. No adjectives, no interpretation, no second clause.
+- The headline is one sentence under 14 words: the single most important number of the day.
+- The action is one sentence under 14 words.
 - Wrap the one key number or name in each insight in **double asterisks**. One per insight.
 - Whole-number percents. Full name once, then first name. Never name individual practices or patients.
 - No em dashes or en dashes; use commas or periods. No bullet symbols in the text itself.
@@ -170,7 +170,7 @@ def render_html(note, data_through):
     h = f'style="margin:22px 0 10px 0;font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:{NAVY};border-bottom:2px solid {DENTAL};padding-bottom:5px"'
     story = rich(note["headline"]).replace('<b style="color:' + NAVY + '">', "").replace("</b>", "")
     parts = [f"<p {p}>Good morning team,</p>",
-             f'<p {p}>Here is where the commercial book stands with data through {html.escape(pretty_date(data_through))}. <b style="color:{NAVY}">{story}</b></p>']
+             f'<p {p}>Data through {html.escape(pretty_date(data_through))}. <b style="color:{NAVY}">{story}</b></p>']
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
         parts.append(f"<p {h}>{title}</p>")
         parts.append('<ul style="margin:0 0 6px 22px;padding:0">' + "".join(f'<li style="margin:0 0 7px 0">{rich(ins)}</li>' for ins in (note.get(key) or [])[:3]) + "</ul>")
@@ -181,7 +181,7 @@ def render_html(note, data_through):
 
 
 def render_text(note, data_through):
-    lines = ["Good morning team,", "", f"Here is where the commercial book stands with data through {pretty_date(data_through)}. {note['headline']}", ""]
+    lines = ["Good morning team,", "", f"Data through {pretty_date(data_through)}. {note['headline']}", ""]
     for title, key in (("Account Executives", "account_executives"), ("Account Managers", "account_managers"), ("Programs", "programs")):
         lines.append(title.upper())
         lines.extend("- " + str(x).replace("**", "") for x in (note.get(key) or [])[:3])
@@ -195,7 +195,7 @@ def clean(note):
         return str(s).replace("—", ", ").replace("–", "-")
     out = {"headline": fix(note["headline"]), "action": fix(note.get("action", ""))}
     for k in ("account_executives", "account_managers", "programs"):
-        out[k] = [fix(x) for x in (note.get(k) or []) if str(x).strip()][:3]
+        out[k] = [fix(x) for x in (note.get(k) or []) if str(x).strip()][:2]
     return out
 
 

@@ -81,12 +81,20 @@
     '<div class="stats">' + stats + "</div>" + predCats + "</div>";
 
   /* where it stands: bars per business unit against the thresholds, plus the month by month movement */
+  var ENGINE_LINES = !!(row.lc || row.lp);
+  function lineCounts(k) {
+    /* the engine's own counts when the engine wrote them (scoped to this list, through the data date); else the Account Health model's */
+    if (ENGINE_LINES) return { q1: (row.lc || {})[k] || 0, q2: (row.lp || {})[k] || 0 };
+    var L = (H && H.line_states && H.line_states[k]) || {};
+    return { q1: L.q1 || 0, q2: L.q2 || 0 };
+  }
+  function lineState(k) { var c = lineCounts(k), full = BAR[k], half = Math.ceil(full / 2); return c.q1 >= full ? "3" : c.q1 >= half ? "2" : c.q1 > 0 ? "1" : "0"; }
   function lineBars() {
     var ls = (H && H.line_states) || {};
-    var keys = Object.keys(BAR).filter(function (k) { return ls[k] || (H && H.super_active_lines && H.super_active_lines.indexOf(k) >= 0); });
-    if (!keys.length) return '<p class="dt-note">No business unit detail for this practice in the Account Health model' + (H ? "" : " (it is outside the modeled book)") + ".</p>";
+    var keys = Object.keys(BAR).filter(function (k) { return ENGINE_LINES ? ((row.lc || {})[k] || (row.lp || {})[k]) : (ls[k] || (H && H.super_active_lines && H.super_active_lines.indexOf(k) >= 0)); });
+    if (!keys.length) return '<p class="dt-note">' + (ENGINE_LINES ? "No cases in the last 180 days in any business unit." : "No business unit detail for this practice in the Account Health model" + (H ? "" : " (it is outside the modeled book)") + ".") + "</p>";
     return keys.map(function (k) {
-      var L = ls[k] || {}, full = BAR[k], half = Math.ceil(full / 2), q1 = L.q1 || 0, q2 = L.q2 || 0, w = Math.min(100, 100 * q1 / (full * 1.15)), col = LINE_COLOR[k];
+      var c = lineCounts(k), full = BAR[k], half = Math.ceil(full / 2), q1 = c.q1, q2 = c.q2, w = Math.min(100, 100 * q1 / (full * 1.15)), col = LINE_COLOR[k];
       var lvl = q1 >= full ? "Super Active" : q1 >= half ? "Core Active" : q1 > 0 ? "Dabbler" : "Inactive";
       return '<div class="lb"><div class="lbn"><i style="background:' + col + '"></i>' + esc(LINES[k]) + '</div>' +
         '<div class="lbt"><span class="lbfill" style="width:' + w.toFixed(1) + '%;background:' + col + '"></span>' +
@@ -95,7 +103,7 @@
     }).join("");
   }
   var stands = '<div class="card"><div class="spark-h">Where this practice stands</div>' +
-    '<div class="stands-grid"><div><div class="m3-varh">Cases received in the last 90 days, by business unit, against the bar</div>' + lineBars() + "</div>" +
+    '<div class="stands-grid"><div><div class="m3-varh">Cases received in the last 90 days, by business unit, against the bar' + (ENGINE_LINES ? " (through " + esc(longDate(D.meta.data_through || D.meta.run_date)) + ")" : " (Account Health model)") + '</div>' + lineBars() + "</div>" +
     '<div><div class="m3-varh">State at the end of each month, ' + esc(String(D.meta.run_date || "").slice(0, 4)) + "</div>" + movement() +
     '<p class="dt-note" style="margin-top:8px">Today: ' + stateChip(row.st) + ' &middot; 30 days ago: ' + stateChip(row.l30) + ' &middot; start of ' + esc(S.quarter || D.meta.quarter || "the quarter") + ": " + stateChip(row.q0) + "</p>" +
     '<p class="dt-note">Half the bar in any one business unit in the last 90 days = Core Active. The full bar in the last 90 days = Super Active. Any case below the bar = Dabbler. Nothing in 90 days = Inactive.</p></div></div></div>';
@@ -323,18 +331,22 @@
   }
   function catLegend(series) { return '<div class="legend vol-legend">' + series.map(function (s) { return '<span><span class="ldot" style="background:' + s.color + '"></span>' + esc(s.name) + "</span>"; }).join("") + "</div>"; }
   function stanceHTML(rows, built) {
-    /* the last bucket against the bar, one card per business unit this practice has ever sent */
+    /* the last live bucket against the bar, one card per business unit this practice has ever sent. The live history is the
+       Account Health case base (every account of the practice, its own business unit classification), not the engine's scope,
+       so the bucket gets a neutral position label and the engine's own verdict sits beside it. */
     if (dd.metric !== "cases" || dd.roll !== 90 || !built || !built.spans.length) return "";
     var last = built.spans[built.spans.length - 1], days = dDiff(last[0], last[1]) + 1;
     var ks = LINE_ORDER.filter(function (k) { return BAR[k] && rows.some(function (r) { return r.basis === dd.basis && r.line === k && (!dd.an || r.an === dd.an); }); });
     if (!ks.length) return "";
     var items = ks.map(function (k) {
       var s = built.series.filter(function (x) { return x.k === k; })[0], v = s ? s.vals[s.vals.length - 1] : 0, full = BAR[k], half = Math.ceil(full / 2);
-      var code = v >= full ? "3" : v >= half ? "2" : v > 0 ? "1" : "0";
-      return '<div class="stance-item"><div class="sn"><i style="background:' + LINE_COLOR[k] + '"></i>' + esc(LINES[k]) + '</div><div class="sv"><b>' + fmtN(v) + "</b> " + (v === 1 ? "case" : "cases") + "</div>" +
-        stateChip(code) + '<div class="sb">Core at ' + half + ' &middot; Super at ' + full + "</div></div>";
+      var pos = v >= full ? "At the Super bar" : v >= half ? "At the Core bar" : v > 0 ? "Below the Core bar" : "Nothing in this bucket";
+      var eng = ENGINE_LINES ? '<div class="se">Engine today: ' + stateChip(lineState(k)) + " <span>" + fmtN(lineCounts(k).q1) + " in its window</span></div>" : "";
+      return '<div class="stance-item"><div class="sn"><i style="background:' + LINE_COLOR[k] + '"></i>' + esc(LINES[k]) + '</div><div class="sv"><b>' + fmtN(v) + "</b> " + (v === 1 ? "case" : "cases") + " live</div>" +
+        '<div class="sb">' + pos + " (Core " + half + ", Super " + full + ")</div>" + eng + "</div>";
     }).join("");
-    return '<div class="m3-varh">Where each business unit stands, ' + esc(dayLabelY(last[0])) + " to " + esc(dayLabelY(last[1])) + (days < 90 ? " (" + days + " days, a partial bucket)" : "") + '</div><div class="stance">' + items + "</div>";
+    return '<div class="m3-varh">The last bucket against the bar, ' + esc(dayLabelY(last[0])) + " to " + esc(dayLabelY(last[1])) + (days < 90 ? " (" + days + " days, a partial bucket)" : "") + '</div><div class="stance">' + items + "</div>" +
+      '<p class="dt-note">Live counts cover every account of this practice on the Account Health case base, through today. The state in the header' + (ENGINE_LINES ? " and the engine counts here" : "") + ' come from the engine, scoped to the ' + esc(S.title) + " list and through the data date, so the two can differ.</p>";
   }
   function ddRender() {
     var box = byId("dd-chart"), rows = DRILL;
@@ -464,7 +476,7 @@
   var volume = '<div class="card" id="vol-card"><div class="spark-h">Volume over time</div>' +
     '<div class="bar" id="dd-controls"></div><div class="bar" id="dd-range"></div>' +
     '<div id="dd-chart"><p class="dt-note">Loading history&hellip;</p></div><div id="dd-stance"></div>' +
-    '<p class="dt-note">Received = when the case arrived; invoiced = when it billed. Units count only main products. Buckets group the range into fixed 7, 30, or 90 day windows counted from the left date, and the left date is set so the last bucket ends today. Pick 90 day buckets to see where the practice stands: that is the window behind Core Active and Super Active, and the dashed lines are the bars for the business units on the chart. Refreshes automatically every 15 minutes.</p>' +
+    '<p class="dt-note">Received = when the case arrived; invoiced = when it billed. Units count only main products. Buckets group the range into fixed 7, 30, or 90 day windows counted from the left date, and the left date is set so the last bucket ends today. Pick 90 day buckets to compare with the bar: 90 days is the window behind Core Active and Super Active, and the dashed lines are the Core and Super bars of the business units on the chart, for reference. The practice&#39;s state is the engine&#39;s, in the header. Refreshes automatically every 15 minutes.</p>' +
     '<button class="xbtn" id="cd-toggle" type="button">Show all cases in this period</button><div id="cd-body" hidden></div></div>';
 
   /* open cases and category table */

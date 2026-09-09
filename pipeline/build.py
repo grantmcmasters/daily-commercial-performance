@@ -355,15 +355,19 @@ def practice_rows(ids, E, months, names, accts):
             continue
         qd = quiet_dates(e, RUN_DATE)
         qm = [i for i, (label, m0, s) in enumerate(months) if any(m0 <= q < (s if s == next_month(m0) else RUN_DATE + DAY) for q in qd)]
-        bu = {}
+        bu, lc, lp = {}, {}, {}
         for ln, lst in e.by_line.items():
-            q1 = e._count(lst, s90, RUN_DATE)
+            q1, q2 = e._count(lst, s90, RUN_DATE), e._count(lst, s180, s90)
+            if q1:
+                lc[ln] = q1
+            if q2:
+                lp[ln] = q2
             if q1 >= SA_T[ln]:
                 bu[ln] = 3
             elif q1 >= CORE_T[ln]:
                 bu[ln] = 2
         rows.append({
-            "pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "bu": bu,
+            "pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "bu": bu, "lc": lc, "lp": lp,
             "st": STATE_CH[e.level(RUN_DATE)], "q0": STATE_CH[e.level(RQ0)], "l30": STATE_CH[e.level(s30)],
             "hist": "".join(STATE_CH[e.level(s)] for s in snaps),
             "wkq": "".join(STATE_CH[e.level(s)] for s in qsnaps), "wky": "".join(STATE_CH[e.level(s)] for s in ysnaps), "qm": qm,

@@ -53,6 +53,8 @@
   var CASES_COLOR = "#B3A369", CASES_INK = "#8A7A42";
   var NEW_COLOR = "#1882C7", QUIET_COLOR = "#D9534F";
 
+  /* wrap a chart element in a link when the caller gave one */
+  function L(href, inner) { return href ? '<a href="' + esc(href) + '">' + inner + "</a>" : inner; }
   function niceTicks(max) {
     if (max <= 0) return [0, 1];
     var raw = max / 4, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10)), r = raw / mag;
@@ -96,7 +98,7 @@
   ];
 
   /* stacked submitters by month; when a network total is given the rest of the network is the dashed top level of the bar */
-  function chartSVG(months, network, W, H) {
+  function chartSVG(months, network, W, H, link) {
     W = W || 960; H = H || 360;
     var padL = 46, padR = 12, padT = 34, padB = 30;
     var n = months.length || 1;
@@ -113,8 +115,8 @@
         var v = m[ser.key] || 0;
         if (v <= 0) return;
         var y1 = y(base + v), h = y(base) - y1;
-        s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + ser.color + '"/>');
-        if (h >= 15) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + ser.ink + '">' + v + '</text>');
+        s.push(L(link && link("seg:" + i + ":" + ser.key), '<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + ser.color + '"/>' +
+          (h >= 15 ? '<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 4).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + ser.ink + '">' + v + '</text>' : "")));
         base += v;
       });
       var yt = y(base), roomAbove = 0;
@@ -266,7 +268,7 @@
   function wowLegendHTML() {
     return '<div class="legend-rows"><div class="legend">' + legendHTML(WOW_LEGEND.slice(0, 2)) + '</div><div class="legend">' + legendHTML(WOW_LEGEND.slice(2)) + "</div></div>";
   }
-  function wowSVG(weekly, W, H, lab) {
+  function wowSVG(weekly, W, H, lab, link) {
     W = W || 560; H = H || 330; lab = lab || 1;
     var weeks = weekly.weeks, padL = 36, padR = 10, padT = 14 + 12 * lab, drop = 13 * lab, weekRow = 14, netRow = 20 * lab, padB = drop + 6 + weekRow + 8 + netRow + 4;
     var n = weeks.length || 1, top = 1, deepest = 0;
@@ -282,19 +284,19 @@
         s.push('<text x="' + (padL - 8) + '" y="' + (yy + 3.5).toFixed(1) + '" text-anchor="end" font-size="10.5" font-weight="700" fill="#5A6B79">' + (v < 0 ? "-" + fmtN(-v) : fmtN(v)) + '</text>');
       });
     });
-    function seg(x, a, b, color, cx) {
+    function seg(x, a, b, color, cx, href) {
       var y1 = Math.min(y(a), y(b)), h = Math.abs(y(a) - y(b));
-      s.push('<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + color + '"/>');
-      if (h >= 13 * lab) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 3.5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (9.5 * lab).toFixed(1) + '" font-weight="800" fill="#FFFFFF">' + Math.abs(b - a) + '</text>');
+      s.push(L(href, '<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" fill="' + color + '"/>' +
+        (h >= 13 * lab ? '<text x="' + cx.toFixed(1) + '" y="' + (y1 + h / 2 + 3.5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (9.5 * lab).toFixed(1) + '" font-weight="800" fill="#FFFFFF">' + Math.abs(b - a) + '</text>' : "")));
     }
     weeks.forEach(function (w, i) {
       var cx = padL + slot * i + slot / 2, x = cx - bw / 2;
       var up = w.promoted, up2 = w.up_super || 0, dn = w.demoted, dn2 = w.down_quiet || 0;
-      if (up > 0) seg(x, 0, up, GREEN, cx);
-      if (up2 > 0) seg(x, up, up + up2, GREEN2, cx);
+      if (up > 0) seg(x, 0, up, GREEN, cx, link && link("wow:" + i + ":up"));
+      if (up2 > 0) seg(x, up, up + up2, GREEN2, cx, link && link("wow:" + i + ":super"));
       if (up + up2 > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(up + up2) - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + GREEN_INK + '">+' + (up + up2) + '</text>');
-      if (dn > 0) seg(x, 0, -dn, RED, cx);
-      if (dn2 > 0) seg(x, -dn, -dn - dn2, RED2, cx);
+      if (dn > 0) seg(x, 0, -dn, RED, cx, link && link("wow:" + i + ":down"));
+      if (dn2 > 0) seg(x, -dn, -dn - dn2, RED2, cx, link && link("wow:" + i + ":inactive"));
       if (dn + dn2 > 0) s.push('<text x="' + cx.toFixed(1) + '" y="' + (y(-dn - dn2) + 13 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">-' + (dn + dn2) + '</text>');
       s.push('<text x="' + cx.toFixed(1) + '" y="' + (Math.max(padT + ih + 4, y(-deepest) + drop + 6) + 11).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#5A6B79">' + esc(w.label) + (w.partial ? "*" : "") + '</text>');
       var netCol = w.net > 0 ? GREEN_INK : w.net < 0 ? RED_INK : "#5A6B79";
@@ -308,15 +310,15 @@
   /* retention: where the practices that were active at the start of the quarter sit today (flow, top) and
      the same practices' invoiced revenue this quarter against the quarter before (bars, bottom) */
   function shortQ(label) { return String(label || "").replace(/ 20(\d\d)$/, "'$1"); }
-  function retentionSVG(ret, W, H) {
+  function retentionSVG(ret, W, H, link) {
     W = W || 640; H = H || 470;
     var s = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Active book maintenance: practices active at the start of the quarter and where they are now; revenue stability: revenue from the same practices this quarter against last quarter">'];
     var q = shortQ(ret.quarter), pq = shortQ(ret.prev_quarter), n = ret.start_active || 0, total = Math.max(n, 1);
     var small = H < 380, left = 12, right = W - 12, big = small ? 28 : 34, mid = small ? 13 : 15, pctBig = small ? 30 : 42;
     /* active book maintenance: one bar of quarter-start actives flowing into where they sit today */
     var y0 = 12, avail = Math.round(H * (small ? 0.34 : 0.38)), barX = left + 4, barW = 50, nodeX = Math.round(W * 0.5), nodeW = 36, cmid = (barX + barW + nodeX) / 2;
-    s.push('<rect x="' + barX + '" y="' + y0 + '" width="' + barW + '" height="' + avail + '" fill="#1882C7" rx="4"/>');
-    s.push('<text x="' + (barX + barW / 2).toFixed(1) + '" y="' + (y0 + avail / 2 + big * 0.36).toFixed(1) + '" text-anchor="middle" font-size="' + big + '" font-weight="800" fill="#FFFFFF">' + n + '</text>');
+    s.push(L(link && link("cohort"), '<rect x="' + barX + '" y="' + y0 + '" width="' + barW + '" height="' + avail + '" fill="#1882C7" rx="4"/>' +
+      '<text x="' + (barX + barW / 2).toFixed(1) + '" y="' + (y0 + avail / 2 + big * 0.36).toFixed(1) + '" text-anchor="middle" font-size="' + big + '" font-weight="800" fill="#FFFFFF">' + n + '</text>'));
     s.push('<text x="' + barX + '" y="' + (y0 + avail + 16) + '" font-size="12" font-weight="700" fill="#5A6B79">active on ' + esc(shortStart(ret.start)) + '</text>');
     var parts = [["stayed", "still active", GREEN, GREEN_INK], ["to_dabbler", "now dabbler", "#4ABEEE", "#0F6BA8"], ["to_inactive", "now inactive", RED, RED_INK]];
     var gap = 10, live = parts.filter(function (p) { return (ret[p[0]] || 0) > 0; }).length, usable = avail - gap * Math.max(live - 1, 0);
@@ -327,9 +329,9 @@
       var hR = usable * v / total, hL = avail * v / total;
       s.push('<path d="M' + (barX + barW) + ',' + yL.toFixed(1) + ' C' + cmid.toFixed(1) + ',' + yL.toFixed(1) + ' ' + cmid.toFixed(1) + ',' + yR.toFixed(1) + ' ' + nodeX + ',' + yR.toFixed(1) +
         ' L' + nodeX + ',' + (yR + hR).toFixed(1) + ' C' + cmid.toFixed(1) + ',' + (yR + hR).toFixed(1) + ' ' + cmid.toFixed(1) + ',' + (yL + hL).toFixed(1) + ' ' + (barX + barW) + ',' + (yL + hL).toFixed(1) + ' Z" fill="' + p[2] + '" fill-opacity="0.3"/>');
-      s.push('<rect x="' + nodeX + '" y="' + yR.toFixed(1) + '" width="' + nodeW + '" height="' + Math.max(hR, 3).toFixed(1) + '" fill="' + p[2] + '" rx="3"/>');
       var ly = Math.max(yR + hR / 2 + big * 0.36, lastLabel + big + 4);
-      s.push('<text x="' + (nodeX + nodeW + 10) + '" y="' + ly.toFixed(1) + '" font-size="' + big + '" font-weight="800" fill="' + p[3] + '">' + v + '<tspan font-size="' + mid + '" font-weight="700" fill="#5A6B79"> ' + p[1] + '</tspan></text>');
+      s.push(L(link && link(p[0]), '<rect x="' + nodeX + '" y="' + yR.toFixed(1) + '" width="' + nodeW + '" height="' + Math.max(hR, 3).toFixed(1) + '" fill="' + p[2] + '" rx="3"/>' +
+        '<text x="' + (nodeX + nodeW + 10) + '" y="' + ly.toFixed(1) + '" font-size="' + big + '" font-weight="800" fill="' + p[3] + '">' + v + '<tspan font-size="' + mid + '" font-weight="700" fill="#5A6B79"> ' + p[1] + '</tspan></text>'));
       lastLabel = ly;
       yR += hR + gap; yL += hL;
     });
@@ -369,7 +371,7 @@
 
   /* programs: new submitters above the axis, practices that became inactive below, net under each month,
      and total submitters that month as a line in its own band above the bars (right axis) */
-  function programFlowSVG(months, W, H, lab) {
+  function programFlowSVG(months, W, H, lab, link) {
     W = W || 960; H = H || 400; lab = lab || 1;
     var padL = 24 + 108 * lab, padR = 48, padT = 14 + 10 * lab, dropB = 12 * lab, padB = dropB + 6 + 14 + 8 + 26 * lab + 4, nameFs = 12.5 * lab;
     var n = months.length || 1, iw = W - padL - padR, ih = H - padT - padB, slot = iw / n, x = function (i) { return padL + slot * i + slot / 2; };
@@ -397,12 +399,12 @@
     months.forEach(function (m, i) {
       var cx = x(i), nv = m.new || 0, qv = m.gone_quiet || 0;
       if (nv > 0) {
-        s.push('<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(nv).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(0) - yB(nv)).toFixed(1) + '" fill="' + GREEN + '" rx="2"/>');
-        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yB(nv) - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + GREEN_INK + '">+' + nv + '</text>');
+        s.push(L(link && link("new:" + i), '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(nv).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(0) - yB(nv)).toFixed(1) + '" fill="' + GREEN + '" rx="2"/>' +
+          '<text x="' + cx.toFixed(1) + '" y="' + (yB(nv) - 5 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + GREEN_INK + '">+' + nv + '</text>'));
       }
       if (qv > 0) {
-        s.push('<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(0).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(-qv) - yB(0)).toFixed(1) + '" fill="' + QUIET_COLOR + '" rx="2"/>');
-        s.push('<text x="' + cx.toFixed(1) + '" y="' + (yB(-qv) + 12 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">-' + qv + '</text>');
+        s.push(L(link && link("quiet:" + i), '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + yB(0).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (yB(-qv) - yB(0)).toFixed(1) + '" fill="' + QUIET_COLOR + '" rx="2"/>' +
+          '<text x="' + cx.toFixed(1) + '" y="' + (yB(-qv) + 12 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="' + RED_INK + '">-' + qv + '</text>'));
       }
       s.push('<text x="' + cx.toFixed(1) + '" y="' + (Math.max(botTop + botH + 4, yB(-deepQ) + dropB + 6) + 11).toFixed(1) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
       var net = nv - qv, netCol = net > 0 ? GREEN_INK : net < 0 ? RED_INK : "#5A6B79", netBg = net > 0 ? "rgba(52,199,89,0.18)" : net < 0 ? "rgba(239,68,68,0.16)" : "rgba(176,183,195,0.25)";
@@ -420,9 +422,9 @@
     }
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + yB(0).toFixed(1) + '" y2="' + yB(0).toFixed(1) + '" stroke="#052030" stroke-width="1.5"/>');
     if (pts.length > 1) s.push('<polyline fill="none" stroke="#1882C7" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map(function (p) { return p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ") + '"/>');
-    pts.forEach(function (p) {
-      s.push('<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#1882C7" stroke="#FFFFFF" stroke-width="1.5"/>');
-      s.push('<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="#0F6BA8">' + fmtN(p[2]) + '</text>');
+    pts.forEach(function (p, i) {
+      s.push(L(link && link("subm:" + i), '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="#1882C7" stroke="#FFFFFF" stroke-width="1.5"/>' +
+        '<text x="' + p[0].toFixed(1) + '" y="' + (p[1] - 8 * lab).toFixed(1) + '" text-anchor="middle" font-size="' + (11 * lab).toFixed(1) + '" font-weight="800" fill="#0F6BA8">' + fmtN(p[2]) + '</text>'));
     });
     return s.join("") + "</svg>";
   }
@@ -465,7 +467,15 @@
   /* dabbler cells: a quiet blue ramp, darker where the row has relatively more dabblers */
   function blueShade(v, lo, hi) { return 0.08 + 0.32 * (hi > lo ? (v - lo) / (hi - lo) : 0.5); }
   /* wide tables (a year of weeks) are split into stacked blocks of at most 13 columns; nothing scrolls sideways */
-  function statesTableHTML(t) {
+  var STATE_CODE = { super: "3", core: "2", dabbler: "1", inactive: "0" };
+  function cellMetric(t, col, rowKey) {
+    var i = t.columns.indexOf(col);
+    if (rowKey === "new") return (t.kind === "month" ? "new:" : (t.range === "year" ? "newwy:" : "neww:")) + (t.kind === "month" ? (+col.start.slice(5, 7) - 1) : i);
+    var code = STATE_CODE[rowKey];
+    if (t.kind === "month") return "m:" + (+col.start.slice(5, 7) - 1) + ":" + code;
+    return (t.range === "year" ? "wy:" : "w:") + i + ":" + code;
+  }
+  function statesTableHTML(t, link) {
     var n = t.columns.length, per = n > 13 ? Math.ceil(n / Math.ceil(n / 13)) : n, out = "";
     for (var start = 0; start < n; start += per) {
       var end = Math.min(n, start + per);
@@ -475,7 +485,9 @@
         var lo = Math.min.apply(null, r.values), hi = Math.max.apply(null, r.values);
         r.values.slice(start, end).forEach(function (v, j) {
           var d = r.deltas[start + j], style = r.tone === "neutral" ? "background:rgba(24,130,199," + blueShade(v, lo, hi).toFixed(2) + ");color:#0C2C4D" : deltaStyle(r.tone, d);
-          h += '<td style="' + style + '">' + fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + signed(d) + "</small>") + "</td>";
+          var inner = fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + signed(d) + "</small>");
+          var href = link ? link(cellMetric(t, t.columns[start + j], r.key)) : null;
+          h += '<td style="' + style + '">' + (href ? '<a class="cell" href="' + esc(href) + '">' + inner + "</a>" : inner) + "</td>";
         });
         h += "</tr>";
       });
@@ -484,20 +496,20 @@
     return out;
   }
   function statesTitle(t) { return (t.kind === "month" ? "Month over month, " : "Week over week, ") + t.range_label; }
-  function statesPanel(id, states, large) {
-    STATE_TABLES[id] = states;
+  function statesPanel(id, states, large, link) {
+    STATE_TABLES[id] = { states: states, link: link };
     var key = states["default"] || "year_month", t = states[key], parts = key.split("_");
     return '<div class="panel states' + (large ? " lg" : "") + '" data-states="' + esc(id) + '"><div class="chart-head"><div class="panel-title" data-role="title">' + esc(statesTitle(t)) + '</div>' +
       '<div class="seg-row"><div class="seg" data-dim="kind">' +
         '<button type="button" data-v="month" class="' + (parts[1] === "month" ? "on" : "") + '">Month</button><button type="button" data-v="week" class="' + (parts[1] === "week" ? "on" : "") + '">Week</button></div>' +
       '<div class="seg" data-dim="range">' +
         '<button type="button" data-v="year" class="' + (parts[0] === "year" ? "on" : "") + '">Year</button><button type="button" data-v="quarter" class="' + (parts[0] === "quarter" ? "on" : "") + '">Quarter</button></div></div></div>' +
-      '<div class="mx-wrap" data-role="host">' + statesTableHTML(t) + "</div></div>";
+      '<div class="mx-wrap" data-role="host">' + statesTableHTML(t, link) + "</div></div>";
   }
   document.addEventListener("click", function (ev) {
     var btn = ev.target && ev.target.closest ? ev.target.closest(".seg button") : null;
     if (!btn) return;
-    var panel = btn.closest(".panel.states"), states = STATE_TABLES[panel.getAttribute("data-states")];
+    var panel = btn.closest(".panel.states"), entry = STATE_TABLES[panel.getAttribute("data-states")], states = entry && entry.states;
     if (!states) return;
     [].forEach.call(btn.parentNode.querySelectorAll("button"), function (b) { b.classList.toggle("on", b === btn); });
     var pick = {};
@@ -505,7 +517,7 @@
     var t = states[pick.range + "_" + pick.kind];
     if (!t) return;
     panel.querySelector('[data-role="title"]').textContent = statesTitle(t);
-    panel.querySelector('[data-role="host"]').innerHTML = statesTableHTML(t);
+    panel.querySelector('[data-role="host"]').innerHTML = statesTableHTML(t, entry.link);
   });
 
   function legendHTML(items) {
@@ -524,7 +536,7 @@
     var host = byId("ae-subs");
     if (!AE || !AE.subsections || !AE.subsections.length) return;
     host.innerHTML = AE.subsections.map(function (sub) {
-      var c = sub.cards;
+      var c = sub.cards, lk = function (m) { return detailsURL("ae", sub.key, m); };
       return '<div class="sub card" id="ae-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
@@ -537,8 +549,8 @@
           tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g", detailsURL("ae", sub.key, "mtd_net_new")) +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
-          legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network) + "</div>" +
-        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states) + playsPanel("Plays", sub.plays) + "</div></div>";
+          legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network, 0, 0, lk) + "</div>" +
+        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + playsPanel("Plays", sub.plays) + "</div></div>";
     }).join("");
   }
 
@@ -563,7 +575,7 @@
     var host = byId("am-subs");
     if (!AM || !AM.subsections || !AM.subsections.length) return;
     host.innerHTML = AM.subsections.map(function (sub) {
-      var c = sub.cards, dly = sub.daily;
+      var c = sub.cards, dly = sub.daily, lk = function (m) { return detailsURL("am", sub.key, m); };
       return '<div class="sub card" id="am-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand"><div class="sub-logos"><div class="logo-cell">' + (sub.logos || []).map(function (p) { return logoImg(p, sub.label, sub.logos.length > 1); }).join("") +
           (sub.logo_tag ? '<span class="logo-tag">' + esc(sub.logo_tag) + "</span>" : "") + "</div></div>" +
@@ -577,9 +589,9 @@
         "</div>" +
         '<div class="chart-wrap hero"><div class="chart-head"><div class="panel-title big">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received per day</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
         '<div class="am-grid3">' +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Active Book Maintenance, ' + esc(shortQ(sub.retention.quarter)) + '</div></div>' + retentionSVG(sub.retention, 470, 470) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Active Book Maintenance, ' + esc(shortQ(sub.retention.quarter)) + '</div></div>' + retentionSVG(sub.retention, 470, 470, lk) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' + revenueLegend(sub) + "</div></div>" + lineSVG(sub.revenue, 470, 400, 1.5) + "</div>" +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 470, 400, 1.5) + "</div>" +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 470, 400, 1.5, lk) + "</div>" +
         "</div></div>";
     }).join("");
   }
@@ -593,7 +605,7 @@
     var host = byId("pg-subs");
     if (!PG || !PG.subsections || !PG.subsections.length) return;
     host.innerHTML = PG.subsections.map(function (sub) {
-      var c = sub.cards;
+      var c = sub.cards, lk = function (m) { return detailsURL("programs", sub.key, m); };
       return '<div class="sub card" id="pg-' + esc(sub.key) + '" data-sub="pg-' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
@@ -608,9 +620,9 @@
           "</div>" +
           tile(fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", "d", detailsURL("programs", sub.key, "penetration")) +
         "</div>" +
-        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div></div>' + programFlowSVG(sub.months, 960, 420, 1.35) + "</div>" +
-        '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true) +
-          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 560, 420, 1.5) + "</div></div>" +
+        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div></div>' + programFlowSVG(sub.months, 960, 420, 1.35, lk) + "</div>" +
+        '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true, lk) +
+          '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 560, 420, 1.5, lk) + "</div></div>" +
         playsPanel("Plays: initiatives and growth", sub.plays, "plays-wide") +
       "</div>";
     }).join("");

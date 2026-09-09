@@ -218,75 +218,60 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 }
 </style>
 <style>
+html,body{overflow-x:hidden}
 .dt-card{margin-top:4px}
 .dt-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-bottom:2px}
-.dt-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-top:14px}
-.tile-btn{cursor:pointer;font:inherit;color:inherit;width:100%;transition:box-shadow .12s,border-color .12s;padding:12px 10px 10px}
-.tile-btn .n{font-size:26px}
-.tile-btn:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,199,.25)}
-.tile-btn.on{border-color:var(--killian);box-shadow:0 0 0 3px rgba(24,130,199,.35);background:#FFFFFF}
-.b3t.up .n{color:var(--up)}
-.b3t.dn .n{color:var(--down)}
-.b3t.q .n{color:var(--down)}
-.dt-toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:18px 0 10px}
-.dt-toolbar input{font:inherit;font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;min-width:260px;background:#FFFFFF}
-.dt-count{font-size:13.5px;color:var(--ink)}
-.dt-note{font-size:12px;color:var(--ink2)}
-.linkbtn{font:inherit;font-size:12px;font-weight:700;color:var(--killianink);text-decoration:underline;padding:0 4px}
+.lead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:18px 0 4px;padding:14px 18px;background:var(--card2);border:1px solid var(--line);border-radius:12px}
+.lead-n{font-size:34px;font-weight:800;color:var(--killianink);line-height:1;font-variant-numeric:tabular-nums}
+.lead-t{font-size:17px;font-weight:700;color:var(--ink)}
+.dt-quick{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.tile-btn{font:inherit;font-size:12px;font-weight:600;color:var(--ink2);background:#FFFFFF;border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;transition:border-color .12s,color .12s}
+.tile-btn b{color:var(--ink);font-weight:800;margin-left:4px}
+.tile-btn:hover{border-color:var(--killian);color:var(--ink)}
+.tile-btn.on{background:var(--killian);border-color:var(--killian);color:#FFFFFF}
+.tile-btn.on b{color:#FFFFFF}
+.dt-toolbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:14px 0 10px}
+.dt-toolbar input{font:inherit;font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:9px;min-width:240px;background:#FFFFFF}
+.dt-count{font-size:12.5px;color:var(--ink2)}
+.dt-note{font-size:12px;color:var(--ink2);font-weight:500}
+.linkbtn{font:inherit;font-size:12px;font-weight:700;color:var(--killianink);text-decoration:underline;padding:0 4px;cursor:pointer}
 .btn.small{margin-left:auto;padding:8px 14px;font-size:12.5px}
-html,body{overflow-x:hidden}
 .dt-wrap{border:1px solid var(--line);border-radius:12px;background:#FFFFFF}
-.dt{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;table-layout:auto}
-.dt th{position:sticky;top:0;background:var(--card2);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;padding:9px 8px;border-bottom:2px solid var(--line);white-space:normal;z-index:1}
+.dt{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;table-layout:auto}
+.dt th{position:sticky;top:0;background:var(--card2);text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;padding:10px 10px;border-bottom:2px solid var(--line);white-space:normal;z-index:1}
 .dt th.sortable{cursor:pointer}
-.dt th.sortable:hover{color:var(--killianink)}
-.dt th.sorted{color:var(--killianink)}
-.dt td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap;color:var(--ink)}
+.dt th.sortable:hover,.dt th.sorted{color:var(--killianink)}
+.dt td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap;color:var(--ink)}
 .dt td.pname,.dt td.wrap{white-space:normal;word-break:break-word}
-.dt td.pname{min-width:170px}
-@media (max-width:1200px){.dt{font-size:11.5px}.dt td{padding:6px 5px}.mv i{width:11px;height:11px}.dt-toolbar input{min-width:200px}}
-.dt td.ph{color:var(--silver);text-align:center;padding:24px}
-.dt .r{text-align:right}
-.dt tr:hover td{background:#F7FBFE}
-.dt tr.rowlink{cursor:pointer}
+.dt td.pname{min-width:200px}
 .dt td.pname a{color:var(--killianink);font-weight:800;text-decoration:none}
 .dt td.pname a:hover{text-decoration:underline}
+.dt td.ph{color:var(--silver);text-align:center;padding:24px}
+.dt .r{text-align:right}
+.dt tr.rowlink{cursor:pointer}
+.dt tr:hover td{background:#F7FBFE}
+@media (max-width:1200px){.dt{font-size:12px}.dt td{padding:7px 6px}.dt-toolbar input{min-width:200px}}
 .stchip{display:inline-block;font-weight:800;font-size:11px;padding:3px 9px;border-radius:999px;white-space:nowrap}
 .butag{display:inline-block;font-weight:800;font-size:10px;letter-spacing:.04em;padding:2px 7px;border-radius:6px;margin-left:5px;white-space:nowrap;border:1px solid}
 .butag.s{color:#052030;border-color:#052030;background:rgba(5,32,48,.08)}
 .butag.c{color:#0F6BA8;border-color:#1882C7;background:rgba(24,130,199,.1)}
-.mv{display:inline-flex;gap:3px;vertical-align:middle}
-.mv i{display:inline-block;width:14px;height:14px;border-radius:3px}
-.spark{display:block}
-.legend.dt-legend{margin-top:10px;font-size:11.5px}
-/* how a practice qualifies */
-.qual{margin-top:14px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 16px 10px}
-.qual-grid{display:grid;grid-template-columns:3fr 2fr;gap:18px}
-@media (max-width:1000px){.qual-grid{grid-template-columns:1fr}}
-.qual .panel-title{margin-bottom:6px}
-.sa-row{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center;margin:7px 0}
-@media (max-width:700px){.sa-row{grid-template-columns:1fr;gap:4px}}
-.sa-name{font-weight:800;font-size:12.5px;display:flex;align-items:center;gap:7px}
-.sa-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.sa-track{position:relative;height:26px;background:var(--card3);border-radius:8px;overflow:hidden}
-.sa-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(5,32,48,.45);white-space:nowrap}
-.qual-note{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.5}
-.qual-note b{color:var(--ink)}
-.ladder{display:flex;flex-direction:column;gap:7px}
-.rung{display:grid;grid-template-columns:118px 1fr;gap:12px;align-items:center;border-radius:9px;padding:8px 12px;background:#FFFFFF;border:1px solid var(--line)}
-.rung .st{font-weight:800;font-size:12px;padding:5px 10px;border-radius:999px;text-align:center;color:#FFFFFF;white-space:nowrap}
-.rung .d{font-size:12px;color:var(--ink);line-height:1.45}
-.rung .d b{color:var(--ink)}
-.win-pill{display:inline-block;font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#052030;background:var(--gold);border-radius:999px;padding:5px 12px;margin-left:10px;vertical-align:middle}
-.win-lead{font-size:12.5px;font-weight:600;color:var(--ink);margin:6px 0 8px}
-.win-lead b{color:var(--goldink)}
-.window{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0 4px;font-size:11.5px}
-.win-box{border-radius:8px;padding:8px 10px;border:1px solid var(--line);background:#FFFFFF}
-.win-box.now{border-color:var(--gold);background:#FBF8EF}
-.win-box .wt{font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
-.win-box.now .wt{color:var(--goldink)}
-.win-box .wd{margin-top:3px;color:var(--ink);line-height:1.4}
-.win-axis{display:flex;justify-content:space-between;font-size:10.5px;font-weight:700;color:var(--ink2);margin:2px 2px 0}
+/* the definitions, folded away */
+details.help{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:#FFFFFF;padding:0 16px}
+details.help summary{cursor:pointer;font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);padding:12px 0;list-style:none}
+details.help summary::-webkit-details-marker{display:none}
+details.help summary::before{content:"+";display:inline-block;width:16px;color:var(--killianink);font-size:15px}
+details.help[open] summary::before{content:"\2013"}
+.help-grid{display:grid;grid-template-columns:3fr 2fr;gap:18px;padding:0 0 14px}
+@media (max-width:1000px){.help-grid{grid-template-columns:1fr}}
+.help-h{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:6px}
+.sa-row{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:center;margin:6px 0}
+@media (max-width:700px){.sa-row{grid-template-columns:1fr;gap:3px}}
+.sa-name{font-weight:700;font-size:12px;display:flex;align-items:center;gap:7px}
+.sa-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.sa-track{position:relative;height:22px;background:var(--card3);border-radius:6px;overflow:hidden}
+.sa-seg{position:absolute;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;text-shadow:0 1px 2px rgba(5,32,48,.35);white-space:nowrap}
+.rung{display:grid;grid-template-columns:104px 1fr;gap:10px;align-items:center;padding:5px 0;font-size:12px;color:var(--ink)}
+.rung .st{font-weight:800;font-size:11px;padding:4px 8px;border-radius:999px;text-align:center;color:#FFFFFF;white-space:nowrap}
 </style>
 
 </head>
@@ -298,7 +283,7 @@ html,body{overflow-x:hidden}
     <div class="bdiv"></div>
     <div class="titleblock">
       <div class="app-title">Daily Commercial Performance</div>
-      <div class="app-sub">Account details</div>
+      <div class="app-sub">Details</div>
     </div>
     <nav class="pills" aria-label="Page sections"><a class="pill" href="index.html#account-executives">Account Executives</a><a class="pill" href="index.html#account-managers">Account Managers</a><a class="pill" href="index.html#programs">Programs</a><a class="pill" href="index.html#about">About</a><a class="pill active" href="details.html" id="pill-details">Details</a><a class="pill" href="account.html" id="pill-drill">Account Drilldown</a></nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
@@ -308,11 +293,20 @@ html,body{overflow-x:hidden}
 <main>
   <div class="card sub dt-card">
     <div class="sub-head" id="dt-head"></div>
-    <div class="qual">
-      <div class="qual-grid">
+    <div class="lead" id="dt-lead"></div>
+    <div class="dt-quick" id="dt-quick"></div>
+    <div class="dt-toolbar">
+      <input type="search" id="dt-search" placeholder="Search a practice" aria-label="Search practices">
+      <div class="dt-count" id="dt-count"></div>
+      <button class="btn small" id="dt-export" type="button">Export to Excel</button>
+    </div>
+    <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
+    <p class="dt-note" style="margin-top:8px">Click a practice for its own page. Click a column heading to sort.</p>
+    <details class="help">
+      <summary>What the states mean</summary>
+      <div class="help-grid">
         <div>
-          <div class="panel-title">How an account qualifies <span class="win-pill">last 90 days</span></div>
-          <p class="win-lead">Cases <b>submitted in the last 90 days</b>, by business unit. Half the bar is Core Active, the full bar is Super Active.</p>
+          <div class="help-h">Cases submitted in the last 90 days, by business unit</div>
           <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#1882C7"></span>Crown and Bridge</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#1882C7;opacity:.45">Core 30+</span><span class="sa-seg" style="left:50%;width:50%;background:#1882C7">Super 60+</span></div></div>
           <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#8A93A3"></span>Removables</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#8A93A3;opacity:.45">Core 15+</span><span class="sa-seg" style="left:50%;width:50%;background:#8A93A3">Super 30+</span></div></div>
           <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#052030"></span>Implants</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#052030;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#052030">Super 12+</span></div></div>
@@ -320,31 +314,19 @@ html,body{overflow-x:hidden}
           <div class="sa-row"><span class="sa-name"><span class="sa-dot" style="background:#4ABEEE"></span>High Esthetics</span><div class="sa-track"><span class="sa-seg" style="left:0;width:50%;background:#4ABEEE;opacity:.45">Core 6+</span><span class="sa-seg" style="left:50%;width:50%;background:#4ABEEE">Super 12+</span></div></div>
         </div>
         <div>
-          <div class="panel-title">The four states</div>
-          <div class="ladder">
-            <div class="rung"><span class="st" style="background:#052030">Super Active</span><span class="d">Full bar in one business unit in the <b>last 90 days</b>.</span></div>
-            <div class="rung"><span class="st" style="background:#1882C7">Core Active</span><span class="d">Half the bar in the <b>last 90 days</b>. Active = Core or Super.</span></div>
-            <div class="rung"><span class="st" style="background:#4ABEEE;color:#052030">Dabbler</span><span class="d">A case in the last 90 days, <b>below every bar</b>.</span></div>
-            <div class="rung"><span class="st" style="background:#EF4444">Inactive</span><span class="d"><b>No case in 90 days</b>, whether it used to send work or never has.</span></div>
-          </div>
-          <p class="qual-note">Recomputed nightly. Click any practice below for its own page.</p>
+          <div class="help-h">The four states</div>
+          <div class="rung"><span class="st" style="background:#052030">Super Active</span><span>Full bar in one business unit in the last 90 days.</span></div>
+          <div class="rung"><span class="st" style="background:#1882C7">Core Active</span><span>Half the bar in the last 90 days. Active means Core or Super.</span></div>
+          <div class="rung"><span class="st" style="background:#4ABEEE;color:#052030">Dabbler</span><span>A case in the last 90 days, below every bar.</span></div>
+          <div class="rung"><span class="st" style="background:#EF4444">Inactive</span><span>No case in the last 90 days.</span></div>
         </div>
       </div>
-    </div>
-    <div class="dt-tiles" id="dt-tiles"></div>
-    <div class="legend dt-legend"><span><i style="background:#052030"></i>Super Active</span><span><i style="background:#1882C7"></i>Core Active</span><span><i style="background:#4ABEEE"></i>Dabbler</span><span><i style="background:#EF4444"></i>Inactive</span><span class="dt-note">Click a tile to list the practices behind it. Movement shows the state at the end of each month this year; the bars are cases received by month.</span></div>
-    <div class="dt-toolbar">
-      <div class="dt-count" id="dt-count"></div>
-      <input type="search" id="dt-search" placeholder="Search practice, ID or account number" aria-label="Search practices">
-      <button class="btn small" id="dt-export" type="button">Export to Excel</button>
-    </div>
-    <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
+    </details>
   </div>
-  <div class="footer"><span class="num">Practice level. A practice is Active when it is Core or Super Active; state is measured on cases received, one business unit per case. Definitions are on the About section of the one pager.</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
-<script src="details-page.js?v=0.12.1"></script>
+<script src="details-page.js?v=0.13.0"></script>
 </body>
 </html>

@@ -336,18 +336,25 @@ STATE_CH = {QUIET: "0", DABBLER: "1", CORE: "2", SUPER: "3"}
 
 
 def practice_rows(ids, E, months, names, accts):
-    """One row per practice for the details page: identity, state today and at each month end this year,
-    cases by month, trailing 90 day counts, first and last case, and the flags behind each tile."""
+    """One row per practice for the details page: identity, state today, at each month end this year and at each
+    week end of the quarter and the year, cases by month, trailing 90 day counts, first and last case, the months
+    the practice went inactive, and the flags behind each tile."""
     snaps = [s for _, _, s in months]
     cur_m0 = months[-1][1]
     s30, s90, s180 = RUN_DATE - dt.timedelta(days=30), RUN_DATE - dt.timedelta(days=90), RUN_DATE - dt.timedelta(days=180)
+    qweeks, yweeks = period_bounds("week", "quarter", RUN_DATE), period_bounds("week", "year", RUN_DATE)
+    qsnaps = [qweeks[0][1]] + [b for _, _, b, _ in qweeks]         # quarter start, then each week end
+    ysnaps = [yweeks[0][1]] + [b for _, _, b, _ in yweeks]
     rows = []
     for pid in ids:
         e = E.get(pid)
         if e is None or not e.dates:
             rows.append({"pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "bu": {}, "st": "0", "q0": "0", "l30": "0",
-                         "hist": "0" * len(months), "cm": [0] * len(months), "ytd": 0, "c90": 0, "p90": 0, "first": None, "last": None, "new": 0})
+                         "hist": "0" * len(months), "wkq": "0" * len(qsnaps), "wky": "0" * len(ysnaps), "qm": [],
+                         "cm": [0] * len(months), "ytd": 0, "c90": 0, "p90": 0, "first": None, "last": None, "new": 0})
             continue
+        qd = quiet_dates(e, RUN_DATE)
+        qm = [i for i, (label, m0, s) in enumerate(months) if any(m0 <= q < (s if s == next_month(m0) else RUN_DATE + DAY) for q in qd)]
         bu = {}
         for ln, lst in e.by_line.items():
             q1 = e._count(lst, s90, RUN_DATE)
@@ -359,6 +366,7 @@ def practice_rows(ids, E, months, names, accts):
             "pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "bu": bu,
             "st": STATE_CH[e.level(RUN_DATE)], "q0": STATE_CH[e.level(RQ0)], "l30": STATE_CH[e.level(s30)],
             "hist": "".join(STATE_CH[e.level(s)] for s in snaps),
+            "wkq": "".join(STATE_CH[e.level(s)] for s in qsnaps), "wky": "".join(STATE_CH[e.level(s)] for s in ysnaps), "qm": qm,
             "cm": [e.cases_between(m0, s) for _, m0, s in months],
             "ytd": e.cases_between(JAN1, RUN_DATE), "c90": e.cases_between(s90, RUN_DATE), "p90": e.cases_between(s180, s90),
             "first": e.first.isoformat() if e.first else None, "last": e.dates[-1].isoformat(),
@@ -1094,7 +1102,12 @@ def main():
     }
     ah_meta, ah_by_id, ah_cases = load_health()
     write_health_files(os.path.dirname(os.path.abspath(out)), ah_meta or {}, ah_by_id, ah_cases)
-    details = {"meta": dict(data["meta"], months=[m[0] for m in ytd_months(RUN_DATE)], quarter=quarter_label(RQ0), quarter_start=RQ0.isoformat(), health=ah_meta), "sections": DETAILS}
+    qw, yw = period_bounds("week", "quarter", RUN_DATE), period_bounds("week", "year", RUN_DATE)
+    details = {"meta": dict(data["meta"], months=[m[0] for m in ytd_months(RUN_DATE)], month_starts=[m[1].isoformat() for m in ytd_months(RUN_DATE)],
+                            quarter=quarter_label(RQ0), quarter_start=RQ0.isoformat(),
+                            qweeks=[{"label": l, "start": a.isoformat(), "end": b.isoformat(), "partial": pt} for l, a, b, pt in qw],
+                            yweeks=[{"label": l, "start": a.isoformat(), "end": b.isoformat(), "partial": pt} for l, a, b, pt in yw],
+                            year=RUN_DATE.year, health=ah_meta), "sections": DETAILS}
     dpath = os.path.join(os.path.dirname(os.path.abspath(out)), "details.js")
     dbody = "window.DCP_DETAILS = " + sanitize(json.dumps(details, ensure_ascii=True, separators=(",", ":"))) + ";\n"
     with open(dpath, "w", encoding="utf8", newline="\n") as f:

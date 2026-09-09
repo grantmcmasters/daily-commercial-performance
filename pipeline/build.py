@@ -50,6 +50,7 @@ import json
 import math
 import os
 import sys
+import time
 from collections import defaultdict
 
 import requests
@@ -95,10 +96,22 @@ def get(table, params, page=PAGE, key=None, max_rows=None):
             p["order"] = f"{key}.asc"
             if last is not None:
                 p[key] = f"gt.{last}"
-        r = requests.get(f"{URL}/rest/v1/{table}", params=p, headers=HEADERS, timeout=180)
-        if r.status_code >= 400:
-            raise RuntimeError(f"{r.status_code} {r.text[:500]}")
-        batch = r.json()
+        batch = None
+        for attempt in range(5):
+            try:
+                r = requests.get(f"{URL}/rest/v1/{table}", params=p, headers=HEADERS, timeout=180)
+                if r.status_code == 429 or r.status_code >= 500:
+                    raise RuntimeError(f"{r.status_code} {r.text[:200]}")
+                if r.status_code >= 400:
+                    raise SystemExit(f"{table}: {r.status_code} {r.text[:500]}")
+                batch = r.json()
+                break
+            except (requests.RequestException, RuntimeError, ValueError) as e:
+                if attempt == 4:
+                    raise
+                wait = 10 * (2 ** attempt)
+                print(f"  {table}: {e}; retry {attempt + 1} in {wait}s", flush=True)
+                time.sleep(wait)
         rows += batch
         if key and batch:
             last = batch[-1][key.strip('"')]

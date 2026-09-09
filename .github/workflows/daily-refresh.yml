@@ -48,7 +48,12 @@ jobs:
           python-version: "3.12"
       - run: pip install -r pipeline/requirements.txt
       - name: Rebuild data.js
-        run: python pipeline/build.py
+        run: |
+          for i in 1 2 3; do
+            python pipeline/build.py && break
+            echo "rebuild attempt $i failed"; [ "$i" = "3" ] && exit 1
+            sleep 120
+          done
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
@@ -64,8 +69,9 @@ jobs:
             git pull --rebase -X theirs origin main
           done
   email:
-    needs: rebuild
-    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_email) }}
+    needs: [gate, rebuild]
+    # runs whenever the gate opened, even if the rebuild failed (the email then carries the last good data, dated in the subject)
+    if: ${{ always() && needs.gate.outputs.run == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.skip_email) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

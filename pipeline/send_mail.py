@@ -16,6 +16,7 @@ import json
 import os
 import smtplib
 import sys
+import time
 import urllib.parse
 import urllib.request
 from email.message import EmailMessage
@@ -184,16 +185,27 @@ def main():
         status = send_graph(summary_html, args.pdf, sender, recipients, subject, tenant, client_id, client_secret)
         print("sent through Microsoft Graph as", sender, "to", ", ".join(recipients), "status", status, "attachment:", os.path.exists(args.pdf))
         return
-    if port == 465:
-        with smtplib.SMTP_SSL(host, port, timeout=60) as smtp:
-            smtp.login(sender, password)
-            smtp.send_message(msg)
-    else:
-        with smtplib.SMTP(host, port, timeout=60) as smtp:
-            smtp.ehlo()
-            smtp.starttls()
-            smtp.login(sender, password)
-            smtp.send_message(msg)
+    for attempt in range(4):
+        try:
+            if port == 465:
+                with smtplib.SMTP_SSL(host, port, timeout=90) as smtp:
+                    smtp.login(sender, password)
+                    smtp.send_message(msg)
+            else:
+                with smtplib.SMTP(host, port, timeout=90) as smtp:
+                    smtp.ehlo()
+                    smtp.starttls()
+                    smtp.ehlo()
+                    smtp.login(sender, password)
+                    smtp.send_message(msg)
+            break
+        except smtplib.SMTPAuthenticationError:
+            raise
+        except (smtplib.SMTPException, OSError) as e:
+            if attempt == 3:
+                raise
+            print(f"send attempt {attempt + 1} failed: {e}; retrying in 60s", file=sys.stderr, flush=True)
+            time.sleep(60)
     print("sent to", ", ".join(recipients), "subject:", subject, "attachment:", os.path.exists(args.pdf))
 
 

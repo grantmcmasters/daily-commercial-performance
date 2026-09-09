@@ -549,7 +549,8 @@
   function subWrap(prefix, key, secId, secName, inner) {
     return '<div class="subwrap" id="' + prefix + "-" + esc(key) + '"><a class="sub-back" href="#' + secId + '">&#8593; Back to ' + esc(secName) + "</a>" + inner + "</div>";
   }
-  function aeCard(sub, lk) {
+  function aeCard(sub, lk, opts) {
+    opts = opts || {};
     var c = sub.cards;
     return '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
@@ -563,8 +564,8 @@
           tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g", lk("mtd_net_new")) +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
-          legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network, 0, 0, lk) + "</div>" +
-        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + playsPanel("Plays", sub.plays) + "</div></div>";
+          legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network, 0, opts.compact ? 190 : 0, lk) + "</div>" +
+        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + (opts.compact ? "" : playsPanel("Plays", sub.plays)) + "</div></div>";
   }
   function renderAE() {
     var host = byId("ae-subs");
@@ -591,7 +592,8 @@
     return sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name === "All" ? "Revenue / practice" : ser.name + " revenue / practice") + "</span>"; }).join("") +
       '<span><i style="background:' + CASES_COLOR + '"></i>Cases / practice</span>';
   }
-  function amCard(sub, lk) {
+  function amCard(sub, lk, opts) {
+    opts = opts || {};
     var c = sub.cards, dly = sub.daily;
     return '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand"><div class="sub-logos"><div class="logo-cell">' + (sub.logos || []).map(function (p) { return logoImg(p, sub.label, sub.logos.length > 1); }).join("") +
@@ -624,7 +626,8 @@
      ============================================================ */
   var PG = (D.sections || {}).programs || null;
   var PG_LEGEND = [{ label: "New submitters", color: GREEN }, { label: "Inactive (90+ days without a case)", color: QUIET_COLOR }, { label: "Total submitters (line, right axis)", color: "#1882C7", line: true }];
-  function pgCard(sub, lk) {
+  function pgCard(sub, lk, opts) {
+    opts = opts || {};
     var c = sub.cards;
     return '<div class="sub card" data-sub="pg-' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
@@ -640,10 +643,10 @@
           "</div>" +
           tile(fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", "d", lk("penetration")) +
         "</div>" +
-        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div></div>' + programFlowSVG(sub.months, 960, 420, 1.35, lk) + "</div>" +
+        '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div></div>' + programFlowSVG(sub.months, 960, opts.compact ? 280 : 420, 1.35, lk) + "</div>" +
         '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true, lk) +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 560, 420, 1.5, lk) + "</div></div>" +
-        playsPanel("Plays: initiatives and growth", sub.plays, "plays-wide") +
+        (opts.compact ? "" : playsPanel("Plays: initiatives and growth", sub.plays, "plays-wide")) +
       "</div>";
   }
   function renderPrograms() {
@@ -658,7 +661,7 @@
   window.__dcpSubCard = function (sec, key, link) {
     var X = sec === "ae" ? AE : sec === "am" ? AM : PG, subs = (X && X.subsections) || [], sub = subs.filter(function (s) { return s.key === key; })[0];
     if (!sub) return "";
-    return (sec === "ae" ? aeCard : sec === "am" ? amCard : pgCard)(sub, link);
+    return (sec === "ae" ? aeCard : sec === "am" ? amCard : pgCard)(sub, link, { compact: true });
   };
 
   /* ============================================================

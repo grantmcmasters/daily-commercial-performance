@@ -31,6 +31,8 @@
     return;
   }
   document.title = S.title + " Account Details";
+  byId("dt-back").href = "index.html#" + ({ ae: "ae-", am: "am-", programs: "pg-" }[SEC] || "") + KEY;
+  byId("dt-back").textContent = "← Back to " + S.title;
   byId("asof").textContent = "Data through " + longDate(D.meta.data_through || D.meta.run_date);
   function logoHTML() {
     var logos = S.logos || (S.logo ? [S.logo] : []);

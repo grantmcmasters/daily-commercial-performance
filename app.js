@@ -1095,4 +1095,9 @@
   window.addEventListener("resize", spy);
   window.addEventListener("hashchange", function () { setTimeout(spy, 350); });
   spy();
+  /* arriving from Details or the drilldown: land on that exact one pager (it only exists once the page has rendered) */
+  if (/^#(ae|am|pg)-/.test(location.hash)) {
+    var target = document.getElementById(location.hash.slice(1));
+    if (target) setTimeout(function () { spy(); target.scrollIntoView({ block: "start" }); setTimeout(spy, 400); }, 60);
+  }
 })();

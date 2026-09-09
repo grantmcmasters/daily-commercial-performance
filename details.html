@@ -179,6 +179,10 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .mx th:first-child{text-align:left}
 .mx td{padding:6px 3px;text-align:center;border-radius:5px;font-weight:700;min-width:0}
 .mx td.lbl{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;padding-left:2px;background:transparent}
+.mx td a.cell{display:block;color:inherit;text-decoration:none}
+.mx td a.cell:hover{text-decoration:underline}
+svg a{cursor:pointer}
+svg a:hover rect,svg a:hover circle,svg a:hover path{filter:brightness(1.12)}
 .mx td.lbl small{display:block;font-weight:600;color:var(--ink2);font-size:9.5px;letter-spacing:0}
 .mx tr.grp td{border-top:6px solid transparent}
 .mx tr.net td{font-weight:800}
@@ -235,6 +239,9 @@ html,body{overflow-x:hidden}
 .dt-count{font-size:12.5px;color:var(--ink2)}
 .dt-note{font-size:12px;color:var(--ink2);font-weight:500}
 .linkbtn{font:inherit;font-size:12px;font-weight:700;color:var(--killianink);text-decoration:underline;padding:0 4px;cursor:pointer}
+.backrow{margin:0 0 12px 0}
+.linkbtn.back{text-decoration:none;font-size:12.5px;font-weight:800;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:#FFFFFF;display:inline-block}
+.linkbtn.back:hover{border-color:var(--killian)}
 .btn.small{margin-left:auto;padding:8px 14px;font-size:12.5px}
 .dt-wrap{border:1px solid var(--line);border-radius:12px;background:#FFFFFF}
 .dt{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums;table-layout:auto}
@@ -292,6 +299,7 @@ details.help[open] summary::before{content:"\2013"}
 
 <main>
   <div class="card sub dt-card">
+    <p class="backrow"><a class="linkbtn back" id="dt-back" href="index.html">&#8592; Back</a></p>
     <div class="sub-head" id="dt-head"></div>
     <div class="lead" id="dt-lead"></div>
     <div class="dt-quick" id="dt-quick"></div>
@@ -327,6 +335,6 @@ details.help[open] summary::before{content:"\2013"}
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
-<script src="details-page.js?v=0.13.0"></script>
+<script src="details-page.js?v=0.13.1"></script>
 </body>
 </html>

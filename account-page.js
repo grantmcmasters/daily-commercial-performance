@@ -31,6 +31,7 @@
   var backHref = "details.html?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + (METRIC ? "&metric=" + METRIC : "");
   byId("asof").textContent = "Data through " + longDate(D.meta.data_through || D.meta.run_date);
   byId("back-list").href = backHref;
+  if (S) byId("back-list").textContent = "← Back to the " + S.title + " list";
   var pd = byId("pill-details"); if (pd && S) pd.href = backHref;
   if (!row) {
     var lastList = "details.html";

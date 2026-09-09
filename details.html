@@ -263,7 +263,7 @@ html,body{overflow-x:hidden}
 /* how an account qualifies, condensed */
 .qual{margin-top:12px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 14px 8px}
 .qual .panel-title{margin-bottom:4px}
-.win-pill{display:inline-block;font-weight:800;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#052030;background:var(--gold);border-radius:999px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+.win-pill{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#0F6BA8;background:rgba(24,130,199,.12);border:1px solid rgba(24,130,199,.45);border-radius:999px;padding:3px 10px;margin-left:8px;vertical-align:middle}
 .win-lead{font-size:12px;font-weight:600;color:var(--ink);margin:2px 0 6px}
 .win-lead b{color:var(--goldink)}
 .sc-row{display:grid;grid-template-columns:132px 1fr;gap:12px;align-items:center;margin:0 0 9px}
@@ -364,7 +364,7 @@ html,body{overflow-x:hidden}
     <nav class="dt-nav" id="dt-nav" aria-label="Every list"></nav>
     <div class="sub-head" id="dt-head"></div>
     <div class="qual">
-      <div class="panel-title">How an account qualifies <span class="win-pill">last 90 days</span></div>
+      <div class="panel-title">Active Account Definition <span class="win-pill"><svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.5V8l2.6 1.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Case Volume Booked Last 90 Days</span></div>
       <div class="sc-row sc-legend-row"><span></span><div class="sc-legend"><span><i style="background:#4ABEEE"></i>Dabbler</span><span class="arr">&#8594;</span><span><i style="background:#1882C7"></i>Core Active</span><span class="arr">&#8594;</span><span><i style="background:#052030"></i>Super Active</span></div></div>
           <div class="sc-row"><span class="sa-name">Crown &amp; Bridge</span><div class="sc-track"><span class="sc-seg d" style="left:0;width:40.00%"></span><span class="sc-seg c" style="left:40.00%;width:40.00%"></span><span class="sc-seg s" style="left:80.00%;width:20.00%"></span><i class="sc-mark" style="left:40.00%"><b>30</b></i><i class="sc-mark" style="left:80.00%"><b>60</b></i></div></div>
           <div class="sc-row"><span class="sa-name">Removables</span><div class="sc-track"><span class="sc-seg d" style="left:0;width:20.00%"></span><span class="sc-seg c" style="left:20.00%;width:20.00%"></span><span class="sc-seg s" style="left:40.00%;width:60.00%"></span><i class="sc-mark" style="left:20.00%"><b>15</b></i><i class="sc-mark" style="left:40.00%"><b>30</b></i></div></div>
@@ -384,13 +384,13 @@ html,body{overflow-x:hidden}
     <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
     <p class="dt-note" style="margin-top:8px">Click a practice for its own page. Click a column heading to sort.</p>
   </div>
-  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.16.5</span></div>
+  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.16.6</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
 <script src="data.js"></script>
-<script src="app.js?v=0.16.5"></script>
-<script src="details-page.js?v=0.16.5"></script>
+<script src="app.js?v=0.16.6"></script>
+<script src="details-page.js?v=0.16.6"></script>
 </body>
 </html>

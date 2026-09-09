@@ -126,12 +126,13 @@
         s.push('<rect x="' + x.toFixed(1) + '" y="' + yn.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + roomAbove.toFixed(1) + '" fill="none" stroke="' + NET_STROKE + '" stroke-width="1.4" stroke-dasharray="5,4"/>');
         s.push('<text x="' + cx.toFixed(1) + '" y="' + (yn - 6).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="#6C7A88">' + fmtN(network) + '</text>');
       }
+      var monthLink = link && link("subm:" + i);
       if (m.total > 0) {
-        s.push((!network || roomAbove >= 20)
+        s.push(L(monthLink, (!network || roomAbove >= 20)
           ? '<text x="' + cx.toFixed(1) + '" y="' + (yt - 6).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#052030">' + fmtN(m.total) + '</text>'
-          : '<text x="' + cx.toFixed(1) + '" y="' + (yt + 14).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">' + fmtN(m.total) + '</text>');
+          : '<text x="' + cx.toFixed(1) + '" y="' + (yt + 14).toFixed(1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="#FFFFFF">' + fmtN(m.total) + '</text>'));
       }
-      s.push('<text x="' + cx.toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5A6B79">' + esc(m.label) + '</text>');
+      s.push(L(monthLink, '<text x="' + cx.toFixed(1) + '" y="' + (H - 9) + '" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5A6B79"' + (monthLink ? ' text-decoration="underline"' : "") + '>' + esc(m.label) + '</text>'));
     });
     s.push('<line x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(0).toFixed(1) + '" y2="' + y(0).toFixed(1) + '" stroke="#B0B7C3" stroke-width="1"/>');
     return s.join("") + "</svg>";
@@ -564,7 +565,7 @@
           tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g", lk("mtd_net_new")) +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
-          legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network, 0, opts.compact ? 190 : 0, lk) + "</div>" +
+          legendHTML(SERIES) + (opts.compact ? "" : '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span>") + "</div></div>" + chartSVG(sub.months, opts.compact ? 0 : sub.network, 0, opts.compact ? 170 : 0, lk) + "</div>" +
         '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + (opts.compact ? "" : playsPanel("Plays", sub.plays)) + "</div></div>";
   }
   function renderAE() {

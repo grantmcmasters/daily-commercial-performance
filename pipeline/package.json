@@ -1,0 +1,13 @@
+{
+  "name": "dcp-pipeline",
+  "version": "1.0.0",
+  "description": "Headless slide export for the Daily Commercial Performance dashboard",
+  "type": "commonjs",
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "jsdom": "^24.1.3",
+    "jspdf": "^2.5.1",
+    "svg2pdf.js": "^2.2.4"
+  },
+  "private": true
+}

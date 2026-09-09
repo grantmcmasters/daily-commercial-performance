@@ -2,3 +2,9 @@
 Thumbs.db
 __pycache__/
 .env
+pipeline/node_modules/
+deck.pdf
+summary.md
+summary.html
+email.eml
+prev.js

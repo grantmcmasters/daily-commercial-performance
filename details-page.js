@@ -1,6 +1,7 @@
 /* Daily Commercial Performance: the Details list.
-   One sentence says which practices are on the list and why; the list itself is plain. Every number on the
-   one pager links here with a metric code; the quick buttons cover the everyday views. */
+   The qualification graphic sits at the top, then the tiles of the one pager, then the list: state today,
+   the state at the end of each month this year, cases by month. Every number on the one pager links here
+   with a metric code; the tiles cover the everyday views. */
 (function () {
   "use strict";
   var D = window.DCP_DETAILS || { meta: {}, sections: {} };
@@ -8,14 +9,15 @@
   var q = new URLSearchParams(location.search);
   var SEC = q.get("sec") || "ae", KEY = q.get("key") || "", METRIC = q.get("metric") || "";
   var SECTION_NAMES = { ae: "Account Executives", am: "Account Managers", programs: "Programs" };
-  var STATE = { "0": { label: "Inactive", bg: "rgba(239,68,68,.12)", ink: "#B0362F" }, "1": { label: "Dabbler", bg: "rgba(74,190,238,.2)", ink: "#0F6BA8" },
-                "2": { label: "Core Active", bg: "rgba(24,130,199,.16)", ink: "#0F6BA8" }, "3": { label: "Super Active", bg: "rgba(5,32,48,.14)", ink: "#052030" } };
+  var STATE = { "0": { label: "Inactive", color: "#EF4444", bg: "rgba(239,68,68,.12)", ink: "#B0362F" }, "1": { label: "Dabbler", color: "#4ABEEE", bg: "rgba(74,190,238,.2)", ink: "#0F6BA8" },
+                "2": { label: "Core Active", color: "#1882C7", bg: "rgba(24,130,199,.16)", ink: "#0F6BA8" }, "3": { label: "Super Active", color: "#052030", bg: "rgba(5,32,48,.14)", ink: "#052030" } };
   var BU = { CB: "Crown and Bridge", REM: "Removables", IMP: "Implants", FA: "Full Arch", HE: "High Esthetics" };
   var months = D.meta.months || [], starts = D.meta.month_starts || [], qweeks = D.meta.qweeks || [], yweeks = D.meta.yweeks || [];
-  var quarter = D.meta.quarter || "the quarter", year = D.meta.year || "";
+  var quarter = D.meta.quarter || "the quarter";
 
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function fmtN(n) { return (n == null) ? "--" : Number(n).toLocaleString("en-US"); }
+  function fmtPct(p) { return (p == null) ? "--" : Math.round(p) + "%"; }
   function longDate(iso) { if (!iso) return ""; try { var p = iso.split("-"); return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(+p[0], +p[1] - 1, +p[2])); } catch (e) { return iso; } }
   function st(r) { return +r.st; }
   function lastIdx() { return Math.max(0, months.length - 1); }
@@ -23,6 +25,8 @@
   function inMonth(r, i) { var a = starts[i], b = starts[i + 1]; return !!(r.first && a && r.first >= a && (!b || r.first < b)); }
   function code(c) { return STATE[String(c)] ? STATE[String(c)].label : "?"; }
   function stateAt(str, i) { return (str || "").charAt(i) || "0"; }
+  var monthLabel = function (i) { return (months[i] || "that month").replace(" MTD", ""); };
+  var weekLabel = function (list, i) { var w = list[i]; return w ? "the week of " + w.label : "that week"; };
 
   var S = (D.sections[SEC] || {})[KEY];
   if (!S) {
@@ -43,8 +47,6 @@
     '<div><span class="chip chip-b">' + esc(S.owner || "") + "</span></div>";
 
   /* ---------- what a metric code means ---------- */
-  var monthLabel = function (i) { return (months[i] || "that month").replace(" MTD", ""); };
-  var weekLabel = function (list, i) { var w = list[i]; return w ? "the week of " + w.label : "that week"; };
   function up(a, b) { return +a < 2 && +b >= 2; }
   function view(m) {
     var last = lastIdx(), parts = (m || "").split(":"), k = parts[0], i = +parts[1], c = parts[2];
@@ -99,19 +101,40 @@
     return V;
   }
 
-  /* ---------- the quick views: the handful of lists a rep asks for every day ---------- */
-  function quick() {
-    var last = monthLabel(lastIdx());
-    var list = [["active", "Active today"], ["super", "Super Active"], ["core", "Core Active"], ["dabblers", "Dabblers"], ["inactive", "Inactive"], ["up30", "Became active, last 30 days"], ["down30", "Lost active status, last 30 days"], ["mtd_net_new", "New in " + last], ["submitters_ytd", "Submitted this year"]];
-    if (SEC === "am") list.push(["stayed", "Kept since " + quarter.split(" ")[0] + " start"], ["to_dabbler", "Active to dabbler this quarter"], ["to_inactive", "Active to inactive this quarter"]);
-    list.push(["total", SEC === "ae" ? "Everyone" : "Whole " + (SEC === "am" ? "book" : "program")]);
-    return list;
+  /* ---------- the tiles: the numbers of the one pager, each one a list ---------- */
+  function tiles() {
+    var rows = S.rows, active = rows.filter(function (r) { return st(r) >= 2; }).length, last = monthLabel(lastIdx());
+    if (SEC === "ae") {
+      return [
+        { key: "total", label: "Total practices", value: fmtN(S.network), sub: fmtN(rows.length) + " in our system" },
+        { key: "active", label: "Active", tone: "g" }, { key: "super", label: "Super Active", tone: "g" }, { key: "core", label: "Core Active", tone: "g" },
+        { key: "dabblers", label: "Dabblers" }, { key: "inactive", label: "Inactive", tone: "q" },
+        { key: "penetration", label: "Penetration", value: fmtPct(S.network ? 100 * active / S.network : null), sub: fmtN(active) + " / " + fmtN(S.network) + " active", tone: "d" },
+        { key: "mtd_net_new", label: "New in " + last, tone: "g" }, { key: "submitters_ytd", label: "Submitters YTD", tone: "g" }
+      ];
+    }
+    if (SEC === "am") {
+      return [
+        { key: "book", label: "Practices in the book" }, { key: "submitters_ytd", label: "Submitters YTD", tone: "g" }, { key: "cases_mtd", label: "Submitted in " + last, tone: "g" },
+        { key: "active_now", label: "Active today", tone: "g" }, { key: "dabblers", label: "Dabblers" },
+        { key: "up30", label: "Became active L30D", tone: "up" }, { key: "down30", label: "Lost active status L30D", tone: "dn" },
+        { key: "cohort", label: "Active at start of " + quarter, tone: "g" }, { key: "stayed", label: "Still active", tone: "up" },
+        { key: "to_dabbler", label: "Now dabbler" }, { key: "to_inactive", label: "Now inactive", tone: "dn" }, { key: "joined", label: "Newly active since " + quarter.split(" ")[0] + " start", tone: "up" }
+      ];
+    }
+    return [
+      { key: "book", label: "Practices in the program" }, { key: "submitters_ytd", label: "Submitters YTD", tone: "g" }, { key: "active", label: "Active", tone: "g" },
+      { key: "dabblers", label: "Dabblers" }, { key: "inactive", label: "Inactive", sub: "sent a case this year, none in 90 days", tone: "q" },
+      { key: "penetration", label: "Penetration", value: fmtPct(rows.length ? 100 * active / rows.length : null), sub: fmtN(active) + " / " + fmtN(rows.length) + " active", tone: "d" },
+      { key: "new_mtd", label: "New in " + last, tone: "g" }
+    ];
   }
-  var current = view(METRIC), sortKey = "ytd", sortDir = -1, query = "", showAll = false;
-  function renderQuick() {
-    byId("dt-quick").innerHTML = quick().map(function (qv) {
-      var n = S.rows.filter(view(qv[0]).filter).length;
-      return '<button type="button" class="tile-btn' + (current.key === qv[0] ? " on" : "") + '" data-metric="' + esc(qv[0]) + '">' + esc(qv[1]) + ' <b>' + fmtN(n) + "</b></button>";
+  var TILES = tiles(), current = view(METRIC), sortKey = "ytd", sortDir = -1, query = "", showAll = false;
+  function renderTiles() {
+    byId("dt-quick").innerHTML = TILES.map(function (m) {
+      var n = m.value != null ? m.value : fmtN(S.rows.filter(view(m.key).filter).length);
+      return '<button type="button" class="tile-btn ' + (m.tone || "") + (current.key === m.key ? " on" : "") + '" data-metric="' + esc(m.key) + '">' +
+        '<div class="n">' + esc(n) + '</div><div class="t">' + esc(m.label) + "</div>" + (m.sub ? '<div class="s">' + esc(m.sub) + "</div>" : "") + "</button>";
     }).join("");
   }
   byId("dt-quick").addEventListener("click", function (ev) {
@@ -122,7 +145,7 @@
   function select(m) {
     current = view(m); showAll = false;
     try { history.replaceState(null, "", location.pathname + "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&metric=" + encodeURIComponent(current.key)); localStorage.setItem("dcp.lastDetails", location.search); } catch (e) { /* ignore */ }
-    renderQuick(); renderTable();
+    renderTiles(); renderTable();
   }
 
   /* ---------- the list ---------- */
@@ -131,6 +154,16 @@
     var bu = r.bu || {}, keys = Object.keys(bu).sort(function (a, b) { return bu[b] - bu[a]; });
     return keys.map(function (k) { return '<span class="butag ' + (bu[k] === 3 ? "s" : "c") + '" title="' + esc(BU[k] || k) + ": " + (bu[k] === 3 ? "Super Active" : "Core Active") + '">' + esc(k) + "</span>"; }).join("");
   }
+  function movement(r) {
+    return '<span class="mv">' + (r.hist || "").split("").map(function (c, i) { var s = STATE[c] || STATE["0"]; return '<i style="background:' + s.color + '" title="' + esc(monthLabel(i)) + ": " + s.label + '"></i>'; }).join("") + "</span>";
+  }
+  function spark(r) {
+    var cm = r.cm || [], max = Math.max.apply(null, cm.concat([1])), w = 8, gap = 2, W = cm.length * (w + gap), H = 20;
+    return '<svg class="spark" viewBox="0 0 ' + W + " " + H + '" width="' + W + '" height="' + H + '">' + cm.map(function (v, i) {
+      var h = v > 0 ? Math.max(2, Math.round((v / max) * (H - 2))) : 0;
+      return '<rect x="' + (i * (w + gap)) + '" y="' + (H - h) + '" width="' + w + '" height="' + h + '" fill="#1882C7" fill-opacity="' + (i === cm.length - 1 ? 1 : 0.6) + '"><title>' + esc(monthLabel(i)) + ": " + v + "</title></rect>";
+    }).join("") + "</svg>";
+  }
   function accountURL(r) { return "account.html?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&pid=" + encodeURIComponent(r.pid) + "&metric=" + encodeURIComponent(current.key); }
   function columns() {
     var cols = [{ key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { return '<a href="' + esc(accountURL(r)) + '">' + esc(r.name) + "</a>"; }, cls: "pname" }];
@@ -138,6 +171,8 @@
       cols.push(c[2] ? { key: "ctx" + i, label: c[0], get: c[1], num: true } : { key: "ctx" + i, label: c[0], get: function (r) { return +c[1](r); }, html: function (r) { return stateChip(c[1](r)); } });
     });
     cols.push({ key: "st", label: "Today", get: function (r) { return st(r) * 10 + Object.keys(r.bu || {}).length; }, html: function (r) { return stateChip(r.st) + buTags(r); }, cls: "wrap" });
+    cols.push({ key: "hist", label: "Movement " + (months.length ? monthLabel(0) + " to " + monthLabel(lastIdx()) : "this year"), get: function (r) { return r.hist; }, html: movement, nosort: true, cls: "opt" });
+    cols.push({ key: "cm", label: "Cases by month", get: function (r) { return r.ytd; }, html: spark, nosort: true, cls: "opt" });
     cols.push({ key: "mtd", label: monthLabel(lastIdx()) + " cases", get: lastMonth, num: true });
     cols.push({ key: "ytd", label: "Cases YTD", get: function (r) { return r.ytd; }, num: true });
     return cols;
@@ -153,7 +188,7 @@
     var rows = selected(), shown = showAll ? rows : rows.slice(0, 300), cols = columns();
     byId("dt-lead").innerHTML = '<div class="lead-n">' + fmtN(rows.length) + '</div><div class="lead-t">' + esc(current.title) + (SEC === "ae" && current.key === "total" ? ' <span class="dt-note">(the network is ' + fmtN(S.network) + ")</span>" : "") + "</div>";
     byId("dt-count").innerHTML = rows.length > shown.length ? 'Showing the first ' + fmtN(shown.length) + '. <button type="button" class="linkbtn" id="dt-more">Show all ' + fmtN(rows.length) + "</button>" : "";
-    var head = "<tr>" + cols.map(function (c) { return '<th class="' + (c.num ? "r" : "") + ' sortable' + (sortKey === c.key ? " sorted" : "") + '" data-col="' + c.key + '">' + esc(c.label) + (sortKey === c.key ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>"; }).join("") + "</tr>";
+    var head = "<tr>" + cols.map(function (c) { return '<th class="' + (c.num ? "r" : "") + (c.cls === "opt" ? " opt" : "") + (c.nosort ? "" : " sortable") + (sortKey === c.key ? " sorted" : "") + '" data-col="' + c.key + '">' + esc(c.label) + (sortKey === c.key ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>"; }).join("") + "</tr>";
     var body = shown.map(function (r) {
       return '<tr class="rowlink" data-href="' + esc(accountURL(r)) + '" title="Open this practice">' + cols.map(function (c) { return '<td class="' + (c.num ? "r" : "") + (c.cls ? " " + c.cls : "") + '">' + (c.html ? c.html(r) : esc(c.get(r))) + "</td>"; }).join("") + "</tr>";
     }).join("") || '<tr><td colspan="' + cols.length + '" class="ph">No practices on this list.</td></tr>';

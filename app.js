@@ -532,12 +532,21 @@
      Account Executives (practice level)
      ============================================================ */
   var AE = (D.sections || {}).ae || null;
+  /* the list of one pagers under a section heading, and the way back up from each one */
+  function subNav(prefix, items) {
+    return '<nav class="subnav" aria-label="One pagers in this section">' + items.map(function (it) {
+      return '<a class="subpill" href="#' + prefix + "-" + esc(it.key) + '">' + esc(it.title) + "</a>";
+    }).join("") + "</nav>";
+  }
+  function subWrap(prefix, key, secId, secName, inner) {
+    return '<div class="subwrap" id="' + prefix + "-" + esc(key) + '"><a class="sub-back" href="#' + secId + '">&#8593; Back to ' + esc(secName) + "</a>" + inner + "</div>";
+  }
   function renderAE() {
     var host = byId("ae-subs");
     if (!AE || !AE.subsections || !AE.subsections.length) return;
-    host.innerHTML = AE.subsections.map(function (sub) {
+    host.innerHTML = subNav("ae", AE.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + AE.subsections.map(function (sub) {
       var c = sub.cards, lk = function (m) { return detailsURL("ae", sub.key, m); };
-      return '<div class="sub card" id="ae-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
+      return subWrap("ae", sub.key, "account-executives", "Account Executives", '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
         '<div class="head-right">' + detailsButton("ae", sub.key) + '<span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
@@ -550,7 +559,7 @@
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
           legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network, 0, 0, lk) + "</div>" +
-        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + playsPanel("Plays", sub.plays) + "</div></div>";
+        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + playsPanel("Plays", sub.plays) + "</div></div>");
     }).join("");
   }
 
@@ -574,9 +583,9 @@
   function renderAM() {
     var host = byId("am-subs");
     if (!AM || !AM.subsections || !AM.subsections.length) return;
-    host.innerHTML = AM.subsections.map(function (sub) {
+    host.innerHTML = subNav("am", AM.subsections.map(function (s) { return { key: s.key, title: s.name }; })) + AM.subsections.map(function (sub) {
       var c = sub.cards, dly = sub.daily, lk = function (m) { return detailsURL("am", sub.key, m); };
-      return '<div class="sub card" id="am-' + esc(sub.key) + '" data-sub="' + esc(sub.key) + '">' +
+      return subWrap("am", sub.key, "account-managers", "Account Managers", '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand"><div class="sub-logos"><div class="logo-cell">' + (sub.logos || []).map(function (p) { return logoImg(p, sub.label, sub.logos.length > 1); }).join("") +
           (sub.logo_tag ? '<span class="logo-tag">' + esc(sub.logo_tag) + "</span>" : "") + "</div></div>" +
           '<div class="sub-title">' + esc(sub.name) + "</div></div>" +
@@ -592,7 +601,7 @@
           '<div class="panel"><div class="chart-head"><div class="panel-title">Active Book Maintenance, ' + esc(shortQ(sub.retention.quarter)) + '</div></div>' + retentionSVG(sub.retention, 470, 470, lk) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' + revenueLegend(sub) + "</div></div>" + lineSVG(sub.revenue, 470, 400, 1.5) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 470, 400, 1.5, lk) + "</div>" +
-        "</div></div>";
+        "</div></div>");
     }).join("");
   }
 
@@ -604,9 +613,9 @@
   function renderPrograms() {
     var host = byId("pg-subs");
     if (!PG || !PG.subsections || !PG.subsections.length) return;
-    host.innerHTML = PG.subsections.map(function (sub) {
+    host.innerHTML = subNav("pg", PG.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + PG.subsections.map(function (sub) {
       var c = sub.cards, lk = function (m) { return detailsURL("programs", sub.key, m); };
-      return '<div class="sub card" id="pg-' + esc(sub.key) + '" data-sub="pg-' + esc(sub.key) + '">' +
+      return subWrap("pg", sub.key, "programs", "Programs", '<div class="sub card" data-sub="pg-' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
         '<div class="head-right">' + detailsButton("programs", sub.key) + '<span class="chip chip-b">Marketing</span></div></div>' +
@@ -624,7 +633,7 @@
         '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true, lk) +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 560, 420, 1.5, lk) + "</div></div>" +
         playsPanel("Plays: initiatives and growth", sub.plays, "plays-wide") +
-      "</div>";
+      "</div>");
     }).join("");
   }
 
@@ -1098,6 +1107,6 @@
   /* arriving from Details or the drilldown: land on that exact one pager (it only exists once the page has rendered) */
   if (/^#(ae|am|pg)-/.test(location.hash)) {
     var target = document.getElementById(location.hash.slice(1));
-    if (target) setTimeout(function () { spy(); target.scrollIntoView({ block: "start" }); setTimeout(spy, 400); }, 60);
+    if (target && target.scrollIntoView) setTimeout(function () { spy(); target.scrollIntoView({ block: "start" }); setTimeout(spy, 400); }, 60);
   }
 })();

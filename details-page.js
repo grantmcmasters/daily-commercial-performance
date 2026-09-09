@@ -115,11 +115,14 @@
       return '<rect x="' + (i * (w + gap)) + '" y="' + (H - h) + '" width="' + w + '" height="' + h + '" fill="#1882C7" fill-opacity="' + (i === cm.length - 1 ? 1 : 0.62) + '"><title>' + esc(months[i] || "") + ": " + v + "</title></rect>";
     }).join("") + "</svg>";
   }
+  var BU = { CB: "Crown and Bridge", REM: "Removables", IMP: "Implants", FA: "Full Arch", HE: "High Esthetics" };
+  function buTags(r) {
+    var bu = r.bu || {}, keys = Object.keys(bu).sort(function (a, b) { return bu[b] - bu[a]; });
+    return keys.map(function (k) { return '<span class="butag ' + (bu[k] === 3 ? "s" : "c") + '" title="' + esc(BU[k] || k) + ": " + (bu[k] === 3 ? "Super Active" : "Core Active") + '">' + esc(k) + "</span>"; }).join("");
+  }
   var COLS = [
-    { key: "pid", label: "Practice ID", get: function (r) { return r.pid; } },
     { key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { return '<a href="' + esc(accountURL(r)) + '">' + esc(r.name) + "</a>"; }, cls: "pname" },
-    { key: "acc", label: "Accounts", get: function (r) { return (r.acc || []).join(", "); }, cls: "wrap" },
-    { key: "st", label: "State today", get: function (r) { return st(r); }, html: function (r) { return stateChip(r.st); } },
+    { key: "st", label: "State today", get: function (r) { return st(r) * 10 + Object.keys(r.bu || {}).length; }, html: function (r) { return stateChip(r.st) + buTags(r); }, cls: "wrap" },
     { key: "hist", label: "Movement " + (months.length ? months[0] + " to " + months[months.length - 1] : "this year"), get: function (r) { return r.hist; }, html: movement, nosort: true },
     { key: "cm", label: "Cases by month", get: function (r) { return r.ytd; }, html: spark, nosort: true },
     { key: "mtd", label: months.length ? months[months.length - 1] : "MTD", get: lastMonth, num: true },
@@ -162,14 +165,14 @@
 
   /* ---------- export: a csv that opens straight in Excel ---------- */
   byId("dt-export").addEventListener("click", function () {
-    var rows = selected(), head = ["Practice ID", "Practice", "Accounts", "State today", "Active at " + (S.quarter ? "start of " + S.quarter : "quarter start"), "State 30 days ago"]
+    var rows = selected(), head = ["Practice ID", "Practice", "Accounts", "State today", "Business units at the bar", "Active at " + (S.quarter ? "start of " + S.quarter : "quarter start"), "State 30 days ago"]
       .concat(months.map(function (m) { return "State end of " + m; }))
       .concat(months.map(function (m) { return "Cases " + m; }))
       .concat(["Cases YTD", "Cases last 90 days", "Cases prior 90 days", "First case", "Last case", "New this month"]);
     function cell(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
     var lines = [head.map(cell).join(",")];
     rows.forEach(function (r) {
-      var vals = [r.pid, r.name, (r.acc || []).join("; "), STATE[r.st].label, STATE[r.q0].label, STATE[r.l30].label]
+      var vals = [r.pid, r.name, (r.acc || []).join("; "), STATE[r.st].label, Object.keys(r.bu || {}).map(function (k) { return (BU[k] || k) + " " + (r.bu[k] === 3 ? "Super" : "Core"); }).join("; "), STATE[r.q0].label, STATE[r.l30].label]
         .concat((r.hist || "").split("").map(function (c) { return STATE[c].label; }))
         .concat(r.cm || [])
         .concat([r.ytd, r.c90, r.p90, r.first || "", r.last || "", r["new"] ? "Yes" : "No"]);

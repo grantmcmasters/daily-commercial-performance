@@ -345,11 +345,18 @@ def practice_rows(ids, E, months, names, accts):
     for pid in ids:
         e = E.get(pid)
         if e is None or not e.dates:
-            rows.append({"pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "st": "0", "q0": "0", "l30": "0",
+            rows.append({"pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "bu": {}, "st": "0", "q0": "0", "l30": "0",
                          "hist": "0" * len(months), "cm": [0] * len(months), "ytd": 0, "c90": 0, "p90": 0, "first": None, "last": None, "new": 0})
             continue
+        bu = {}
+        for ln, lst in e.by_line.items():
+            q1, q2 = e._count(lst, s90, RUN_DATE), e._count(lst, s180, s90)
+            if q1 >= SA_T[ln] and q2 >= SA_T[ln]:
+                bu[ln] = 3
+            elif q1 >= CORE_T[ln]:
+                bu[ln] = 2
         rows.append({
-            "pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []),
+            "pid": pid, "name": names.get(pid, ""), "acc": accts.get(pid, []), "bu": bu,
             "st": STATE_CH[e.level(RUN_DATE)], "q0": STATE_CH[e.level(RQ0)], "l30": STATE_CH[e.level(s30)],
             "hist": "".join(STATE_CH[e.level(s)] for s in snaps),
             "cm": [e.cases_between(m0, s) for _, m0, s in months],

@@ -34,6 +34,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+html,body{overflow-x:hidden}
 body{background:var(--bg);color:var(--ink);font-family:var(--head);font-size:14px;line-height:1.55}
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 a{color:inherit}
@@ -171,11 +172,12 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
 .mx.dense th{font-size:8.5px;padding:3px 1px}
 .panel{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
 .panel .panel-title{margin-bottom:8px}
-.mx-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mx-wrap{overflow:visible}
+.mx + .mx{margin-top:10px}
 .mx{width:100%;border-collapse:separate;border-spacing:2px;font-size:12.5px;font-variant-numeric:tabular-nums}
 .mx th{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);font-weight:700;padding:4px 2px;text-align:center;white-space:nowrap}
 .mx th:first-child{text-align:left}
-.mx td{padding:6px 4px;text-align:center;border-radius:5px;font-weight:700;min-width:38px}
+.mx td{padding:6px 3px;text-align:center;border-radius:5px;font-weight:700;min-width:0}
 .mx td.lbl{text-align:left;font-weight:700;color:var(--ink);white-space:nowrap;padding-left:2px;background:transparent}
 .mx td.lbl small{display:block;font-weight:600;color:var(--ink2);font-size:9.5px;letter-spacing:0}
 .mx tr.grp td{border-top:6px solid transparent}
@@ -267,11 +269,11 @@ a.b3t.link:hover{border-color:var(--killian);box-shadow:0 0 0 2px rgba(24,130,19
     <div class="card about" id="about-body"></div>
   </section>
 
-  <div class="footer"><span class="num" id="build-tag">Build v0.11.1</span></div>
+  <div class="footer"><span class="num" id="build-tag">Build v0.11.2</span></div>
 
 </main>
 
 <script src="data.js"></script>
-<script src="app.js?v=0.11.1"></script>
+<script src="app.js?v=0.11.2"></script>
 </body>
 </html>

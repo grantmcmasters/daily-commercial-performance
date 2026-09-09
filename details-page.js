@@ -118,16 +118,12 @@
   var COLS = [
     { key: "pid", label: "Practice ID", get: function (r) { return r.pid; } },
     { key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { return '<a href="' + esc(accountURL(r)) + '">' + esc(r.name) + "</a>"; }, cls: "pname" },
-    { key: "acc", label: "Accounts", get: function (r) { return (r.acc || []).join(", "); } },
+    { key: "acc", label: "Accounts", get: function (r) { return (r.acc || []).join(", "); }, cls: "wrap" },
     { key: "st", label: "State today", get: function (r) { return st(r); }, html: function (r) { return stateChip(r.st); } },
     { key: "hist", label: "Movement " + (months.length ? months[0] + " to " + months[months.length - 1] : "this year"), get: function (r) { return r.hist; }, html: movement, nosort: true },
     { key: "cm", label: "Cases by month", get: function (r) { return r.ytd; }, html: spark, nosort: true },
     { key: "mtd", label: months.length ? months[months.length - 1] : "MTD", get: lastMonth, num: true },
-    { key: "ytd", label: "YTD", get: function (r) { return r.ytd; }, num: true },
-    { key: "c90", label: "Last 90 days", get: function (r) { return r.c90; }, num: true },
-    { key: "p90", label: "Prior 90 days", get: function (r) { return r.p90; }, num: true },
-    { key: "first", label: "First case", get: function (r) { return r.first || ""; }, html: function (r) { return esc(longDate(r.first)); } },
-    { key: "last", label: "Last case", get: function (r) { return r.last || ""; }, html: function (r) { return esc(longDate(r.last)); } }
+    { key: "ytd", label: "YTD", get: function (r) { return r.ytd; }, num: true }
   ];
   function accountURL(r) { return "account.html?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&pid=" + encodeURIComponent(r.pid) + (current ? "&metric=" + current.key : ""); }
   function matches(r) {

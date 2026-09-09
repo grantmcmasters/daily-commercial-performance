@@ -464,18 +464,24 @@
   }
   /* dabbler cells: a quiet blue ramp, darker where the row has relatively more dabblers */
   function blueShade(v, lo, hi) { return 0.08 + 0.32 * (hi > lo ? (v - lo) / (hi - lo) : 0.5); }
+  /* wide tables (a year of weeks) are split into stacked blocks of at most 13 columns; nothing scrolls sideways */
   function statesTableHTML(t) {
-    var h = '<table class="mx' + (t.columns.length > 14 ? " dense" : "") + '"><thead><tr><th>State at ' + esc(t.kind) + ' end</th>' + t.columns.map(function (c) { return "<th>" + esc(c.label) + (c.partial ? "*" : "") + "</th>"; }).join("") + "</tr></thead><tbody>";
-    t.rows.forEach(function (r) {
-      h += '<tr><td class="lbl">' + esc(r.label) + "</td>";
-      var lo = Math.min.apply(null, r.values), hi = Math.max.apply(null, r.values);
-      r.values.forEach(function (v, i) {
-        var d = r.deltas[i], style = r.tone === "neutral" ? "background:rgba(24,130,199," + blueShade(v, lo, hi).toFixed(2) + ");color:#0C2C4D" : deltaStyle(r.tone, d);
-        h += '<td style="' + style + '">' + fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + signed(d) + "</small>") + "</td>";
+    var n = t.columns.length, per = n > 13 ? Math.ceil(n / Math.ceil(n / 13)) : n, out = "";
+    for (var start = 0; start < n; start += per) {
+      var end = Math.min(n, start + per);
+      var h = '<table class="mx' + (n > 13 ? " dense" : "") + '"><thead><tr><th>State at ' + esc(t.kind) + ' end</th>' + t.columns.slice(start, end).map(function (c) { return "<th>" + esc(c.label) + (c.partial ? "*" : "") + "</th>"; }).join("") + "</tr></thead><tbody>";
+      t.rows.forEach(function (r) {
+        h += '<tr><td class="lbl">' + esc(r.label) + "</td>";
+        var lo = Math.min.apply(null, r.values), hi = Math.max.apply(null, r.values);
+        r.values.slice(start, end).forEach(function (v, j) {
+          var d = r.deltas[start + j], style = r.tone === "neutral" ? "background:rgba(24,130,199," + blueShade(v, lo, hi).toFixed(2) + ");color:#0C2C4D" : deltaStyle(r.tone, d);
+          h += '<td style="' + style + '">' + fmtN(v) + (d == null || d === 0 ? "" : '<small style="display:block;font-size:9.5px;font-weight:700">' + signed(d) + "</small>") + "</td>";
+        });
+        h += "</tr>";
       });
-      h += "</tr>";
-    });
-    return h + "</tbody></table>";
+      out += h + "</tbody></table>";
+    }
+    return out;
   }
   function statesTitle(t) { return (t.kind === "month" ? "Month over month, " : "Week over week, ") + t.range_label; }
   function statesPanel(id, states, large) {

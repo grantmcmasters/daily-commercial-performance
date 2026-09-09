@@ -1,18 +1,23 @@
 """Send the morning email: the summary in the body, the deck attached, a link to the live page.
 
-Sends through Gmail with an app password by default (no domain setup needed); any SMTP server works,
-for example smtp.office365.com on port 587 when the Microsoft 365 tenant allows SMTP AUTH for the mailbox.
+Two ways to send, picked from the environment:
+  * Microsoft Graph (preferred for a Microsoft 365 mailbox): set MS_TENANT_ID, MS_CLIENT_ID, MS_CLIENT_SECRET for an app
+    registration with the Mail.Send application permission, and MAIL_FROM = the mailbox to send from.
+  * SMTP (Gmail app password by default; smtp.office365.com on 587 if the tenant still allows SMTP AUTH): MAIL_FROM,
+    MAIL_PASSWORD, optional MAIL_SMTP_HOST (smtp.gmail.com) and MAIL_SMTP_PORT (465 = SSL, 587 = STARTTLS).
 
 usage: python pipeline/send_mail.py [--summary summary.html] [--pdf deck.pdf] [--to a@x.com,b@y.com] [--dry-run]
-env:   MAIL_FROM (the sending address), MAIL_PASSWORD (or GMAIL_APP_PASSWORD), MAIL_TO (comma separated),
-       optional MAIL_SMTP_HOST (smtp.gmail.com), MAIL_SMTP_PORT (465 = SSL, 587 = STARTTLS), MAIL_SUBJECT_PREFIX, DCP_URL
+env:   MAIL_TO (comma separated) plus one of the sets above; optional MAIL_SUBJECT_PREFIX, DCP_URL
 """
 import argparse
 import datetime as dt
 import json
 import os
+import base64
 import smtplib
 import sys
+import urllib.parse
+import urllib.request
 from email.message import EmailMessage
 from email.utils import formataddr
 
@@ -56,6 +61,36 @@ def build(summary_html, pdf_path, sender, recipients, subject):
     return msg
 
 
+def send_graph(summary_html, pdf_path, sender, recipients, subject, tenant, client_id, client_secret):
+    """Send as the mailbox through Microsoft Graph (client credentials, Mail.Send)."""
+    token_req = urllib.request.Request(
+        f"https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token",
+        data=urllib.parse.urlencode({"client_id": client_id, "client_secret": client_secret, "scope": "https://graph.microsoft.com/.default", "grant_type": "client_credentials"}).encode("utf8"),
+        method="POST")
+    with urllib.request.urlopen(token_req, timeout=60) as r:
+        token = json.loads(r.read().decode("utf8"))["access_token"]
+    msg = build(summary_html, pdf_path, sender, recipients, subject)
+    html_part = msg.get_body(preferencelist=("html",))
+    body = {
+        "message": {
+            "subject": subject,
+            "body": {"contentType": "HTML", "content": html_part.get_content() if html_part else summary_html},
+            "toRecipients": [{"emailAddress": {"address": a}} for a in recipients],
+            "attachments": [],
+        },
+        "saveToSentItems": True,
+    }
+    if pdf_path and os.path.exists(pdf_path):
+        with open(pdf_path, "rb") as f:
+            body["message"]["attachments"].append({"@odata.type": "#microsoft.graph.fileAttachment", "name": os.path.basename(pdf_path),
+                                                   "contentType": "application/pdf", "contentBytes": base64.b64encode(f.read()).decode("ascii")})
+    req = urllib.request.Request(f"https://graph.microsoft.com/v1.0/users/{urllib.parse.quote(sender)}/sendMail",
+                                 data=json.dumps(body).encode("utf8"), method="POST",
+                                 headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return r.status
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--summary", default=os.path.join(ROOT, "summary.html"))
@@ -70,14 +105,20 @@ def main():
     recipients = [x.strip() for x in (args.to or os.environ.get("MAIL_TO", "")).split(",") if x.strip()]
     summary_html = open(args.summary, encoding="utf8").read() if os.path.exists(args.summary) else "<p>Summary unavailable this morning.</p>"
     subject = (os.environ.get("MAIL_SUBJECT_PREFIX", "") + "Daily Commercial Performance, " + data_through()).strip()
-    if not args.dry_run and (not sender or not password or not recipients):
-        print("missing MAIL_FROM, MAIL_PASSWORD or MAIL_TO", file=sys.stderr)
+    tenant, client_id, client_secret = os.environ.get("MS_TENANT_ID", ""), os.environ.get("MS_CLIENT_ID", ""), os.environ.get("MS_CLIENT_SECRET", "")
+    graph = bool(tenant and client_id and client_secret)
+    if not args.dry_run and (not sender or not recipients or not (graph or password)):
+        print("missing MAIL_FROM, MAIL_TO, and either the MS_* app registration or MAIL_PASSWORD", file=sys.stderr)
         sys.exit(1)
     msg = build(summary_html, args.pdf, sender or "sender@example.com", recipients or ["nobody@example.com"], subject)
     if args.dry_run:
         out = os.path.join(ROOT, "email.eml")
         open(out, "wb").write(bytes(msg))
         print("dry run: wrote", out, "size", os.path.getsize(out), "attachment:", os.path.exists(args.pdf))
+        return
+    if graph:
+        status = send_graph(summary_html, args.pdf, sender, recipients, subject, tenant, client_id, client_secret)
+        print("sent through Microsoft Graph as", sender, "to", ", ".join(recipients), "status", status, "attachment:", os.path.exists(args.pdf))
         return
     if port == 465:
         with smtplib.SMTP_SSL(host, port, timeout=60) as smtp:

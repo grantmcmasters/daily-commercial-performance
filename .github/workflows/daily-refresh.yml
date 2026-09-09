@@ -91,6 +91,9 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
+          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
           MAIL_SMTP_HOST: ${{ vars.MAIL_SMTP_HOST || 'smtp.gmail.com' }}
           MAIL_SMTP_PORT: ${{ vars.MAIL_SMTP_PORT || '465' }}
       - name: Keep the deck and summary for 14 days

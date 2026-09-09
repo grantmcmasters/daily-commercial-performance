@@ -136,51 +136,37 @@
   function pathKey(p) { return (+p[1] || 0) * 100 + (+p[2] || 0) * 10 + (+p[0] || 0); }
   function pathSort(fn) { return function (a, b) { return (pathKey(fn(b)) - pathKey(fn(a))) || (b.ytd - a.ytd); }; }
 
-  /* ---------- the tiles: the numbers of the one pager, each one a list ---------- */
-  function tiles() {
-    var rows = S.rows, active = rows.filter(function (r) { return st(r) >= 2; }).length, last = monthLabel(lastIdx());
-    if (SEC === "ae") {
-      return [
-        { key: "total", label: "Total practices", value: fmtN(S.network), sub: fmtN(rows.length) + " in our system" + (S.excluded ? ", " + fmtN(S.excluded) + " not offices" : "") },
-        { key: "active", label: "Active", tone: "g" }, { key: "super", label: "Super Active", tone: "g" }, { key: "core", label: "Core Active", tone: "g" },
-        { key: "dabblers", label: "Dabblers" }, { key: "inactive", label: "Inactive", tone: "q" },
-        { key: "penetration", label: "Penetration", value: fmtPct(S.network ? 100 * active / S.network : null), sub: fmtN(active) + " / " + fmtN(S.network) + " active", tone: "d" },
-        { key: "mtd_net_new", label: "New in " + last, tone: "g" }, { key: "submitters_ytd", label: "Submitters YTD", tone: "g" }
-      ];
-    }
-    if (SEC === "am") {
-      return [
-        { key: "book", label: "Practices in the book" }, { key: "submitters_ytd", label: "Submitters YTD", tone: "g" }, { key: "cases_mtd", label: "Submitted in " + last, tone: "g" },
-        { key: "active_now", label: "Active today", tone: "g" }, { key: "dabblers", label: "Dabblers" },
-        { key: "up30", label: "Became active L30D", tone: "up" }, { key: "down30", label: "Lost active status L30D", tone: "dn" },
-        { key: "cohort", label: "Active at start of " + quarter, tone: "g" }, { key: "stayed", label: "Still active", tone: "up" },
-        { key: "to_dabbler", label: "Now dabbler" }, { key: "to_inactive", label: "Now inactive", tone: "dn" }, { key: "joined", label: "Newly active since " + quarter.split(" ")[0] + " start", tone: "up" }
-      ];
-    }
-    return [
-      { key: "book", label: "Practices in the program" }, { key: "submitters_ytd", label: "Submitters YTD", tone: "g" }, { key: "active", label: "Active", tone: "g" },
-      { key: "dabblers", label: "Dabblers" }, { key: "inactive", label: "Inactive", sub: "sent a case this year, none in 90 days", tone: "q" },
-      { key: "penetration", label: "Penetration", value: fmtPct(rows.length ? 100 * active / rows.length : null), sub: fmtN(active) + " / " + fmtN(rows.length) + " active", tone: "d" },
-      { key: "new_mtd", label: "New in " + last, tone: "g" }
-    ];
+  /* ---------- the replica: the one pager itself, condensed; every number filters the list below ---------- */
+  var current = view(METRIC), sortKey = "ytd", sortDir = -1, query = "", showAll = false, replica = byId("dt-replica");
+  function metricOf(a) { var h = a.getAttribute("href") || ""; var m = /[?&]metric=([^&#]*)/.exec(h); return m ? decodeURIComponent(m[1]) : null; }
+  function markOn() {
+    if (!replica) return;
+    [].forEach.call(replica.querySelectorAll("a.on"), function (x) { x.classList.remove("on"); });
+    [].forEach.call(replica.querySelectorAll("a[href*='metric=']"), function (x) { if (metricOf(x) === current.key) x.classList.add("on"); });
   }
-  var TILES = tiles(), current = view(METRIC), sortKey = "ytd", sortDir = -1, query = "", showAll = false;
-  function renderTiles() {
-    byId("dt-quick").innerHTML = TILES.map(function (m) {
-      var n = m.value != null ? m.value : fmtN(S.rows.filter(view(m.key).filter).length);
-      return '<button type="button" class="tile-btn ' + (m.tone || "") + (current.key === m.key ? " on" : "") + '" data-metric="' + esc(m.key) + '">' +
-        '<div class="n">' + esc(n) + '</div><div class="t">' + esc(m.label) + "</div>" + (m.sub ? '<div class="s">' + esc(m.sub) + "</div>" : "") + "</button>";
-    }).join("");
+  function renderReplica() {
+    if (!replica) return;
+    if (!window.__dcpSubCard) { replica.innerHTML = ""; return; }
+    replica.innerHTML = window.__dcpSubCard(SEC, KEY, function (m) { return "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&metric=" + encodeURIComponent(m); });
+    markOn();
   }
-  byId("dt-quick").addEventListener("click", function (ev) {
-    var b = ev.target.closest ? ev.target.closest(".tile-btn") : null;
-    if (!b) return;
-    select(b.getAttribute("data-metric"));
+  if (replica) replica.addEventListener("click", function (ev) {
+    var a = ev.target.closest ? ev.target.closest("a[href*='metric=']") : null;
+    if (a) {
+      ev.preventDefault();
+      var m = metricOf(a);
+      if (m == null) return;
+      select(m);
+      var lead = byId("dt-lead");
+      if (lead && lead.scrollIntoView) lead.scrollIntoView({ block: "start", behavior: "smooth" });
+      return;
+    }
+    if (ev.target.closest && ev.target.closest(".seg button")) setTimeout(markOn, 0);   /* the state table picker re-renders its links */
   });
   function select(m) {
     current = view(m); showAll = false;
     try { history.replaceState(null, "", location.pathname + "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + "&metric=" + encodeURIComponent(current.key)); localStorage.setItem("dcp.lastDetails", location.search); } catch (e) { /* ignore */ }
-    renderTiles(); renderTable();
+    markOn(); renderTable();
   }
 
   /* ---------- the list ---------- */
@@ -270,5 +256,6 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
   });
 
+  renderReplica();
   select(METRIC);
 })();

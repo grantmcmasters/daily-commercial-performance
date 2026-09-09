@@ -549,25 +549,28 @@
   function subWrap(prefix, key, secId, secName, inner) {
     return '<div class="subwrap" id="' + prefix + "-" + esc(key) + '"><a class="sub-back" href="#' + secId + '">&#8593; Back to ' + esc(secName) + "</a>" + inner + "</div>";
   }
-  function renderAE() {
-    var host = byId("ae-subs");
-    if (!host || !AE || !AE.subsections || !AE.subsections.length) return;
-    host.innerHTML = subNav("ae", AE.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + AE.subsections.map(function (sub) {
-      var c = sub.cards, lk = function (m) { return detailsURL("ae", sub.key, m); };
-      return subWrap("ae", sub.key, "account-executives", "Account Executives", '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
+  function aeCard(sub, lk) {
+    var c = sub.cards;
+    return '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
         '<div class="head-right">' + detailsButton("ae", sub.key) + '<span class="chip chip-b">' + esc(sub.ae) + "</span></div></div>" +
         '<div class="b5row">' +
-          tile(fmtN(c.total), "Total practices", "", "", detailsURL("ae", sub.key, "total")) +
-          tile(fmtN(c.active), "Active", "", "g", detailsURL("ae", sub.key, "active")) +
-          tile(fmtN(c.dabblers), "Dabblers", "", "", detailsURL("ae", sub.key, "dabblers")) +
-          tile(fmtPct(c.penetration_pct), "Penetration", fmtN(c.active) + " / " + fmtN(c.total) + " offices currently active", "d", detailsURL("ae", sub.key, "penetration")) +
-          tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g", detailsURL("ae", sub.key, "mtd_net_new")) +
+          tile(fmtN(c.total), "Total practices", fmtN(c.in_system) + " in our system", "", lk("total")) +
+          tile(fmtN(c.active), "Active", "", "g", lk("active")) +
+          tile(fmtN(c.dabblers), "Dabblers", "", "", lk("dabblers")) +
+          tile(fmtPct(c.penetration_pct), "Penetration", fmtN(c.active) + " / " + fmtN(c.total) + " offices currently active", "d", lk("penetration")) +
+          tile(fmtN(c.mtd_net_new), "MTD net new submitters", "", "g", lk("mtd_net_new")) +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">Submitting practices by month, ' + esc(AE.year) + ' YTD</div><div class="legend">' +
           legendHTML(SERIES) + '<span><i class="dash"></i>Rest of the network (' + fmtN(sub.network) + " total)</span></div></div>" + chartSVG(sub.months, sub.network, 0, 0, lk) + "</div>" +
-        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + playsPanel("Plays", sub.plays) + "</div></div>");
+        '<div class="bottom">' + statesPanel("ae-" + sub.key, sub.states, false, lk) + playsPanel("Plays", sub.plays) + "</div></div>";
+  }
+  function renderAE() {
+    var host = byId("ae-subs");
+    if (!host || !AE || !AE.subsections || !AE.subsections.length) return;
+    host.innerHTML = subNav("ae", AE.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + AE.subsections.map(function (sub) {
+      return subWrap("ae", sub.key, "account-executives", "Account Executives", aeCard(sub, function (m) { return detailsURL("ae", sub.key, m); }));
     }).join("");
   }
 
@@ -588,28 +591,31 @@
     return sub.revenue.series.map(function (ser, i) { return '<span><i class="ln" style="background:' + LINE_COLORS[i % LINE_COLORS.length] + '"></i>' + esc(ser.name === "All" ? "Revenue / practice" : ser.name + " revenue / practice") + "</span>"; }).join("") +
       '<span><i style="background:' + CASES_COLOR + '"></i>Cases / practice</span>';
   }
-  function renderAM() {
-    var host = byId("am-subs");
-    if (!host || !AM || !AM.subsections || !AM.subsections.length) return;
-    host.innerHTML = subNav("am", AM.subsections.map(function (s) { return { key: s.key, title: s.name }; })) + AM.subsections.map(function (sub) {
-      var c = sub.cards, dly = sub.daily, lk = function (m) { return detailsURL("am", sub.key, m); };
-      return subWrap("am", sub.key, "account-managers", "Account Managers", '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
+  function amCard(sub, lk) {
+    var c = sub.cards, dly = sub.daily;
+    return '<div class="sub card" data-sub="' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand"><div class="sub-logos"><div class="logo-cell">' + (sub.logos || []).map(function (p) { return logoImg(p, sub.label, sub.logos.length > 1); }).join("") +
           (sub.logo_tag ? '<span class="logo-tag">' + esc(sub.logo_tag) + "</span>" : "") + "</div></div>" +
           '<div class="sub-title">' + esc(sub.name) + "</div></div>" +
         '<div class="head-right">' + detailsButton("am", sub.key) + '<span class="chip chip-b">' + esc(sub.label) + "</span></div></div>" +
         '<div class="b4row">' +
-          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g", detailsURL("am", sub.key, "submitters_ytd")) +
-          tileHTML(fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerHTML(c), "", detailsURL("am", sub.key, "cases_mtd")) +
-          tile("+" + fmtN(c.promoted_30), "Became active L30D", "", "up", detailsURL("am", sub.key, "up30")) +
-          tile("-" + fmtN(c.demoted_30), "Lost active status L30D", "", "dn", detailsURL("am", sub.key, "down30")) +
+          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g", lk("submitters_ytd")) +
+          tileHTML(fmtN(Math.round(c.avg_per_day_mtd)), "Cases Booked per Day, " + c.month_label + "'" + String(AM.year).slice(-2), avgTickerHTML(c), "", lk("cases_mtd")) +
+          tile("+" + fmtN(c.promoted_30), "Became active L30D", "", "up", lk("up30")) +
+          tile("-" + fmtN(c.demoted_30), "Lost active status L30D", "", "dn", lk("down30")) +
         "</div>" +
         '<div class="chart-wrap hero"><div class="chart-head"><div class="panel-title big">Case volume by business day, trailing 60 days (' + fmtN(dly.total) + ' cases)</div><div class="legend"><span><i style="background:#1882C7"></i>Cases received per day</span><span><i class="dash-gold"></i>Weekly average per business day</span></div></div>' + dailySVG(dly.days) + "</div>" +
         '<div class="am-grid3">' +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Active Book Maintenance, ' + esc(shortQ(sub.retention.quarter)) + '</div></div>' + retentionSVG(sub.retention, 470, 470, lk) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Revenue and case utilization, ' + esc(AM.year) + ' YTD</div><div class="legend">' + revenueLegend(sub) + "</div></div>" + lineSVG(sub.revenue, 470, 400, 1.5) + "</div>" +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 470, 400, 1.5, lk) + "</div>" +
-        "</div></div>");
+        "</div></div>";
+  }
+  function renderAM() {
+    var host = byId("am-subs");
+    if (!host || !AM || !AM.subsections || !AM.subsections.length) return;
+    host.innerHTML = subNav("am", AM.subsections.map(function (s) { return { key: s.key, title: s.name }; })) + AM.subsections.map(function (sub) {
+      return subWrap("am", sub.key, "account-managers", "Account Managers", amCard(sub, function (m) { return detailsURL("am", sub.key, m); }));
     }).join("");
   }
 
@@ -618,32 +624,42 @@
      ============================================================ */
   var PG = (D.sections || {}).programs || null;
   var PG_LEGEND = [{ label: "New submitters", color: GREEN }, { label: "Inactive (90+ days without a case)", color: QUIET_COLOR }, { label: "Total submitters (line, right axis)", color: "#1882C7", line: true }];
-  function renderPrograms() {
-    var host = byId("pg-subs");
-    if (!host || !PG || !PG.subsections || !PG.subsections.length) return;
-    host.innerHTML = subNav("pg", PG.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + PG.subsections.map(function (sub) {
-      var c = sub.cards, lk = function (m) { return detailsURL("programs", sub.key, m); };
-      return subWrap("pg", sub.key, "programs", "Programs", '<div class="sub card" data-sub="pg-' + esc(sub.key) + '">' +
+  function pgCard(sub, lk) {
+    var c = sub.cards;
+    return '<div class="sub card" data-sub="pg-' + esc(sub.key) + '">' +
         '<div class="sub-head"><div class="sub-brand">' + (sub.logo ? logoImg(sub.logo, sub.title) : "") +
           '<div class="sub-title">' + esc(sub.title) + "</div></div>" +
         '<div class="head-right">' + detailsButton("programs", sub.key) + '<span class="chip chip-b">Marketing</span></div></div>' +
         '<div class="pg-tiles">' +
-          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g", detailsURL("programs", sub.key, "submitters_ytd")) +
+          tile(fmtN(c.submitters_ytd), "Submitters YTD", "", "g", lk("submitters_ytd")) +
           '<div class="eq">=</div>' +
           '<div class="tile-group">' +
-            tile(fmtN(c.active), "Active", "", "g", detailsURL("programs", sub.key, "active")) +
-            tile(fmtN(c.dabblers), "Dabblers", "", "", detailsURL("programs", sub.key, "dabblers")) +
-            tile(fmtN(c.gone_quiet), "Inactive", "", "q", detailsURL("programs", sub.key, "inactive")) +
+            tile(fmtN(c.active), "Active", "", "g", lk("active")) +
+            tile(fmtN(c.dabblers), "Dabblers", "", "", lk("dabblers")) +
+            tile(fmtN(c.gone_quiet), "Inactive", "", "q", lk("inactive")) +
           "</div>" +
-          tile(fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", "d", detailsURL("programs", sub.key, "penetration")) +
+          tile(fmtPct(c.practices ? 100 * c.active / c.practices : null), "Penetration", fmtN(c.active) + " / " + fmtN(c.practices) + " offices currently active", "d", lk("penetration")) +
         "</div>" +
         '<div class="chart-wrap"><div class="chart-head"><div class="panel-title">New, inactive and total submitters by month, ' + esc(PG.year) + ' YTD</div></div>' + programFlowSVG(sub.months, 960, 420, 1.35, lk) + "</div>" +
         '<div class="bottom">' + statesPanel("pg-" + sub.key, sub.states, true, lk) +
           '<div class="panel"><div class="chart-head"><div class="panel-title">Week over week, ' + esc(sub.weekly.quarter) + '</div>' + wowLegendHTML() + "</div>" + wowSVG(sub.weekly, 560, 420, 1.5, lk) + "</div></div>" +
         playsPanel("Plays: initiatives and growth", sub.plays, "plays-wide") +
-      "</div>");
+      "</div>";
+  }
+  function renderPrograms() {
+    var host = byId("pg-subs");
+    if (!host || !PG || !PG.subsections || !PG.subsections.length) return;
+    host.innerHTML = subNav("pg", PG.subsections.map(function (s) { return { key: s.key, title: s.title }; })) + PG.subsections.map(function (sub) {
+      return subWrap("pg", sub.key, "programs", "Programs", pgCard(sub, function (m) { return detailsURL("programs", sub.key, m); }));
     }).join("");
   }
+
+  /* one subsection's card with a link function of the caller's choosing: the Details page renders it above the list */
+  window.__dcpSubCard = function (sec, key, link) {
+    var X = sec === "ae" ? AE : sec === "am" ? AM : PG, subs = (X && X.subsections) || [], sub = subs.filter(function (s) { return s.key === key; })[0];
+    if (!sub) return "";
+    return (sec === "ae" ? aeCard : sec === "am" ? amCard : pgCard)(sub, link);
+  };
 
   /* ============================================================
      About: every definition and footnote lives here

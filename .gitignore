@@ -9,3 +9,10 @@ summary.html
 email.eml
 prev.js
 summary.json
+
+# the script computer job
+.env
+state/
+out/
+logs/
+email.eml

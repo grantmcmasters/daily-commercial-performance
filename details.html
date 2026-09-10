@@ -311,6 +311,8 @@ html,body{overflow-x:hidden}
 .lead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:16px 0 4px;scroll-margin-top:96px}
 .lead-n{font-size:30px;font-weight:800;color:var(--killianink);line-height:1;font-variant-numeric:tabular-nums}
 .lead-t{font-size:16px;font-weight:700;color:var(--ink)}
+.lead .reset{margin-left:auto;font:inherit;font-size:12.5px;font-weight:800;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#FFFFFF;color:var(--killianink);cursor:pointer;transition:border-color .12s}
+.lead .reset:hover{border-color:var(--killian)}
 .dt-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
 .tile-btn{cursor:pointer;font:inherit;color:inherit;width:100%;transition:box-shadow .12s,border-color .12s;padding:9px 8px 8px;background:var(--card2);border:1px solid var(--line);border-radius:10px;text-align:center}
 .tile-btn .n{font-size:21px;font-weight:800;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums}
@@ -399,13 +401,13 @@ html,body{overflow-x:hidden}
     <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
     <p class="dt-note" style="margin-top:8px">Click a practice for its own page. Click a column heading to sort.</p>
   </div>
-  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.16.14</span></div>
+  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.16.15</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
 <script src="details.js"></script>
 <script src="data.js"></script>
-<script src="app.js?v=0.16.14"></script>
-<script src="details-page.js?v=0.16.14"></script>
+<script src="app.js?v=0.16.15"></script>
+<script src="details-page.js?v=0.16.15"></script>
 </body>
 </html>

@@ -232,7 +232,11 @@
   }
   function renderTable() {
     var rows = selected(), shown = showAll ? rows : rows.slice(0, 300), cols = columns();
-    byId("dt-lead").innerHTML = '<div class="lead-n">' + fmtN(rows.length) + '</div><div class="lead-t">' + esc(current.title) + (SEC === "ae" && current.key === "total" && S.network !== S.rows.length ? ' <span class="dt-note">(the network is ' + fmtN(S.network) + ")</span>" : "") + "</div>";
+    var isAll = current.key === "total" || current.key === "book" || current.key === "";
+    byId("dt-lead").innerHTML = '<div class="lead-n">' + fmtN(rows.length) + '</div><div class="lead-t">' + esc(current.title) + (SEC === "ae" && isAll && S.network !== S.rows.length ? ' <span class="dt-note">(the network is ' + fmtN(S.network) + ")</span>" : "") + "</div>" +
+      (isAll && !query ? "" : '<button type="button" class="reset" id="dt-reset">Reset to all practices</button>');
+    var reset = byId("dt-reset");
+    if (reset) reset.addEventListener("click", function () { query = ""; byId("dt-search").value = ""; select("total"); });
     byId("dt-count").innerHTML = rows.length > shown.length ? 'Showing the first ' + fmtN(shown.length) + '. <button type="button" class="linkbtn" id="dt-more">Show all ' + fmtN(rows.length) + "</button>" : "";
     var head = "<tr>" + cols.map(function (c) { return '<th class="' + (c.num ? "r" : "") + (c.cls === "opt" ? " opt" : "") + (c.nosort ? "" : " sortable") + (sortKey === c.key ? " sorted" : "") + '" data-col="' + c.key + '">' + esc(c.label) + (sortKey === c.key ? (sortDir > 0 ? " ▲" : " ▼") : "") + "</th>"; }).join("") + "</tr>";
     var body = shown.map(function (r) {

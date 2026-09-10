@@ -6,7 +6,7 @@ on:
   schedule:
     - cron: "0 11 * * *"   # 4:00 AM PDT
     - cron: "0 12 * * *"   # 4:00 AM PST
-    - cron: "40 2 10 9 *"  # one-off test for Grant: Sep 9, 2026 at 7:40 PM PDT (02:40 UTC Sep 10); delete after it runs
+    - cron: "0 5 10 9 *"   # one-off test for Grant: Sep 9, 2026 at 10:00 PM PDT (05:00 UTC Sep 10); delete after it runs
   workflow_dispatch:
     inputs:
       send_to:
@@ -30,7 +30,7 @@ jobs:
       - id: check
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
-          if [ "${{ github.event.schedule }}" = "40 2 10 9 *" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; echo "test=true" >> "$GITHUB_OUTPUT"; echo "one-off test run: the email goes to Grant only"; exit 0; fi
+          if [ "${{ github.event.schedule }}" = "0 5 10 9 *" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; echo "test=true" >> "$GITHUB_OUTPUT"; echo "one-off test run: the email goes to Grant only"; exit 0; fi
           # keep the cron that equals 4 AM Pacific this time of year: 11:00 UTC in daylight time, 12:00 UTC in standard time
           OFF=$(TZ=America/Los_Angeles date +%z)
           SCHED="${{ github.event.schedule }}"

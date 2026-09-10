@@ -32,8 +32,10 @@
   byId("asof").textContent = "Data through " + longDate(D.meta.data_through || D.meta.run_date);
   byId("back-list").href = backHref;
   if (S) byId("back-list").textContent = "← Back to the " + S.title + " list";
+  var dirLink = byId("dir-link"); if (dirLink) dirLink.hidden = false;
   var pd = byId("pill-details"); if (pd && S) pd.href = backHref;
-  if (!row) {
+  if (!row) { renderDirectory(); return; }
+  if (false) {
     var lastList = "details.html";
     try { lastList = "details.html" + (localStorage.getItem("dcp.lastDetails") || ""); } catch (e) { /* ignore */ }
     byId("acct").innerHTML = '<div class="card"><div class="sub-title">Pick a practice to drill into</div><p class="dt-note" style="font-size:13.5px;margin-top:6px">The Account Drilldown shows one practice at a time. Open <a href="' + esc(lastList) + '" style="color:#0F6BA8;font-weight:800">Behind the Numbers</a>, then click any practice.</p></div>';
@@ -41,6 +43,80 @@
   }
   try { localStorage.setItem("dcp.lastAccount", location.search); localStorage.setItem("dcp.lastDetails", "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + (METRIC ? "&metric=" + METRIC : "")); } catch (e) { /* ignore */ }
   document.title = row.name + " Account Page";
+
+  /* ---------- the Account Directory: every practice in our system, filtered by partner, account executive, account manager and state ---------- */
+  function renderDirectory() {
+    var Y = window.DCP_DIRECTORY, rows = (Y && Y.rows) || [], host = byId("acct");
+    document.title = "Account Directory";
+    var back = byId("back-list"); if (back) back.hidden = true;
+    if (!rows.length) { host.innerHTML = '<div class="card"><div class="sub-title">Account Directory</div><p class="dt-note" style="margin-top:6px">The directory has not been built yet; it arrives with the next data refresh.</p></div>'; return; }
+    var F = { sp: "", ae: "", am: "", st: "", q: "" }, sortKey = "ytd", sortDir = -1, showAll = false;
+    function uniq(field) { var seen = {}; rows.forEach(function (r) { (r[field] || []).forEach(function (v) { seen[v] = 1; }); }); return Object.keys(seen).sort(); }
+    var SP = uniq("sp"), AE = uniq("ae"), AMS = uniq("am");
+    function sel(id, label, opts, all) { return '<select id="' + id + '" aria-label="' + esc(label) + '"><option value="">' + esc(all) + "</option>" + opts.map(function (o) { return '<option value="' + esc(o[0]) + '">' + esc(o[1]) + "</option>"; }).join("") + "</select>"; }
+    host.innerHTML = '<div class="card"><div class="sub-head"><div><div class="dt-kicker">Every practice in our system</div><div class="sub-title">Account Directory</div></div><span class="chip chip-gold dir-bubble">Account Directory</span></div>' +
+      '<div class="dir-filters">' + sel("dir-sp", "Partner", SP.map(function (v) { return [v, v]; }), "All partners") + sel("dir-ae", "Account executive", AE.map(function (v) { return [v, v]; }), "All account executives") +
+      sel("dir-am", "Account manager", AMS.map(function (v) { return [v, v]; }), "All account managers") + sel("dir-st", "State today", [["3", "Super Active"], ["2", "Core Active"], ["1", "Dabbler"], ["0", "Inactive"]], "All states") +
+      '<input type="search" id="dir-q" placeholder="Search a practice or account number" aria-label="Search">' + '<button type="button" class="btn small" id="dir-export">Export to Excel</button></div>' +
+      '<div class="lead" id="dir-lead"></div><div class="dt-wrap"><table class="dt" id="dir-table"></table></div><div class="dt-count" id="dir-count"></div>' +
+      '<p class="dt-note" style="margin-top:8px">Click a practice for its own page. The state is across every case the practice sends; a practice on two partner lists shows both.</p></div>';
+    function pageURL(r) { return r.sec ? "account.html?sec=" + r.sec + "&key=" + encodeURIComponent(r.key) + "&pid=" + encodeURIComponent(r.pid) : null; }
+    var COLS = [
+      { key: "name", label: "Practice", get: function (r) { return r.name; }, html: function (r) { var u = pageURL(r), nm = r.name || r.pid; return u ? '<a href="' + esc(u) + '">' + esc(nm) + "</a>" : "<b>" + esc(nm) + "</b>"; }, cls: "pname" },
+      { key: "sp", label: "Partner", get: function (r) { return (r.sp || []).join(", "); }, cls: "wrap" },
+      { key: "ae", label: "Account executive", get: function (r) { return (r.ae || []).join(", "); }, cls: "wrap" },
+      { key: "am", label: "Account manager", get: function (r) { return (r.am || []).join(", "); }, cls: "wrap" },
+      { key: "st", label: "Today", get: function (r) { return +r.st; }, html: function (r) { return stateChip(r.st); } },
+      { key: "ytd", label: "Cases YTD", get: function (r) { return r.ytd; }, num: true },
+      { key: "last", label: "Last case", get: function (r) { return r.last || ""; }, html: function (r) { return r.last ? esc(longDate(r.last)) : '<span class="dt-note">none</span>'; } }
+    ];
+    function selected() {
+      var q = F.q.toLowerCase();
+      var out = rows.filter(function (r) {
+        return (!F.sp || (r.sp || []).indexOf(F.sp) >= 0) && (!F.ae || (r.ae || []).indexOf(F.ae) >= 0) && (!F.am || (r.am || []).indexOf(F.am) >= 0) && (!F.st || r.st === F.st) &&
+          (!q || (r.pid + " " + r.name + " " + (r.acc || []).join(" ")).toLowerCase().indexOf(q) >= 0);
+      });
+      var col = COLS.filter(function (c) { return c.key === sortKey; })[0];
+      if (col) out.sort(function (a, b2) { var x = col.get(a), y = col.get(b2); if (x == null) x = ""; if (y == null) y = ""; return (x < y ? -1 : x > y ? 1 : 0) * sortDir || (b2.ytd - a.ytd); });
+      return out;
+    }
+    function render() {
+      var list = selected(), shown = showAll ? list : list.slice(0, 300), filtered = F.sp || F.ae || F.am || F.st || F.q;
+      var what = [F.sp, F.ae, F.am, F.st ? { "3": "Super Active", "2": "Core Active", "1": "Dabbler", "0": "Inactive" }[F.st] : "", F.q ? '"' + F.q + '"' : ""].filter(Boolean).join(" \u00b7 ");
+      byId("dir-lead").innerHTML = '<div class="lead-n">' + fmtN(list.length) + '</div><div class="lead-t">' + (filtered ? esc(what) : "Every practice in our system") + "</div>" + (filtered ? '<button type="button" class="reset" id="dir-reset">Reset to all practices</button>' : "");
+      var head = "<tr>" + COLS.map(function (c) { return '<th class="' + (c.num ? "r" : "") + ' sortable' + (sortKey === c.key ? " sorted" : "") + '" data-col="' + c.key + '">' + esc(c.label) + (sortKey === c.key ? (sortDir > 0 ? " \u25b2" : " \u25bc") : "") + "</th>"; }).join("") + "</tr>";
+      var body = shown.map(function (r) {
+        var u = pageURL(r);
+        return '<tr class="' + (u ? "rowlink" : "") + '"' + (u ? ' data-href="' + esc(u) + '" title="Open this practice"' : "") + ">" + COLS.map(function (c) { return '<td class="' + (c.num ? "r" : "") + (c.cls ? " " + c.cls : "") + '">' + (c.html ? c.html(r) : esc(c.get(r))) + "</td>"; }).join("") + "</tr>";
+      }).join("") || '<tr><td colspan="' + COLS.length + '" class="ph">No practices match.</td></tr>';
+      byId("dir-table").innerHTML = "<thead>" + head + "</thead><tbody>" + body + "</tbody>";
+      byId("dir-count").innerHTML = list.length > shown.length ? "Showing the first " + fmtN(shown.length) + '. <button type="button" class="linkbtn" id="dir-more">Show all ' + fmtN(list.length) + "</button>" : "";
+      var more = byId("dir-more"); if (more) more.addEventListener("click", function () { showAll = true; render(); });
+      var reset = byId("dir-reset"); if (reset) reset.addEventListener("click", function () { F = { sp: "", ae: "", am: "", st: "", q: "" }; ["dir-sp", "dir-ae", "dir-am", "dir-st", "dir-q"].forEach(function (id) { byId(id).value = ""; }); showAll = false; render(); });
+    }
+    [["dir-sp", "sp"], ["dir-ae", "ae"], ["dir-am", "am"], ["dir-st", "st"]].forEach(function (pair) { byId(pair[0]).addEventListener("change", function (ev) { F[pair[1]] = ev.target.value; showAll = false; render(); }); });
+    byId("dir-q").addEventListener("input", function (ev) { F.q = ev.target.value.trim(); showAll = false; render(); });
+    byId("dir-table").addEventListener("click", function (ev) {
+      var tr = ev.target.closest ? ev.target.closest("tr.rowlink") : null;
+      if (tr && !(ev.target.closest && ev.target.closest("a"))) { location.href = tr.getAttribute("data-href"); return; }
+      var th = ev.target.closest ? ev.target.closest("th.sortable") : null;
+      if (!th) return;
+      var k = th.getAttribute("data-col");
+      if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = k === "ytd" || k === "st" || k === "last" ? -1 : 1; }
+      render();
+    });
+    byId("dir-export").addEventListener("click", function () {
+      var list = selected(), head = ["Practice ID", "Practice", "Partner", "Account executive", "Account manager", "Accounts", "State today", "Cases YTD", "Cases last 90 days", "Last case"];
+      function cell(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+      var lines = [head.map(cell).join(",")];
+      list.forEach(function (r) { lines.push([r.pid, r.name, (r.sp || []).join("; "), (r.ae || []).join("; "), (r.am || []).join("; "), (r.acc || []).join("; "), (STATE[r.st] || STATE["0"]).label, r.ytd, r.c90, r.last || ""].map(cell).join(",")); });
+      var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }), a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); a.download = ("Account Directory - " + (Y.meta.data_through || "")).replace(/[\\/:*?"<>|]/g, " ") + ".csv";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    });
+    render();
+  }
 
   /* ---------- pieces ---------- */
   function stateChip(code, big) { var s = STATE[code] || STATE["0"]; return '<span class="stchip' + (big ? " big" : "") + '" style="background:' + s.bg + ';color:' + s.ink + '">' + s.label + "</span>"; }

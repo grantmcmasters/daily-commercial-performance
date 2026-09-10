@@ -1110,6 +1110,57 @@ def sanitize(text):
                 .replace("\\u2014", ", ").replace("\\u2013", "-"))
 
 
+def build_directory(P):
+    """One row per practice in our system for the Account Directory: partners, account executive, account manager,
+    the state today across every case the practice sends, cases YTD, the last case, and the page that opens it."""
+    scope, counted = P["scope"], P["counted"]
+    ae_of = {p["partner"]: p["ae"] for p in PARTNERS}
+    recs = {}
+    for an, s in scope.items():
+        r = recs.setdefault(s["pid"], {"pid": s["pid"], "name": s["name"], "sp": set(), "ae": set(), "am": set(), "acc": []})
+        if not r["name"] and s["name"]:
+            r["name"] = s["name"]
+        if s["sp"]:
+            r["sp"].add(s["sp"])
+        if s["sp"] in ae_of:
+            r["ae"].add(ae_of[s["sp"]])
+        if s["amc"] and not s["amc"].startswith("(x)"):
+            r["am"].add(s["amc"])
+        r["acc"].append(an)
+    ents = defaultdict(Entity)
+    for d, line, sp_, pid, amc, cn in counted:
+        ents[pid].add(d, line)
+    for e in ents.values():
+        e.finish()
+    s90 = RUN_DATE - dt.timedelta(days=90)
+    in_list = {}                                   # the page that opens the practice: its partner list first, then a book, then a program
+    for sec in ("ae", "am", "programs"):
+        for key, v in DETAILS.get(sec, {}).items():
+            for row in v["rows"]:
+                in_list.setdefault(row["pid"], (sec, key))
+    unlisted = sorted(pid for pid, r in recs.items() if pid not in in_list and not any(not_office(sp_, pid, r["name"]) for sp_ in r["sp"]))
+    if unlisted:
+        names = {pid: recs[pid]["name"] for pid in unlisted}
+        accts = {pid: list(recs[pid]["acc"]) for pid in unlisted}
+        DETAILS["other"] = {"unlisted": {"title": "Other practices", "owner": "No partner list or account manager book", "logo": None, "network": len(unlisted), "in_system": len(unlisted),
+                                         "rows": practice_rows(unlisted, {pid: ents[pid] for pid in unlisted if pid in ents}, ytd_months(RUN_DATE), names, accts)}}
+        for pid in unlisted:
+            in_list[pid] = ("other", "unlisted")
+    out = []
+    for pid, r in recs.items():
+        if any(not_office(sp_, pid, r["name"]) for sp_ in r["sp"]):
+            continue
+        e = ents.get(pid)
+        has = bool(e and e.dates)
+        ref = in_list.get(pid)
+        out.append({"pid": pid, "name": r["name"], "sp": sorted(r["sp"]), "ae": sorted(r["ae"]), "am": sorted(r["am"]), "acc": r["acc"],
+                    "st": STATE_CH[e.level(RUN_DATE)] if has else "0", "ytd": e.cases_between(JAN1, RUN_DATE) if has else 0,
+                    "c90": e.cases_between(s90, RUN_DATE) if has else 0, "last": e.dates[-1].isoformat() if has else None,
+                    "sec": ref[0] if ref else None, "key": ref[1] if ref else None})
+    out.sort(key=lambda x: (-x["ytd"], x["name"]))
+    return out
+
+
 def main():
     out = os.environ.get("DCP_OUT") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data.js")
     now_utc = dt.datetime.now(dt.timezone.utc)
@@ -1128,6 +1179,7 @@ def main():
             "programs": build_programs(P),
         },
     }
+    directory = build_directory(P)
     ah_meta, ah_by_id, ah_cases = load_health()
     write_health_files(os.path.dirname(os.path.abspath(out)), ah_meta or {}, ah_by_id, ah_cases)
     qw, yw = period_bounds("week", "quarter", RUN_DATE), period_bounds("week", "year", RUN_DATE)
@@ -1136,6 +1188,11 @@ def main():
                             qweeks=[{"label": l, "start": a.isoformat(), "end": b.isoformat(), "partial": pt} for l, a, b, pt in qw],
                             yweeks=[{"label": l, "start": a.isoformat(), "end": b.isoformat(), "partial": pt} for l, a, b, pt in yw],
                             year=RUN_DATE.year, health=ah_meta), "sections": DETAILS}
+    ypath = os.path.join(os.path.dirname(os.path.abspath(out)), "directory.js")
+    ybody = "window.DCP_DIRECTORY = " + sanitize(json.dumps({"meta": {"run_date": RUN_DATE.isoformat(), "data_through": (RUN_DATE - DAY).isoformat()}, "rows": directory}, ensure_ascii=True, separators=(",", ":"))) + ";\n"
+    with open(ypath, "w", encoding="utf8", newline="\n") as f:
+        f.write(ybody)
+    print(f"wrote {ypath} ({len(ybody):,} bytes; {len(directory):,} practices in the directory)", flush=True)
     dpath = os.path.join(os.path.dirname(os.path.abspath(out)), "details.js")
     dbody = "window.DCP_DETAILS = " + sanitize(json.dumps(details, ensure_ascii=True, separators=(",", ":"))) + ";\n"
     with open(dpath, "w", encoding="utf8", newline="\n") as f:

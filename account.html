@@ -336,6 +336,27 @@ html,body{overflow-x:hidden}
 .xbtn{font:inherit;font-weight:700;font-size:12px;color:var(--killianink);border:1px solid var(--line);border-radius:8px;padding:7px 14px;background:var(--card2);cursor:pointer;margin-top:8px}
 .xbtn:hover{border-color:var(--killian);color:var(--ink)}
 .dt td.wrap{white-space:normal}
+/* the directory */
+.dir-bubble{font-size:15px;padding:8px 22px;letter-spacing:.06em;text-transform:uppercase}
+.chip-gold{background:var(--gold);color:#052030}
+.dt-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-bottom:2px}
+.dir-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 4px}
+.dir-filters select,.dir-filters input{font:inherit;font-size:13px;padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:#FFFFFF;color:var(--ink)}
+.dir-filters input{flex:1;min-width:220px}
+.dir-filters .btn.small{margin-left:auto;padding:8px 14px;font-size:12.5px}
+.lead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:14px 0 6px}
+.lead-n{font-size:30px;font-weight:800;color:var(--killianink);line-height:1;font-variant-numeric:tabular-nums}
+.lead-t{font-size:16px;font-weight:700;color:var(--ink)}
+.lead .reset{margin-left:auto;font:inherit;font-size:12.5px;font-weight:800;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:#FFFFFF;color:var(--killianink);cursor:pointer}
+.lead .reset:hover{border-color:var(--killian)}
+.dt th.sortable{cursor:pointer}
+.dt th.sortable:hover,.dt th.sorted{color:var(--killianink)}
+.dt tr.rowlink{cursor:pointer}
+.dt tr:hover td{background:#F7FBFE}
+.dt td.pname a{color:var(--killianink);font-weight:800;text-decoration:none}
+.dt td.ph{color:var(--silver);text-align:center;padding:24px}
+.dt-count{font-size:12.5px;color:var(--ink2);margin-top:8px}
+.linkbtn{font:inherit;font-size:12px;font-weight:700;color:var(--killianink);text-decoration:underline;padding:0 4px;cursor:pointer;background:none;border:0}
 </style>
 
 </head>
@@ -347,27 +368,28 @@ html,body{overflow-x:hidden}
     <div class="bdiv"></div>
     <div class="titleblock">
       <div class="app-title">Daily Commercial Performance</div>
-      <div class="app-sub">Account page</div>
+      <div class="app-sub">Account Directory</div>
     </div>
-    <nav class="pills" aria-label="Page sections"><a class="pill g1" href="index.html#account-executives" data-sec="account-executives">Account Executives</a><a class="pill g1" href="index.html#account-managers" data-sec="account-managers">Account Managers</a><a class="pill g1" href="index.html#programs" data-sec="programs">Programs</a><a class="pill g2" href="details.html" data-sec="details" id="pill-details">Behind the Numbers</a><a class="pill g2 active" href="account.html" data-sec="drill" id="pill-drill">Account Drilldown</a><a class="pill g3" href="about.html" data-sec="about">About</a></nav>
+    <nav class="pills" aria-label="Page sections"><a class="pill g1" href="index.html#account-executives" data-sec="account-executives">Account Executives</a><a class="pill g1" href="index.html#account-managers" data-sec="account-managers">Account Managers</a><a class="pill g1" href="index.html#programs" data-sec="programs">Programs</a><a class="pill g2" href="details.html" data-sec="details" id="pill-details">Behind the Numbers</a><a class="pill g2 active" href="account.html" data-sec="drill" id="pill-drill">Account Directory</a><a class="pill g3" href="about.html" data-sec="about">About</a></nav>
     <span class="asof"><span class="dot" aria-hidden="true"></span><span id="asof"></span></span>
   </div>
 </header>
 
 <main>
-  <p style="margin:0 0 10px 0"><a class="linkbtn" id="back-list" href="details.html">&#8592; Back to the list</a></p>
+  <p style="margin:0 0 10px 0;display:flex;gap:14px;flex-wrap:wrap"><a class="linkbtn" id="back-list" href="details.html">&#8592; Back to the list</a><a class="linkbtn" id="dir-link" href="account.html" hidden>&#8592; Account Directory</a></p>
   <div class="acct" id="acct"><div class="card"><p class="dt-note">Loading the practice&hellip;</p></div></div>
   <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Practice level. State and history from the Daily Commercial Performance engine; predictions, summaries, plays and open cases from the Account Health model when the practice is in its modeled book.</span></div>
 </main>
 
-<script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;if(_pa&&_a)_pa.href="account.html"+_a;}catch(e){}</script>
+<script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;}catch(e){}</script>
 <script src="details.js"></script>
 <script>
   (function () {
     var q = new URLSearchParams(location.search), sec = (q.get("sec") || "ae").replace(/[^a-z]/g, ""), key = (q.get("key") || "").replace(/[^a-z0-9-]/g, "");
-    document.write('<script src="health/' + sec + '-' + key + '.js?v=0.16.17"><\/script>');
+    if (q.get("pid")) document.write('<script src="health/' + sec + '-' + key + '.js?v=0.17.0"><\/script>');
+    else document.write('<script src="directory.js"><\/script>');
   })();
 </script>
-<script src="account-page.js?v=0.16.17"></script>
+<script src="account-page.js?v=0.17.0"></script>
 </body>
 </html>

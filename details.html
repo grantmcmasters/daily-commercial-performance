@@ -249,13 +249,12 @@ html,body{overflow-x:hidden}
 .dt-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin-bottom:2px}
 .backrow{margin:0 0 10px 0}
 /* the navigator: every list one click away */
-.dt-nav{display:flex;flex-direction:column;gap:6px;margin:0 0 14px;padding:10px 14px;background:var(--card2);border:1px solid var(--line);border-radius:12px}
-.dt-nav .grp{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.dt-nav .lbl{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);min-width:150px}
-.dt-nav a{display:inline-block;text-decoration:none;font-weight:700;font-size:12px;color:var(--killianink);background:#FFFFFF;border:1px solid var(--line);border-radius:999px;padding:5px 12px;transition:border-color .12s,background .12s,color .12s}
+.dt-nav{display:flex;flex-wrap:wrap;align-items:center;gap:4px 22px;margin:0 0 12px;padding:6px 12px;background:var(--card2);border:1px solid var(--line);border-radius:10px}
+.dt-nav .grp{display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap}
+.dt-nav .lbl{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-right:4px;white-space:nowrap}
+.dt-nav a{display:inline-block;text-decoration:none;font-weight:700;font-size:11px;color:var(--killianink);background:#FFFFFF;border:1px solid var(--line);border-radius:999px;padding:3px 9px;line-height:1.3;transition:border-color .12s,background .12s,color .12s}
 .dt-nav a:hover{border-color:var(--killian)}
 .dt-nav a.on{background:var(--killian);border-color:var(--killian);color:#FFFFFF}
-@media (max-width:700px){.dt-nav .lbl{min-width:0;width:100%}}
 /* past, present, future */
 .path{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
 .path .arw{color:var(--ink2);font-weight:800}
@@ -402,13 +401,13 @@ html,body{overflow-x:hidden}
     <div class="dt-wrap"><table class="dt" id="dt-table"></table></div>
     <p class="dt-note" style="margin-top:8px">Click a practice for its own page. Click a column heading to sort.</p>
   </div>
-  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.17.1</span></div>
+  <div class="footer"><a class="about-link" href="about.html">About this app: every definition and counting rule</a><span class="num">Build v0.17.2</span></div>
 </main>
 
 <script>try{var _d=localStorage.getItem("dcp.lastDetails"),_a=localStorage.getItem("dcp.lastAccount"),_pd=document.getElementById("pill-details"),_pa=document.getElementById("pill-drill");if(_pd&&_d)_pd.href="details.html"+_d;}catch(e){}</script>
 <script src="details.js"></script>
 <script src="data.js"></script>
-<script src="app.js?v=0.17.1"></script>
-<script src="details-page.js?v=0.17.1"></script>
+<script src="app.js?v=0.17.2"></script>
+<script src="details-page.js?v=0.17.2"></script>
 </body>
 </html>

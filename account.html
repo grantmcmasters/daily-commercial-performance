@@ -386,10 +386,10 @@ html,body{overflow-x:hidden}
 <script>
   (function () {
     var q = new URLSearchParams(location.search), sec = (q.get("sec") || "ae").replace(/[^a-z]/g, ""), key = (q.get("key") || "").replace(/[^a-z0-9-]/g, "");
-    if (q.get("pid")) document.write('<script src="health/' + sec + '-' + key + '.js?v=0.17.0"><\/script>');
+    if (q.get("pid")) document.write('<script src="health/' + sec + '-' + key + '.js?v=0.17.1"><\/script>');
     else document.write('<script src="directory.js"><\/script>');
   })();
 </script>
-<script src="account-page.js?v=0.17.0"></script>
+<script src="account-page.js?v=0.17.1"></script>
 </body>
 </html>

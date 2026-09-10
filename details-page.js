@@ -75,7 +75,7 @@
   }
   byId("dt-head").innerHTML =
     '<div class="sub-brand"><div class="sub-logos">' + logoHTML() + '</div><div><div class="dt-kicker">' + esc(SECTION_NAMES[SEC] || "") + '</div><div class="sub-title">' + esc(S.title) + '</div></div></div>' +
-    '<span class="chip chip-gold dt-bubble">Behind the Numbers</span>' +
+    '<a class="chip chip-gold dt-bubble" id="dt-bubble" href="?sec=' + SEC + '&key=' + encodeURIComponent(KEY) + '&metric=total" title="The full account list">Behind the Numbers</a>' +
     '<div><span class="chip chip-b">' + esc(S.owner || "") + "</span></div>";
 
   /* ---------- what a metric code means ---------- */
@@ -279,6 +279,13 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
   });
 
+  byId("dt-bubble").addEventListener("click", function (ev) {
+    ev.preventDefault();
+    query = ""; byId("dt-search").value = "";
+    select("total");
+    var lead = byId("dt-lead");
+    if (lead && lead.scrollIntoView) lead.scrollIntoView({ block: "start", behavior: "smooth" });
+  });
   renderReplica();
   select(METRIC);
 })();

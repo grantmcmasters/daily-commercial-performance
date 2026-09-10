@@ -12,7 +12,7 @@ Static site on Vercel, no build step, no framework. Same deployment pattern as `
 - `index.html`: markup and CSS. `app.js`: the page script (renders every section from `data.js`, the state table picker, and the Export slides button, which draws a PDF deck with jsPDF and svg2pdf using the brand fonts in `fonts/`).
 - `data.js`: `window.DCP_DATA` written by `pipeline/build.py`. Served no-cache so a refresh shows new numbers.
 - `pipeline/build.py`: pulls from Supabase (SK Public) through the REST API and writes `data.js`. The three section builders are stubs until the metrics are decided.
-- `.github/workflows/daily-refresh.yml`: nightly at 11:30 UTC (4:30 AM Pacific) plus manual run; commits `data.js`, Vercel auto-deploys.
+- Nightly refresh and morning email: moving to the lab script computer (Windows Task Scheduler); the GitHub workflow was removed on 2026-09-10 after its scheduler skipped runs.
 - `vercel.json`: static config.
 
 ## Deploy (one time)

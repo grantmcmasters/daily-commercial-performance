@@ -81,7 +81,7 @@
     var open = href ? '<a class="b3t link ' + (tone || "") + '" href="' + esc(href) + '" title="Open the practices behind this number">' : '<div class="b3t ' + (tone || "") + '">';
     return open + '<div class="n">' + esc(value) + '</div><div class="t">' + esc(label) + '</div><div class="rv">' + subHTML + "</div>" + (href ? "</a>" : "</div>");
   }
-  function detailsButton(sec, key) { return '<a class="btn-details" href="' + esc(detailsURL(sec, key)) + '">Click for details</a>'; }
+  function detailsButton(sec, key) { return '<a class="btn-details" href="' + esc(detailsURL(sec, key)) + '">Behind the numbers</a>'; }
   function logoImg(path, title, small) {
     var cls = "sub-logo" + (small ? " sm" : "") + (/aspen-beacon/.test(path) ? " tall" : "");
     return '<img class="' + cls + '" src="' + esc(path) + '" alt="' + esc(title) + ' logo" onerror="this.style.display=\'none\'">';
@@ -699,7 +699,7 @@
       "<li><b>Book:</b> " + esc(pg.book) + ". There is no network cap: the program's universe is the whole marketable universe.</li>" +
       "<li><b>Submitters YTD, Active, Dabblers:</b> as defined above. <b>Inactive (tile):</b> " + esc(pg.quiet) + ". <b>Penetration:</b> currently active practices divided by every practice in the program's book, since there is no network cap.</li>" +
       "<li><b>Chart:</b> new submitters (up) = " + esc(pg.new) + "; inactive (down) = " + esc(pg.gone_quiet_month) + "; the net of the two is under each month; the line is the practices that sent at least one case that month, on the right axis. The state table and the week over week chart follow the same rules as the other sections.</li></ul>" +
-      "<h3>Account details</h3><p>Every one pager has a Click for details button, and every tile is a link. Both open a separate tab that lists the practices behind the number: state today, state at the end of each month this year, cases by month, trailing 90 day counts, first and last case, and the account numbers that roll up to the practice. The list can be exported to Excel.</p>" +
+      "<h3>Behind the Numbers</h3><p>Every one pager has a Behind the numbers button, and every number on it is a link. Both open the Behind the Numbers page, which repeats the one pager and lists the practices behind whichever number you click: state today, the state at the end of each month this year, cases by month, and the account manager. The list can be exported to Excel, and every practice opens its own Account Drilldown.</p>" +
       "<h3>Plays</h3><p>The Plays boxes are editable on the page (click into them). Edits go into the slide export but are not saved between visits yet.</p>" +
       "<h3>Counting rules</h3><p>Cases are counted the same way as the Account Health app: one business unit per case from the primary product, manufacturing jigs dropped, TRI rebill cases dropped, corporate sample accounts dropped, lab, university and intercompany accounts dropped. The one difference is that Aspen Beacon non-LFX cases are kept here so the Beacon page shows the whole Beacon book.</p>";
   }

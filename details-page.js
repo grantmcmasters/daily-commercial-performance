@@ -65,7 +65,7 @@
     byId("dt-lead").innerHTML = '<p class="dt-note">Open Details from any partner, account manager or program on the main screen, or from any number there.</p>';
     return;
   }
-  document.title = S.title + " Account Details";
+  document.title = S.title + ": Behind the Numbers";
   byId("dt-back").href = "index.html#" + ({ ae: "ae-", am: "am-", programs: "pg-" }[SEC] || "") + KEY;
   byId("dt-back").textContent = "← Back to " + S.title;
   byId("asof").textContent = "Data through " + longDate(D.meta.data_through || D.meta.run_date);
@@ -75,7 +75,7 @@
   }
   byId("dt-head").innerHTML =
     '<div class="sub-brand"><div class="sub-logos">' + logoHTML() + '</div><div><div class="dt-kicker">' + esc(SECTION_NAMES[SEC] || "") + '</div><div class="sub-title">' + esc(S.title) + '</div></div></div>' +
-    '<span class="chip chip-gold dt-bubble">Details</span>' +
+    '<span class="chip chip-gold dt-bubble">Behind the Numbers</span>' +
     '<div><span class="chip chip-b">' + esc(S.owner || "") + "</span></div>";
 
   /* ---------- what a metric code means ---------- */

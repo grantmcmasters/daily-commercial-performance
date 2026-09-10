@@ -36,7 +36,7 @@
   if (!row) {
     var lastList = "details.html";
     try { lastList = "details.html" + (localStorage.getItem("dcp.lastDetails") || ""); } catch (e) { /* ignore */ }
-    byId("acct").innerHTML = '<div class="card"><div class="sub-title">Pick a practice to drill into</div><p class="dt-note" style="font-size:13.5px;margin-top:6px">The Account Drilldown shows one practice at a time. Open the <a href="' + esc(lastList) + '" style="color:#0F6BA8;font-weight:800">Details</a> list, then click any practice.</p></div>';
+    byId("acct").innerHTML = '<div class="card"><div class="sub-title">Pick a practice to drill into</div><p class="dt-note" style="font-size:13.5px;margin-top:6px">The Account Drilldown shows one practice at a time. Open <a href="' + esc(lastList) + '" style="color:#0F6BA8;font-weight:800">Behind the Numbers</a>, then click any practice.</p></div>';
     return;
   }
   try { localStorage.setItem("dcp.lastAccount", location.search); localStorage.setItem("dcp.lastDetails", "?sec=" + SEC + "&key=" + encodeURIComponent(KEY) + (METRIC ? "&metric=" + METRIC : "")); } catch (e) { /* ignore */ }

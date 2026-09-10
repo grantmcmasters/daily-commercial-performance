@@ -1,11 +1,13 @@
 name: daily-refresh
-# Every morning at 4:00 AM Pacific: rebuild data.js from the database, then render the deck, write the
+# Every morning at 4:07 AM Pacific: rebuild data.js from the database, then render the deck, write the
 # AI summary and email it to the team.  GitHub cron runs in UTC, so two schedules cover daylight and
-# standard time and the first job keeps only the one that lands at 4 AM Pacific.
+# standard time and the first job keeps only the one that lands at 4:07 AM Pacific.  The odd minute is
+# deliberate: GitHub delays or drops schedules that fire at the top of the hour when its queue is busy
+# (the 4:00 run was skipped on 2026-09-10).
 on:
   schedule:
-    - cron: "0 11 * * *"   # 4:00 AM PDT
-    - cron: "0 12 * * *"   # 4:00 AM PST
+    - cron: "7 11 * * *"   # 4:07 AM PDT
+    - cron: "7 12 * * *"   # 4:07 AM PST
   workflow_dispatch:
     inputs:
       send_to:
@@ -28,11 +30,11 @@ jobs:
       - id: check
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
-          # keep the cron that equals 4 AM Pacific this time of year: 11:00 UTC in daylight time, 12:00 UTC in standard time
+          # keep the cron that equals 4:07 AM Pacific this time of year: 11:07 UTC in daylight time, 12:07 UTC in standard time
           OFF=$(TZ=America/Los_Angeles date +%z)
           SCHED="${{ github.event.schedule }}"
           echo "Pacific offset $OFF, schedule '$SCHED', Pacific time now $(TZ=America/Los_Angeles date '+%H:%M')"
-          if { [ "$OFF" = "-0700" ] && [ "$SCHED" = "0 11 * * *" ]; } || { [ "$OFF" = "-0800" ] && [ "$SCHED" = "0 12 * * *" ]; }; then
+          if { [ "$OFF" = "-0700" ] && [ "$SCHED" = "7 11 * * *" ]; } || { [ "$OFF" = "-0800" ] && [ "$SCHED" = "7 12 * * *" ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"

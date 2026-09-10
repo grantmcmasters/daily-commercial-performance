@@ -75,6 +75,7 @@
   }
   byId("dt-head").innerHTML =
     '<div class="sub-brand"><div class="sub-logos">' + logoHTML() + '</div><div><div class="dt-kicker">' + esc(SECTION_NAMES[SEC] || "") + '</div><div class="sub-title">' + esc(S.title) + '</div></div></div>' +
+    '<span class="chip chip-gold dt-bubble">Details</span>' +
     '<div><span class="chip chip-b">' + esc(S.owner || "") + "</span></div>";
 
   /* ---------- what a metric code means ---------- */

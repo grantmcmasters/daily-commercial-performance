@@ -8,6 +8,8 @@ on:
   schedule:
     - cron: "7 11 * * *"   # 4:07 AM PDT
     - cron: "7 12 * * *"   # 4:07 AM PST
+    - cron: "37 11 * * *"  # 4:37 AM PDT backup: runs only if the 4:07 run never sent the email
+    - cron: "37 12 * * *"  # 4:37 AM PST backup
   workflow_dispatch:
     inputs:
       send_to:
@@ -20,6 +22,7 @@ on:
         default: false
 permissions:
   contents: write
+  actions: read
 concurrency: daily-refresh
 jobs:
   gate:
@@ -28,17 +31,26 @@ jobs:
       run: ${{ steps.check.outputs.run }}
     steps:
       - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
-          # keep the cron that equals 4:07 AM Pacific this time of year: 11:07 UTC in daylight time, 12:07 UTC in standard time
+          # 4:07 AM Pacific is 11:07 UTC in daylight time and 12:07 UTC in standard time; the other hour's crons are ignored
           OFF=$(TZ=America/Los_Angeles date +%z)
           SCHED="${{ github.event.schedule }}"
+          MIN=$(echo "$SCHED" | awk '{print $1}'); HOUR=$(echo "$SCHED" | awk '{print $2}')
+          WANT=11; [ "$OFF" = "-0800" ] && WANT=12
           echo "Pacific offset $OFF, schedule '$SCHED', Pacific time now $(TZ=America/Los_Angeles date '+%H:%M')"
-          if { [ "$OFF" = "-0700" ] && [ "$SCHED" = "7 11 * * *" ]; } || { [ "$OFF" = "-0800" ] && [ "$SCHED" = "7 12 * * *" ]; }; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          fi
+          if [ "$HOUR" != "$WANT" ]; then echo "run=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ "$MIN" = "7" ]; then echo "run=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          # the 4:37 backup slot: take over only if no run has sent today's email (GitHub sometimes skips a schedule)
+          SINCE=$(TZ=America/Los_Angeles date -d "today 00:00" -u +%Y-%m-%dT%H:%M:%SZ)
+          SENT=""
+          for id in $(gh run list --workflow daily-refresh.yml --limit 20 --json databaseId,createdAt --jq ".[] | select(.createdAt >= \"$SINCE\") | .databaseId" 2>/dev/null); do
+            if gh run view "$id" --json jobs --jq '.jobs[] | select(.name == "email" and .conclusion == "success") | .name' 2>/dev/null | grep -q email; then SENT="$id"; break; fi
+          done
+          if [ -n "$SENT" ]; then echo "run $SENT already sent today's email; the backup slot stands down"; echo "run=false" >> "$GITHUB_OUTPUT"
+          else echo "no email has gone out today; the backup slot runs the job"; echo "run=true" >> "$GITHUB_OUTPUT"; fi
   rebuild:
     needs: gate
     if: needs.gate.outputs.run == 'true'

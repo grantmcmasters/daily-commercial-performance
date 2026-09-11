@@ -167,9 +167,9 @@ def rich(text):
 
 
 def update_day(data_through):
-    """the morning the email goes out: the day after the data-through date"""
+    """the day the update covers: the data-through date, the same date as the subject line and the PDF name"""
     try:
-        d = dt.date.fromisoformat(data_through) + dt.timedelta(days=1)
+        d = dt.date.fromisoformat(data_through)
         return f"{d.strftime('%A')}, {d.strftime('%B')} {ordinal(d.day)}, {d.year}"
     except Exception:
         return "today"

@@ -34,12 +34,12 @@ SIGNATURE = {
 
 
 def through_date():
+    """the date the email goes out, in Pacific time: the subject, the PDF name and the note's opening line all use it"""
     try:
-        s = open(os.path.join(ROOT, "data.js"), encoding="utf8").read()
-        d = json.loads(s[s.index("{"):s.rindex("}") + 1])
-        return dt.date.fromisoformat(d.get("meta", {}).get("data_through"))
+        from zoneinfo import ZoneInfo
+        return dt.datetime.now(ZoneInfo("America/Los_Angeles")).date()
     except Exception:
-        return dt.date.today() - dt.timedelta(days=1)
+        return dt.date.today()
 
 
 def ordinal(n):

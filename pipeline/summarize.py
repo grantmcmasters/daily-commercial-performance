@@ -166,10 +166,14 @@ def rich(text):
     return re.sub(r"\*\*(.+?)\*\*", r'<b style="color:' + NAVY + r'">\1</b>', t)
 
 
-def update_day(data_through):
-    """the day the update covers: the data-through date, the same date as the subject line and the PDF name"""
+def update_day(data_through=None):
+    """the day the email goes out, in Pacific time (the same date as the subject line and the PDF name)"""
     try:
-        d = dt.date.fromisoformat(data_through)
+        try:
+            from zoneinfo import ZoneInfo
+            d = dt.datetime.now(ZoneInfo("America/Los_Angeles")).date()
+        except Exception:
+            d = dt.date.today()
         return f"{d.strftime('%A')}, {d.strftime('%B')} {ordinal(d.day)}, {d.year}"
     except Exception:
         return "today"

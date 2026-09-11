@@ -1,0 +1,105 @@
+name: daily-refresh
+# Manual only: the Run workflow button rebuilds data.js from the database, renders the deck, writes the
+# AI summary and emails it. The nightly schedule lives on the lab script computer (Windows Task Scheduler,
+# see dcp-morning-deployment); GitHub's scheduler skipped runs and is not used.
+on:
+  workflow_dispatch:
+    inputs:
+      send_to:
+        description: "Send the email only to these addresses (comma separated). Leave blank for the normal list."
+        required: false
+        default: ""
+      skip_email:
+        description: "Rebuild the data only, no email"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency: daily-refresh
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - id: check
+        run: echo "run=true" >> "$GITHUB_OUTPUT"
+  rebuild:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r pipeline/requirements.txt
+      - name: Rebuild data.js
+        run: |
+          for i in 1 2 3; do
+            python pipeline/build.py && break
+            echo "rebuild attempt $i failed"; [ "$i" = "3" ] && exit 1
+            sleep 120
+          done
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          DCP_OUT: data.js
+      - name: Commit and push
+        run: |
+          git config user.name "sk-refresh"
+          git config user.email "actions@users.noreply.github.com"
+          git add data.js details.js directory.js health
+          git diff --cached --quiet || git commit -m "Daily refresh $(date -u +%F)"
+          for i in 1 2 3; do
+            git push && break
+            git pull --rebase -X theirs origin main
+          done
+  email:
+    needs: [gate, rebuild]
+    # runs whenever the gate opened, even if the rebuild failed (the email then carries the last good data, dated in the subject)
+    if: ${{ always() && needs.gate.outputs.run == 'true' && !(github.event_name == 'workflow_dispatch' && inputs.skip_email) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the export libraries
+        run: npm ci --prefix pipeline
+      - name: Render the deck
+        run: node pipeline/export_deck.js deck.pdf
+      - name: Yesterday's data for the day over day comparison
+        run: |
+          PREV=$(git log --format=%H -n 1 --skip=1 -- data.js || true)
+          if [ -n "$PREV" ]; then git show "$PREV:data.js" > prev.js; echo "using $PREV"; else echo "no earlier data.js"; fi
+      - name: Write the summary
+        run: python pipeline/summarize.py --today data.js --yesterday prev.js --out summary.md
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL || 'claude-fable-5-1' }}
+      - name: Send the email
+        run: python pipeline/send_mail.py --summary summary.html --pdf deck.pdf ${{ inputs.send_to && format('--to "{0}"', inputs.send_to) || '' }}
+        env:
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          MAIL_SMTP_HOST: ${{ vars.MAIL_SMTP_HOST || 'smtp.gmail.com' }}
+          MAIL_SMTP_PORT: ${{ vars.MAIL_SMTP_PORT || '465' }}
+      - name: Keep the deck and summary for 14 days
+        uses: actions/upload-artifact@v4
+        with:
+          name: deck-${{ github.run_id }}
+          path: |
+            deck.pdf
+            summary.md
+          retention-days: 14
